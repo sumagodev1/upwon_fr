@@ -3,6 +3,7 @@ import HeroSlider from '../components/ui/HeroSlider.jsx';
 import WmsProofStrip from '../components/sections/WmsProofStrip.jsx';
 import WmsRecognition from '../components/sections/WmsRecognition.jsx';
 import WmsOperationalReality from '../components/sections/WmsOperationalReality.jsx';
+import WmsApproach from '../components/sections/WmsApproach.jsx';
 import Seo, { productJsonLd, breadcrumbJsonLd } from '../components/common/Seo.jsx';
 import { getPlatformTheme, findProductBySlug } from '../data/modules.js';
 
@@ -53,6 +54,9 @@ export default function WmsPage() {
 
       {/* ========== OPERATIONAL REALITY — automate promise + daily pain-points ========== */}
       <WmsOperationalReality />
+
+      {/* ========== UPWON'S APPROACH — food-grade warehouse flow ========== */}
+      <WmsApproach />
     </>
   );
 }

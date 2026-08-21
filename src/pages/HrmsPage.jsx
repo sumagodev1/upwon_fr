@@ -26,7 +26,6 @@ import { getPlatformTheme, findProductBySlug } from '../data/modules.js';
   Routed at /products/hrms.
 */
 
-
 export default function HrmsPage() {
   const product = findProductBySlug('hrms');
   if (!product) return <Navigate to="/platform" replace />;
