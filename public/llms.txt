@@ -1,0 +1,54 @@
+# UpWon
+
+> UpWon is India's enterprise software suite for food manufacturers, FMCG companies and franchise networks. One integrated platform runs production, distribution, retail, HR and finance on the same data — built for food, not retrofitted. Live in 30–45 days.
+
+UpWon is built by Byte Elephants Technologies (Nashik, Maharashtra, India). It serves businesses doing roughly ₹2 Cr to ₹500 Cr in revenue across bakery, dairy, sweets & namkeen, spices & agro, beverages, food processing, FMCG distribution and QSR/franchise.
+
+## Products (the 7-platform suite)
+
+- [UpWon ERP](https://upwon.in/products/erp): Batch-driven production, recipe BOM, multi-plant control, finance, FSSAI & GST compliance.
+- [UpWon SFA-DMS](https://upwon.in/products/sfa-dms): Beat planning, secondary-sales capture, distributor stock visibility, scheme control.
+- [UpWon FMS](https://upwon.in/products/fms): Franchise onboarding, royalty, outlet POS, central kitchen and aggregator orders.
+- [UpWon POS](https://upwon.in/products/pos): Offline-first counter billing with Swiggy/Zomato/ONDC, loyalty and settlement.
+- [UpWon HREasy](https://upwon.in/products/hrms): Multi-state payroll, biometric attendance, PF/ESIC/TDS, statutory compliance.
+- [UpWon WMS](https://upwon.in/products/wms): FEFO putaway, expiry alerts and temperature zones for perishable warehouses.
+- [UpWon Vendor Portal](https://upwon.in/products/vendor-portal): Supplier onboarding, RFQs, PO confirmation, quality self-certification.
+
+## Industries served
+
+- [Bakery & Confectionery](https://upwon.in/industries/bakery)
+- [Dairy & Ice Cream](https://upwon.in/industries/dairy)
+- [FMCG Distribution](https://upwon.in/industries/fmcg-distribution)
+- [QSR & Franchise F&B](https://upwon.in/industries/qsr-franchise)
+- [Sweets & Namkeen](https://upwon.in/industries/sweets-namkeen)
+- [Spices & Agro Processing](https://upwon.in/industries/spices-agro)
+- [Food Processing](https://upwon.in/industries/food-processing)
+- [Beverages & Juices](https://upwon.in/industries/beverage)
+
+## Key pages
+
+- [What is UpWon](https://upwon.in/what-is-upwon): The 5-minute introduction.
+- [Why UpWon](https://upwon.in/why-upwon): Differentiators vs generic ERP.
+- [Pricing](https://upwon.in/pricing): Starter / Growth / Enterprise tiers.
+- [Implementation](https://upwon.in/implementation): The 30–45 day go-live process.
+- [Clients & case studies](https://upwon.in/clients): Named outcomes (Monginis, Kaka Halwai, Vatsalya Dairy).
+- [Book a demo](https://upwon.in/demo): Free 30-minute live demo.
+- [Contact](https://upwon.in/contact): Sales +91-93568-98277, hello@upwon.in.
+
+## Knowledgebase
+
+- [Knowledgebase hub](https://upwon.in/knowledgebase): Operations guides for food & FMCG teams.
+- [Inventory Management](https://upwon.in/knowledgebase/inventory-management): Real-time stock, FEFO/FIFO, expiry.
+- [Compliance & Food Safety](https://upwon.in/knowledgebase/compliance): FSSAI, GST, traceability.
+- [Distribution & Sales](https://upwon.in/knowledgebase/distribution): Secondary sales, beat planning.
+
+## Comparisons
+
+- [UpWon vs SAP](https://upwon.in/compare/upwon-vs-sap)
+- [UpWon vs Tally + Zoho](https://upwon.in/compare/upwon-vs-tally)
+- [UpWon vs Others](https://upwon.in/compare/upwon-vs-others)
+
+## More
+
+- Full detail for AI: [/llms-full.txt](https://upwon.in/llms-full.txt)
+- Sitemap: [/sitemap.xml](https://upwon.in/sitemap.xml)

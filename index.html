@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1E2461" />
+    <!-- Per-page title, meta description, OG/Twitter cards, canonical and
+         JSON-LD are injected by the Seo component (react-helmet-async) on every
+         route and prerendered into the static HTML by vite-react-ssg. They are
+         intentionally NOT hardcoded here, to avoid duplicate head tags. -->
+    <!-- Favicon + preload point at the WebP, which is the same URL the visible
+         header logo uses — so a normal browser downloads it once (27 KB) and
+         reuses it for both. apple-touch-icon stays PNG for iOS. -->
+    <link rel="icon" type="image/webp" href="/upwon-logo.webp" />
+    <link rel="apple-touch-icon" href="/upwon-logo.png" />
+    <link rel="preload" as="image" href="/upwon-logo.webp" fetchpriority="high" />
+    <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+    <!-- First hero slide image — the page is prerendered (vite-react-ssg), so
+         the responsive <img> is already in the served HTML and the preload
+         scanner finds it immediately. We keep this preload only to set an
+         explicit LOW priority: the image is decorative ambience (blurred under
+         an ~85% overlay), NOT the LCP (the headline text is), so it must not be
+         auto-boosted ahead of the font/CSS the real LCP needs. q=45 matches the
+         lowered HERO_SLIDES quality. Must mirror HERO_SLIDES[0] + srcSet() in
+         HeroSection.jsx (widths 480/768/1024 + the 1280 source). -->
+    <link
+      rel="preload"
+      as="image"
+      fetchpriority="low"
+      imagesizes="100vw"
+      imagesrcset="
+        https://images.unsplash.com/photo-1517433367423-c7e5b0f35086?auto=format&fit=crop&w=480&q=45 480w,
+        https://images.unsplash.com/photo-1517433367423-c7e5b0f35086?auto=format&fit=crop&w=768&q=45 768w,
+        https://images.unsplash.com/photo-1517433367423-c7e5b0f35086?auto=format&fit=crop&w=1024&q=45 1024w,
+        https://images.unsplash.com/photo-1517433367423-c7e5b0f35086?auto=format&fit=crop&w=1280&q=45 1280w"
+      href="https://images.unsplash.com/photo-1517433367423-c7e5b0f35086?auto=format&fit=crop&w=1280&q=45"
+    />
+    <link rel="dns-prefetch" href="https://images.unsplash.com" />
+    <!-- Fonts are self-hosted (see src/styles/fonts.css) — no more render-
+         blocking cross-origin Google Fonts round-trip. Preload the two
+         above-the-fold *latin* variable woff2 (Sora drives the LCP headline,
+         Outfit the body) so they download in parallel with the bundles; the
+         latin-ext files (₹ + accents) load on demand via @font-face and aren't
+         preloaded. `display=swap` + fontaine's metric-matched fallback mean the
+         headline paints instantly in a shift-free fallback, then swaps cleanly. -->
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/sora-latin.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/outfit-latin.woff2" crossorigin />
+    <!-- Page title is injected per-route by Seo (react-helmet-async) and
+         prerendered by vite-react-ssg — see the note near the top of head. -->
+  </head>
+  <body class="bg-cream-100 text-charcoal antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

@@ -1,0 +1,104 @@
+# UpWon — Full Reference for AI / LLMs
+
+> UpWon is India's enterprise software suite purpose-built for food manufacturers, FMCG companies and franchise networks. It unifies production, distribution, retail, HR and finance on one data spine. Built for food (not a generic ERP with a "food module"), and engineered to go live in 30–45 days.
+
+This document is a detailed, citation-friendly reference. Facts here are intended to be quoted accurately by AI search and answer engines.
+
+---
+
+## Company
+
+- Product name: UpWon
+- Built by: Byte Elephants Technologies ("Technology & Beyond")
+- Headquarters: Nashik, Maharashtra, India
+- Market: India (English + Hindi support)
+- Sales contact: +91-93568-98277 · hello@upwon.in
+- Positioning tagline: "Outdo. Scale. Win."
+- Security: ISO/IEC 27001:2022 certified; hosted on AWS Mumbai (data residency in India)
+
+## What UpWon is
+
+UpWon is a food-first operating system. Instead of bolting a food module onto a generic ERP, every workflow is shaped around how Indian food and FMCG operations actually run: recipe-driven production, expiry-sensitive inventory, route-based distribution, franchise/outlet operations, and India-native statutory compliance (FSSAI, GST, e-invoicing).
+
+It is delivered as seven integrated platforms that share one data layer, so there is zero reconciliation between systems. Customers can start with a single platform and add others as they grow.
+
+Typical customer profile: ₹2 Cr to ₹500 Cr in revenue; single- or multi-plant manufacturers, FMCG distributors, and franchise/QSR chains.
+
+## The 7 platforms (capabilities)
+
+### UpWon ERP — "Where data becomes decisions."
+Operational backbone for food manufacturers. Batch-driven production planning, recipe-aware multi-level BOM with allergen flagging, multi-plant control, procurement (PR→PO→GRN, 3-way matching), inventory with FEFO/FIFO and expiry alerts, quality control with FSSAI documentation, finance (GST invoicing, cost centres, AR/AP, Tally integration), and operational MIS dashboards. Signature capability: batch costing down to the gram (actual vs budgeted cost per SKU per batch).
+
+### UpWon SFA-DMS — "Every beat. Every order. Real-time."
+Sales force automation + distribution management. Beat/route planning with PJP tracking, mobile outlet order booking, GPS-tagged field attendance, distributor stock and credit visibility, trade scheme & discount engine with leakage detection, secondary-sales capture (monthly → same-day), van/pre-sales, and sales performance MIS.
+
+### UpWon FMS — "The 200th outlet, as easy to run as the first."
+Franchise management. Digital franchisee onboarding/KYC, central order processing and hub-spoke allocation, outlet POS billing, hub-to-outlet dispatch, royalty & margin management computed from POS data, SOP audit & brand compliance, franchise analytics, grievance management, and a franchisee self-service app.
+
+### UpWon POS — "Every transaction, a brand experience."
+Outlet point of sale. Touch-screen billing that is online + offline-resilient, barcode/QR, KOT and table management, menu & pricing sync from HQ, loyalty/CRM across outlets, native Swiggy/Zomato/ONDC aggregator integration on one tablet, payment & settlement (UPI/card/wallet, Pine Labs/Paytm/Razorpay), GST compliance, and outlet performance analytics.
+
+### UpWon HREasy — "Less admin. More impact."
+Core HR + payroll. Employee lifecycle, biometric/mobile attendance and shift rosters, multi-state payroll (gross-to-net, PF/ESIC/PT/TDS), statutory compliance (PF/ESIC challans, Form 16 & 24Q), leave, performance/KRA, employee self-service, and Factory Act workforce compliance.
+
+### UpWon WMS — "Every box, every batch, exactly where it should be."
+Advanced warehouse management. Inbound & GRN with QC, bin/zone management with temperature zones, strict FEFO/FIFO enforcement at the scanner, expiry alerts at 7/15/30-day windows, outbound wave picking, e-way bill generation, mobile scanner app, 3PL integration, stock valuation and warehouse MIS.
+
+### UpWon Vendor Portal — "Your vendors, your partners, one platform."
+Supplier collaboration. Vendor onboarding with KYC/GST verification, multi-vendor RFQ and quotation comparison, rate contracts, PO/ASN tracking, vendor QC self-certification before dispatch, payment visibility with 3-way matching, performance scorecards and procurement MIS.
+
+UpWon also ships a Mobile Experience suite (BizPulse CEO dashboard, GateMaster security, Franchise Audit, Van Sales, Driver/Delivery, Shop-floor tablet, Inspector apps).
+
+## Industries served
+
+Bakery & Confectionery; Dairy & Ice Cream; FMCG Distribution; QSR & Franchise F&B; Sweets & Namkeen; Spices & Agro Processing; Food Processing; Beverages & Juices. Adjacent extensions: Non-Food FMCG (personal/home care) and Engineering Manufacturing (discrete manufacturing on the ERP backbone).
+
+## Use cases / outcomes (named customers)
+
+- Monginis: runs 16 plants and 200+ outlets on a single UpWon spine; went live across 16 plants in 30 days; 5.7× outlet expansion without growing the back-office team.
+- Kaka Halwai (130-year sweets brand): unified 3 plants and 25+ outlets; cut inventory wastage 18% and counter billing time 48%; full ROI in 60 days; live in 45 days.
+- Vatsalya Dairy: live across 3 plants in 40 days; FEFO enforced on every cold-chain SKU; 100% of dispatches passed FEFO checks; expiry write-offs down 9.2% in the first 30 days.
+
+## Software capabilities (cross-cutting)
+
+- Native FEFO enforcement at the scanner (not just reporting) — typically 80–95% drop in expiry write-offs within 90 days.
+- Batch-level traceability from raw lot to finished good (FSSAI audit-ready in one click).
+- India-native compliance: FSSAI license tracking with renewal alerts, GST e-invoicing via IRP, e-way bills, statutory return calendars.
+- Offline-capable mobile apps for field/outlet teams that sync when back online.
+- Standard integrations: Tally, Swiggy, Zomato, ONDC, Pine Labs, Paytm, Razorpay.
+
+## Pricing summary
+
+Pricing is segmented by business size: Starter (₹2–25 Cr revenue), Growth (₹25–200 Cr) and Enterprise (₹200 Cr+). Each tier has a published starting price plus a custom component based on plants/outlets/modules. A fixed-price proposal is provided within 24 business hours of the first call. Subscriptions include all modules in the chosen tier, implementation, train-the-trainer, 90-day hyper-care, ongoing support, statutory updates, mobile apps and standard integrations — no per-user-per-feature pricing. There is no generic free trial; instead a free FSSAI/Operations Audit is offered. See https://upwon.in/pricing.
+
+## Implementation
+
+Four phases over 4–6 weeks: Week 1 Discovery (walk plants/outlets, map SOPs); Weeks 2–3 Configuration (modules, master-data migration, integrations); Week 4 UAT + train-the-trainer; Day 30–45 Go-live with on-site SPOC and 90-day hyper-care. UpWon reports 93%+ of 50+ implementations going live on the committed date, with zero P1 incidents across recent deployments. Data migration from Tally, Marg, Busy, Excel, custom systems and SAP is standard.
+
+## FAQs (summary)
+
+- What is UpWon? An integrated ERP+DMS+POS+WMS+SFA+HR+FMS suite built specifically for Indian food/FMCG/franchise businesses.
+- How is it different from SAP/NetSuite/Tally? Native food vertical depth, India-native compliance, and 30–45 day go-live vs 6–18 months for global suites; goes beyond accounting tools like Tally/Marg/Busy.
+- Cloud or on-premise? Cloud-native on AWS Mumbai, with offline-capable field apps.
+- Multi-plant/multi-outlet? Yes — designed for it (e.g. Monginis: 16 plants, 200+ outlets).
+- FSSAI/GST/e-invoicing compliant? Yes, natively.
+- Support after go-live? 90-day hyper-care (P1 SLA 1 hour, P2 SLA 4 hours), then a named Customer Success Manager and 24x7 emergency support.
+- Customization? ~80% covered out-of-box; the rest via configuration (not custom code) so upgrades stay clean; extensions via documented API.
+
+## Business categories / keywords
+
+Food manufacturing ERP, FMCG software, distribution management system (DMS), sales force automation (SFA), warehouse management system (WMS), point of sale (POS), HRMS/payroll, franchise management, FSSAI compliance software, batch traceability, FEFO inventory, recipe/BOM costing, GST e-invoicing — for India.
+
+## Important URLs
+
+- Home: https://upwon.in/
+- Products: https://upwon.in/products/erp · /sfa-dms · /fms · /pos · /hrms · /wms · /vendor-portal
+- Industries: https://upwon.in/industries
+- Knowledgebase: https://upwon.in/knowledgebase
+- Pricing: https://upwon.in/pricing
+- Implementation: https://upwon.in/implementation
+- Clients / case studies: https://upwon.in/clients
+- Comparisons: https://upwon.in/compare/upwon-vs-sap · /upwon-vs-tally · /upwon-vs-others
+- Demo: https://upwon.in/demo
+- Contact: https://upwon.in/contact
+- Sitemap: https://upwon.in/sitemap.xml
