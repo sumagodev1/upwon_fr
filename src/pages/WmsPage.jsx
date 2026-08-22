@@ -4,6 +4,8 @@ import WmsProofStrip from '../components/sections/WmsProofStrip.jsx';
 import WmsRecognition from '../components/sections/WmsRecognition.jsx';
 import WmsOperationalReality from '../components/sections/WmsOperationalReality.jsx';
 import WmsApproach from '../components/sections/WmsApproach.jsx';
+import WmsCoreCapabilities from '../components/sections/WmsCoreCapabilities.jsx';
+import WmsConnectedByDesign from '../components/sections/WmsConnectedByDesign.jsx';
 import Seo, { productJsonLd, breadcrumbJsonLd } from '../components/common/Seo.jsx';
 import { getPlatformTheme, findProductBySlug } from '../data/modules.js';
 
@@ -57,6 +59,10 @@ export default function WmsPage() {
 
       {/* ========== UPWON'S APPROACH — food-grade warehouse flow ========== */}
       <WmsApproach />
+
+      {/* <WmsCoreCapabilities/> */}
+
+      <WmsConnectedByDesign/>
     </>
   );
 }
