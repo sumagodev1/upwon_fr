@@ -24,10 +24,26 @@ const EASE = [0.22, 1, 0.3, 1];
 
 // In-app capabilities shown beneath the headline (left column of the banner).
 const CAPS = [
-  { icon: Smartphone, title: 'Mobile App for Workers', desc: 'Real-time tasks, scanning & updates on the go.' },
-  { icon: ScanBarcode, title: 'Scan Bin & Track Inventory', desc: 'Accurate scanning for every movement.' },
-  { icon: RefreshCw, title: 'Enforce FEFO, FIFO, FMFO', desc: 'System-driven rules reduce manual errors.' },
-  { icon: BarChart3, title: 'Track Performance in Real Time', desc: 'Monitor fill rates, errors & productivity instantly.' },
+  {
+    icon: Smartphone,
+    title: 'Mobile App for Workers',
+    desc: 'Real-time tasks, scanning & updates on the go.',
+  },
+  {
+    icon: ScanBarcode,
+    title: 'Scan Bin & Track Inventory',
+    desc: 'Accurate scanning for every movement.',
+  },
+  {
+    icon: RefreshCw,
+    title: 'Enforce FEFO, FIFO, FMFO',
+    desc: 'System-driven rules reduce manual errors.',
+  },
+  {
+    icon: BarChart3,
+    title: 'Track Performance in Real Time',
+    desc: 'Monitor fill rates, errors & productivity instantly.',
+  },
 ];
 
 // The four pain-points of a food warehouse without a purpose-built WMS.
@@ -76,6 +92,7 @@ const PAINS = [
 
 function PainCard({ p, i }) {
   const Icon = p.icon;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 22 }}
@@ -95,14 +112,28 @@ function PainCard({ p, i }) {
         className="mx-auto grid h-16 w-16 place-items-center rounded-full"
         style={{ background: p.tint }}
       >
-        <Icon className="h-8 w-8" style={{ color: p.accent }} strokeWidth={1.8} />
+        <Icon
+          className="h-8 w-8"
+          style={{ color: p.accent }}
+          strokeWidth={1.8}
+        />
       </span>
 
-      <h3 className="mt-4 text-center text-[1.15rem] font-bold leading-tight tracking-tight" style={{ color: p.accent }}>
+      <h3
+        className="mt-4 text-center text-[1.15rem] font-bold leading-tight tracking-tight"
+        style={{ color: p.accent }}
+      >
         {p.title}
       </h3>
-      <span className="mx-auto mt-2 block h-[3px] w-8 rounded-full" style={{ background: p.accent }} />
-      <p className="mt-3 text-center text-[14px] leading-snug text-navy-600">{p.desc}</p>
+
+      <span
+        className="mx-auto mt-2 block h-[3px] w-8 rounded-full"
+        style={{ background: p.accent }}
+      />
+
+      <p className="mt-3 text-center text-[14px] leading-snug text-navy-600">
+        {p.desc}
+      </p>
 
       <div className="mt-5 overflow-hidden rounded-xl">
         <img
@@ -123,12 +154,22 @@ export default function WmsOperationalReality() {
       <Container>
         {/* ===== Hero banner ===== */}
         <div className="relative overflow-hidden rounded-[2rem] border border-cream-300 shadow-sm">
-          <img
-            src="/images/oper_reality_back.webp"
-            alt=""
-            aria-hidden
-            className="absolute inset-0 h-full w-full object-cover object-right"
-          />
+          {/* ===== Responsive Background Image ===== */}
+          {/* Mobile: 320px to 767px */}
+          <picture className="absolute inset-0 h-full w-full">
+            <source
+              media="(max-width: 767px)"
+              srcSet="/images/oper_reality_back_mb.webp"
+            />
+            {/* Desktop: 768px and above */}
+            <img
+              src="/images/oper_reality_back.webp"
+              alt=""
+              aria-hidden="true"
+              className="h-full w-full object-cover object-center md:object-right"
+            />
+          </picture>
+
           {/* left legibility wash — confined to the text zone so the photo stays crisp */}
           <div
             className="absolute inset-0"
@@ -149,13 +190,17 @@ export default function WmsOperationalReality() {
                 <Warehouse className="h-4 w-4" />
                 Operational Reality
               </p>
-              <h2 className="mt-4 h-display text-[2.2rem] leading-[1.08] tracking-tight text-navy-950 md:text-[2.75rem]">
+
+              <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
                 Automated Warehouses.{' '}
-                <span className="gradient-text-orange">More Productive Warehouses.</span>
+                <span className="gradient-text-orange">
+                  More Productive Warehouses.
+                </span>
               </h2>
+
               <p className="mt-4 max-w-md text-[15px] leading-relaxed text-navy-600">
-                From counting to compliance — automate every step, empower your workforce with
-                real-time visibility.
+                From counting to compliance — automate every step, empower your
+                workforce with real-time visibility.
               </p>
 
               {/* In-app capabilities */}
@@ -166,14 +211,24 @@ export default function WmsOperationalReality() {
                     initial={{ opacity: 0, y: 16 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: '-40px' }}
-                    transition={{ duration: 0.5, delay: 0.25 + i * 0.1, ease: EASE }}
+                    transition={{
+                      duration: 0.5,
+                      delay: 0.25 + i * 0.1,
+                      ease: EASE,
+                    }}
                     className="group"
                   >
                     <span className="grid h-11 w-11 place-items-center rounded-xl bg-navy-900/[0.06] text-navy-800 transition-colors duration-300 group-hover:bg-orange-500 group-hover:text-white">
                       <Icon className="h-5 w-5" strokeWidth={1.8} />
                     </span>
-                    <h3 className="mt-3 text-[14px] font-bold leading-tight text-navy-950">{title}</h3>
-                    <p className="mt-1 text-[12.5px] leading-snug text-navy-500">{desc}</p>
+
+                    <h3 className="mt-3 text-[14px] font-bold leading-tight text-navy-950">
+                      {title}
+                    </h3>
+
+                    <p className="mt-1 text-[12.5px] leading-snug text-navy-500">
+                      {desc}
+                    </p>
                   </motion.div>
                 ))}
               </div>
@@ -193,17 +248,27 @@ export default function WmsOperationalReality() {
             initial={{ scaleX: 0 }}
             whileInView={{ scaleX: 1 }}
             viewport={{ once: true, margin: '-40px' }}
-            transition={{ duration: 0.5, delay: 0.15, ease: EASE }}
+            transition={{
+              duration: 0.5,
+              delay: 0.15,
+              ease: EASE,
+            }}
             className="h-px w-10 origin-right bg-navy-200"
           />
+
           <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-navy-500">
             The Challenges You Face Every Day
           </p>
+
           <motion.span
             initial={{ scaleX: 0 }}
             whileInView={{ scaleX: 1 }}
             viewport={{ once: true, margin: '-40px' }}
-            transition={{ duration: 0.5, delay: 0.15, ease: EASE }}
+            transition={{
+              duration: 0.5,
+              delay: 0.15,
+              ease: EASE,
+            }}
             className="h-px w-10 origin-left bg-navy-200"
           />
         </motion.div>
@@ -214,7 +279,6 @@ export default function WmsOperationalReality() {
             <PainCard key={p.num} p={p} i={i} />
           ))}
         </div>
-
       </Container>
     </section>
   );

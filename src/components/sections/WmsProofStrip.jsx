@@ -86,13 +86,6 @@ export default function WmsProofStrip() {
         ))}
       </motion.div>
 
-      {/* Source note */}
-      <Container>
-        <p className="mt-8 text-center text-[13px] font-medium text-navy-400">
-          Across live UpWon deployments. Figures are indicative ranges, not WMS-specific case-study
-          results.
-        </p>
-      </Container>
     </section>
   );
 }

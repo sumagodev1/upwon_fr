@@ -83,7 +83,7 @@ export default function WmsApproach() {
             transition={{ duration: 0.6, ease: EASE }}
           >
             <Eyebrow>UpWon&apos;s Approach</Eyebrow>
-            <h2 className="mt-4 h-display text-[2.3rem] leading-[1.08] tracking-tight text-navy-950 md:text-[2.75rem]">
+            <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
               We Built the Warehouse App Around{' '}
               <span className="gradient-text-orange">Domain Needs.</span>
             </h2>

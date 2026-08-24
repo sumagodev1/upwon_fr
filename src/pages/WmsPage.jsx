@@ -6,6 +6,11 @@ import WmsOperationalReality from '../components/sections/WmsOperationalReality.
 import WmsApproach from '../components/sections/WmsApproach.jsx';
 import WmsCoreCapabilities from '../components/sections/WmsCoreCapabilities.jsx';
 import WmsConnectedByDesign from '../components/sections/WmsConnectedByDesign.jsx';
+import WmsCategoryDepth from '../components/sections/WmsCategoryDepth.jsx';
+import WmsFaqSection from '../components/sections/WmsFaqSection.jsx';
+import WmsSectionReady from '../components/sections/WmsSectionReady.jsx';
+import WmsCta from '../components/sections/WmsCta.jsx';
+import WmsClientRecognition from '../components/sections/WmsClientRecognition.jsx';
 import Seo, { productJsonLd, breadcrumbJsonLd } from '../components/common/Seo.jsx';
 import { getPlatformTheme, findProductBySlug } from '../data/modules.js';
 
@@ -60,9 +65,19 @@ export default function WmsPage() {
       {/* ========== UPWON'S APPROACH — food-grade warehouse flow ========== */}
       <WmsApproach />
 
-      {/* <WmsCoreCapabilities/> */}
+      <WmsCoreCapabilities/>
 
       <WmsConnectedByDesign/>
+
+      <WmsSectionReady />
+
+      <WmsCategoryDepth />
+
+      <WmsClientRecognition />
+
+      <WmsFaqSection />
+
+      <WmsCta />
     </>
   );
 }
