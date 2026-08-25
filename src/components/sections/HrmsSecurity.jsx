@@ -4,9 +4,7 @@ import Container from '../ui/Container.jsx';
 
 /*
   HRMS "Secure, Compliant, Accountable" — addresses statutory compliance risk
-  directly, the highest-stakes trust question in HR software. Concrete,
-  evidence-based claims: PF/ESI/PT/TDS auto-deduction, multi-state support,
-  ISO-aligned, CMMI Level 3 — plus statutory coverage across India.
+  directly, the highest-stakes trust question in HR software.
 */
 
 const EASE = [0.22, 1, 0.3, 1];
@@ -17,10 +15,26 @@ const GREEN = '#16A34A';
 const PURPLE = '#7C3AED';
 
 const CARDS = [
-  { color: ORANGE, label: 'PF / ESI / PT / TDS Auto-Deduction', img: '/images/hrms_pf_deduction.webp' },
-  { color: BLUE, label: 'Multi-State Statutory Support', img: '/images/hrms_multistate.webp' },
-  { color: GREEN, label: 'ISO-Aligned Processes', img: '/images/hrms_iso.webp' },
-  { color: PURPLE, label: 'CMMI Level 3 Process Rigour', img: '/images/hrms_cmmlevel.webp' },
+  {
+    color: ORANGE,
+    label: 'PF / ESI / PT / TDS Auto-Deduction',
+    img: '/images/hrms_pf_deduction.webp',
+  },
+  {
+    color: BLUE,
+    label: 'Multi-State Statutory Support',
+    img: '/images/hrms_multistate.webp',
+  },
+  {
+    color: GREEN,
+    label: 'ISO-Aligned Processes',
+    img: '/images/hrms_iso.webp',
+  },
+  {
+    color: PURPLE,
+    label: 'CMMI Level 3 Process Rigour',
+    img: '/images/hrms_cmmlevel.webp',
+  },
 ];
 
 const STATS = [
@@ -45,18 +59,22 @@ export default function HrmsSecurity() {
             <ShieldCheck className="h-4 w-4" />
             Secure, Compliant, Accountable
           </p>
+
           <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
             PF, ESI, PT, TDS — Calculated Right,{' '}
-            <span className="gradient-text-orange">Every Time, Every State.</span>
+            <span className="gradient-text-orange">
+              Every Time, Every State.
+            </span>
           </h2>
+
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
-            HREasy ensures statutory compliance with accuracy, automation and audit-ready reports
-            across India.
+            HREasy ensures statutory compliance with accuracy, automation and
+            audit-ready reports across India.
           </p>
         </motion.div>
       </Container>
 
-      {/* Cards — wider than the standard container so all five cards grow */}
+      {/* Cards */}
       <div className="mx-auto mt-12 grid max-w-[1560px] grid-cols-2 gap-5 px-4 sm:px-6 lg:grid-cols-[repeat(4,minmax(0,1fr))_1.6fr] lg:px-8">
         {CARDS.map((c, i) => (
           <motion.div
@@ -64,12 +82,28 @@ export default function HrmsSecurity() {
             initial={{ opacity: 0, y: 22 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.5, delay: i * 0.08, ease: EASE }}
+            transition={{
+              duration: 0.5,
+              delay: i * 0.08,
+              ease: EASE,
+            }}
             className="flex flex-col items-center rounded-2xl border border-cream-300 bg-cream-100 p-8 text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-enterprise"
           >
-            <img src={c.img} alt="" aria-hidden className="w-full rounded-xl object-contain" />
-            <span className="mt-6 block h-[3px] w-10 rounded-full" style={{ background: c.color }} />
-            <p className="mt-6 text-base font-bold leading-snug text-navy-950">{c.label}</p>
+            <img
+              src={c.img}
+              alt=""
+              aria-hidden
+              className="w-full rounded-xl object-contain"
+            />
+
+            <span
+              className="mt-6 block h-[3px] w-10 rounded-full"
+              style={{ background: c.color }}
+            />
+
+            <p className="mt-6 text-base font-bold leading-snug text-navy-950">
+              {c.label}
+            </p>
           </motion.div>
         ))}
 
@@ -78,31 +112,45 @@ export default function HrmsSecurity() {
           initial={{ opacity: 0, y: 22 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-50px' }}
-          transition={{ duration: 0.5, delay: CARDS.length * 0.08, ease: EASE }}
+          transition={{
+            duration: 0.5,
+            delay: CARDS.length * 0.08,
+            ease: EASE,
+          }}
           className="col-span-2 flex flex-col justify-center rounded-2xl border border-cream-300 bg-cream-100 p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-enterprise lg:col-span-1"
         >
-            <p className="text-center text-[15px] font-bold text-navy-950">
-              Statutory Coverage Across India
-            </p>
-            <span className="mx-auto mt-3 block h-[3px] w-8 rounded-full bg-orange-500" />
-            <div className="mt-5 flex items-center gap-5">
-              <span className="grid h-20 w-20 shrink-0 place-items-center rounded-2xl bg-white text-navy-900 shadow-sm">
-                <ShieldCheck className="h-10 w-10 text-orange-500" strokeWidth={1.6} />
-              </span>
-              <div className="flex-1 space-y-3">
-                {STATS.map(({ icon: Icon, num, label }) => (
-                  <div key={label} className="flex items-center gap-3">
-                    <Icon className="h-4 w-4 shrink-0 text-navy-400" />
-                    <p className="text-[14px] text-navy-700">
-                      <span className="font-bold text-navy-950">{num}</span> {label}
-                    </p>
-                  </div>
-                ))}
-              </div>
+          <p className="text-center text-[15px] font-bold text-navy-950">
+            Statutory Coverage Across India
+          </p>
+
+          <span className="mx-auto mt-3 block h-[3px] w-8 rounded-full bg-orange-500" />
+
+          <div className="mt-5 flex items-center gap-5">
+            {/* Indian Map Image */}
+            <div className="flex h-32 w-[110px] shrink-0 items-center justify-center">
+              <img
+                src="/images/hrms_indian_map.webp"
+                alt="Statutory coverage across India"
+                className="h-full w-full object-contain"
+              />
             </div>
+
+            {/* Stats */}
+            <div className="flex-1 space-y-3">
+              {STATS.map(({ icon: Icon, num, label }) => (
+                <div key={label} className="flex items-center gap-3">
+                  <Icon className="h-4 w-4 shrink-0 text-navy-400" />
+
+                  <p className="text-[14px] text-navy-700">
+                    <span className="font-bold text-navy-950">{num}</span>{' '}
+                    {label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
         </motion.div>
       </div>
-      {/* end cards grid */}
     </section>
   );
 }

@@ -65,7 +65,7 @@ const wmsPageLazy = async () => ({
   Component: (await import('./pages/WmsPage.jsx')).default,
 });
 const vendorPortalPageLazy = async () => ({
-  Component: (await import('./pages/VendorPortalPage.jsx')).default,
+  Component: (await import('./pages/VmsPage.jsx')).default,
 });
 
 // Platforms that have their own dedicated page/route. Excluded from the dynamic
@@ -185,7 +185,7 @@ export const routes = [
       {
         path: 'products/vendor-portal',
         lazy: vendorPortalPageLazy,
-        entry: 'src/pages/VendorPortalPage.jsx',
+        entry: 'src/pages/VmsPage.jsx',
         getStaticPaths: async () => ['/products/vendor-portal'],
       },
       {
