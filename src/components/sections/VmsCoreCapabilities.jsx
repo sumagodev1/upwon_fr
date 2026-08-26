@@ -169,6 +169,7 @@ const benefits = [
 function CapabilityCard({ item, index }) {
     const Icon = item.icon;
 
+    
     return (
         <motion.article
             initial={{ opacity: 0, y: 24 }}

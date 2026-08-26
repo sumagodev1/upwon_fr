@@ -93,25 +93,25 @@ const INDUSTRY_MEGA_DESCS = {
 // most relevant existing page (no new routes required).
 const PLATFORM_BY_BUSINESS = [
   { label: 'Single-plant manufacturers', desc: 'Start with ERP, add as you grow', to: '/products/erp', icon: Factory },
-  { label: 'Multi-plant operations',     desc: 'One login, every plant',           to: '/platform',     icon: Building2 },
-  { label: 'Franchise & QSR chains',     desc: 'Run every outlet from one HQ',     to: '/products/fms', icon: ChefHat },
-  { label: 'FMCG distributors',          desc: 'Secondary sales same-day',         to: '/products/sfa-dms', icon: Truck },
-  { label: 'Cloud kitchens',             desc: 'Multi-brand, multi-outlet',        to: '/products/pos',     icon: Store },
-  { label: 'Exporters & cold chain',     desc: 'FEFO + temperature zones',         to: '/products/wms',     icon: Globe2 },
+  { label: 'Multi-plant operations', desc: 'One login, every plant', to: '/platform', icon: Building2 },
+  { label: 'Franchise & QSR chains', desc: 'Run every outlet from one HQ', to: '/products/fms', icon: ChefHat },
+  { label: 'FMCG distributors', desc: 'Secondary sales same-day', to: '/products/sfa-dms', icon: Truck },
+  { label: 'Cloud kitchens', desc: 'Multi-brand, multi-outlet', to: '/products/pos', icon: Store },
+  { label: 'Exporters & cold chain', desc: 'FEFO + temperature zones', to: '/products/wms', icon: Globe2 },
 ];
 
 // Axis 3 — "Popular Features". Tebra's third column deep-links straight to
 // the highest-converting topics. We do the same: every entry routes to the
 // product page where that capability lives.
 const PLATFORM_POPULAR = [
-  { label: 'Batch traceability',     to: '/products/erp',          icon: Boxes },
-  { label: 'FSSAI compliance',       to: '/products/erp',          icon: ShieldCheck },
-  { label: 'FEFO inventory',         to: '/products/wms',          icon: Snowflake },
-  { label: 'Recipe & BOM costing',   to: '/products/erp',          icon: Receipt },
-  { label: 'Swiggy / Zomato POS',    to: '/products/pos',          icon: Store },
-  { label: 'BizPulse CEO app',       to: '/products/mobile-apps',  icon: Activity },
-  { label: 'ROI Calculator',         to: '/roi-calculator',        icon: Calculator },
-  { label: 'Live in 30-45 days',     to: '/implementation',        icon: Rocket },
+  { label: 'Batch traceability', to: '/products/erp', icon: Boxes },
+  { label: 'FSSAI compliance', to: '/products/erp', icon: ShieldCheck },
+  { label: 'FEFO inventory', to: '/products/wms', icon: Snowflake },
+  { label: 'Recipe & BOM costing', to: '/products/erp', icon: Receipt },
+  { label: 'Swiggy / Zomato POS', to: '/products/pos', icon: Store },
+  { label: 'BizPulse CEO app', to: '/products/mobile-apps', icon: Activity },
+  { label: 'ROI Calculator', to: '/roi-calculator', icon: Calculator },
+  { label: 'Live in 30-45 days', to: '/implementation', icon: Rocket },
 ];
 
 // Featured CTA panel that pins to the right of every mega menu — the Tebra
@@ -283,8 +283,7 @@ export default function Navbar() {
   return (
     <header
       style={{ top: 'var(--ann-h, 0px)' }}
-      className={`fixed inset-x-0 z-50 transition-all duration-500 ${
-        scrolled
+      className={`fixed inset-x-0 z-50 transition-all duration-500 ${scrolled
           ? 'border-b border-cream-300 bg-white/90 backdrop-blur-xl shadow-sm'
           : inDarkMode
             // On dark-hero routes BEFORE the visitor scrolls, the navbar sits
@@ -295,7 +294,7 @@ export default function Navbar() {
             // opaque or visually heavy.
             ? 'bg-gradient-to-b from-navy-950/55 via-navy-950/25 to-transparent backdrop-blur-[2px]'
             : 'bg-transparent'
-      }`}
+        }`}
     >
       <div className="container-max container-px">
         <nav className="relative flex h-[84px] items-center justify-between">
@@ -312,10 +311,10 @@ export default function Navbar() {
             <li
               onMouseEnter={() => setActiveDropdown('products')}
               onMouseLeave={() => setActiveDropdown(null)}
-              // Products mega-menu centers on the nav (≈ viewport centre), so its
-              // panel must anchor to the relative <nav>, not this <li>. Dropping
-              // `relative` here lets the absolute panel below resolve to <nav>.
-              // className="relative"
+            // Products mega-menu centers on the nav (≈ viewport centre), so its
+            // panel must anchor to the relative <nav>, not this <li>. Dropping
+            // `relative` here lets the absolute panel below resolve to <nav>.
+            // className="relative"
             >
               <button className={dropdownBtnCls(inDarkMode, isProductsActive)}>
                 Products
@@ -406,10 +405,10 @@ export default function Navbar() {
             <li
               onMouseEnter={() => setActiveDropdown('industries')}
               onMouseLeave={() => setActiveDropdown(null)}
-              // Industries mega-menu centers on the nav (≈ viewport centre), so its
-              // panel must anchor to the relative <nav>, not this <li>. Dropping
-              // `relative` here lets the absolute panel below resolve to <nav>.
-              // className="relative"
+            // Industries mega-menu centers on the nav (≈ viewport centre), so its
+            // panel must anchor to the relative <nav>, not this <li>. Dropping
+            // `relative` here lets the absolute panel below resolve to <nav>.
+            // className="relative"
             >
               <button className={dropdownBtnCls(inDarkMode, isIndustriesActive)}>
                 Industries
@@ -440,7 +439,11 @@ export default function Navbar() {
                           {INDUSTRIES.map((ind) => (
                             <MegaItem
                               key={ind.id}
-                              to={`/industries/${ind.slug}`}
+                              to={
+                                ind.name === 'Bakery & Confectionery'
+                                  ? '/industries/bakery-and-confectionery'
+                                  : `/industries/${ind.slug}`
+                              }
                               icon={ind.icon}
                               label={ind.name}
                               desc={INDUSTRY_MEGA_DESCS[ind.slug] || ind.tag}
@@ -476,10 +479,10 @@ export default function Navbar() {
             <li
               onMouseEnter={() => setActiveDropdown('resources')}
               onMouseLeave={() => setActiveDropdown(null)}
-              // Resources mega-menu centers on the nav (≈ viewport centre), so its
-              // panel must anchor to the relative <nav>, not this <li>. Dropping
-              // `relative` here lets the absolute panel below resolve to <nav>.
-              // className="relative"
+            // Resources mega-menu centers on the nav (≈ viewport centre), so its
+            // panel must anchor to the relative <nav>, not this <li>. Dropping
+            // `relative` here lets the absolute panel below resolve to <nav>.
+            // className="relative"
             >
               <button className={dropdownBtnCls(inDarkMode, isResourcesActive)}>
                 Resources
@@ -547,11 +550,10 @@ export default function Navbar() {
                 the centered nav is a flex-1 sibling, not an absolute overlay. */}
             <a
               href={`tel:${TOLL_FREE_TEL}`}
-              className={`group hidden items-center gap-2 rounded-md border px-3 py-2 text-[14px] font-semibold transition-colors xl:inline-flex ${
-                inDarkMode
+              className={`group hidden items-center gap-2 rounded-md border px-3 py-2 text-[14px] font-semibold transition-colors xl:inline-flex ${inDarkMode
                   ? 'border-white/20 bg-white/[0.06] text-white hover:bg-white/[0.10]'
                   : 'border-cream-300 bg-white text-navy-900 hover:border-orange-300 hover:bg-orange-50'
-              }`}
+                }`}
               aria-label={`Call ${COMPANY.contact.tollFreeLabel || 'Sales'} toll-free ${TOLL_FREE_DISPLAY}`}
             >
               <span className="relative flex h-7 w-7 items-center justify-center rounded-full bg-orange-500/15 text-orange-600">
@@ -559,9 +561,8 @@ export default function Navbar() {
                 <span className="absolute inset-0 -z-0 rounded-full bg-orange-500/30 opacity-0 transition-opacity duration-300 group-hover:animate-ping group-hover:opacity-100" />
               </span>
               <span className="flex flex-col leading-tight">
-                <span className={`text-[9px] font-semibold uppercase tracking-[0.16em] ${
-                  inDarkMode ? 'text-white/70' : 'text-orange-600'
-                }`}>
+                <span className={`text-[9px] font-semibold uppercase tracking-[0.16em] ${inDarkMode ? 'text-white/70' : 'text-orange-600'
+                  }`}>
                   Toll-Free · {COMPANY.contact.tollFreeLabel || 'Sales'}
                 </span>
                 <span className="num-display text-[14px] font-bold">{TOLL_FREE_DISPLAY}</span>
@@ -576,11 +577,10 @@ export default function Navbar() {
 
           <button
             onClick={() => setOpen((o) => !o)}
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-md border lg:hidden ${
-              inDarkMode
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-md border lg:hidden ${inDarkMode
                 ? 'border-white/20 bg-white/[0.06] text-white'
                 : 'border-cream-300 bg-white text-navy-950'
-            }`}
+              }`}
             aria-label="Toggle menu"
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -686,36 +686,32 @@ const DARK_LINK_SHADOW =
   '[text-shadow:0_1px_10px_rgba(15,21,53,0.55),_0_1px_2px_rgba(0,0,0,0.4)]';
 
 const navLinkCls = (inDarkMode) => ({ isActive }) =>
-  `relative inline-flex items-center whitespace-nowrap rounded-md px-3.5 py-2 text-[17px] font-semibold transition-colors ${
-    inDarkMode
-      ? isActive
-        ? `text-white ${DARK_LINK_SHADOW}`
-        : `text-white/85 hover:text-white ${DARK_LINK_SHADOW}`
-      : isActive
+  `relative inline-flex items-center whitespace-nowrap rounded-md px-3.5 py-2 text-[17px] font-semibold transition-colors ${inDarkMode
+    ? isActive
+      ? `text-white ${DARK_LINK_SHADOW}`
+      : `text-white/85 hover:text-white ${DARK_LINK_SHADOW}`
+    : isActive
       ? 'text-navy-950'
       : 'text-navy-600 hover:text-navy-950'
-  } ${
-    isActive
-      ? 'after:absolute after:bottom-0 after:left-3.5 after:right-3.5 after:h-[3px] after:rounded-full after:bg-orange-500 after:shadow-[0_0_10px_rgba(232,93,38,0.4)]'
-      : ''
+  } ${isActive
+    ? 'after:absolute after:bottom-0 after:left-3.5 after:right-3.5 after:h-[3px] after:rounded-full after:bg-orange-500 after:shadow-[0_0_10px_rgba(232,93,38,0.4)]'
+    : ''
   }`;
 
 // Dropdown-button styling — mirrors navLinkCls so the Products / Industries /
 // Resources dropdowns also show the active underline when the user is on one
 // of their child pages.
 const dropdownBtnCls = (inDarkMode, isActive) =>
-  `relative inline-flex items-center gap-1 whitespace-nowrap rounded-md px-3.5 py-2 text-[17px] font-semibold transition-colors ${
-    inDarkMode
-      ? isActive
-        ? `text-white ${DARK_LINK_SHADOW}`
-        : `text-white/85 hover:text-white ${DARK_LINK_SHADOW}`
-      : isActive
+  `relative inline-flex items-center gap-1 whitespace-nowrap rounded-md px-3.5 py-2 text-[17px] font-semibold transition-colors ${inDarkMode
+    ? isActive
+      ? `text-white ${DARK_LINK_SHADOW}`
+      : `text-white/85 hover:text-white ${DARK_LINK_SHADOW}`
+    : isActive
       ? 'text-navy-950'
       : 'text-navy-600 hover:text-navy-950'
-  } ${
-    isActive
-      ? 'after:absolute after:bottom-0 after:left-3.5 after:right-6 after:h-[3px] after:rounded-full after:bg-orange-500 after:shadow-[0_0_10px_rgba(232,93,38,0.4)]'
-      : ''
+  } ${isActive
+    ? 'after:absolute after:bottom-0 after:left-3.5 after:right-6 after:h-[3px] after:rounded-full after:bg-orange-500 after:shadow-[0_0_10px_rgba(232,93,38,0.4)]'
+    : ''
   }`;
 
 // Click-to-expand mobile group. Each group renders its title as a button
@@ -736,9 +732,8 @@ function MobileGroup({ title, children, defaultOpen = false }) {
           {title}
         </span>
         <ChevronDown
-          className={`h-4 w-4 text-navy-500 transition-transform duration-300 ${
-            open ? 'rotate-180 text-orange-500' : ''
-          }`}
+          className={`h-4 w-4 text-navy-500 transition-transform duration-300 ${open ? 'rotate-180 text-orange-500' : ''
+            }`}
         />
       </button>
       <AnimatePresence initial={false}>
@@ -783,10 +778,10 @@ function MegaItem({ to, icon: Icon, label, desc, descLines = 1, accent }) {
   // identity is reinforced without competing with the navbar's hierarchy.
   const iconStyle = accent
     ? {
-        backgroundColor: `${accent}14`,
-        borderColor: `${accent}33`,
-        color: accent,
-      }
+      backgroundColor: `${accent}14`,
+      borderColor: `${accent}33`,
+      color: accent,
+    }
     : undefined;
   return (
     <Link
@@ -847,10 +842,9 @@ function MobileLink({ to, children, accent }) {
       to={to}
       style={accent ? { color: accent, borderLeft: `3px solid ${accent}` } : undefined}
       className={({ isActive }) =>
-        `block rounded-md px-3 py-2 text-[14px] font-medium transition-colors ${
-          isActive
-            ? 'bg-cream-100 text-navy-950'
-            : accent
+        `block rounded-md px-3 py-2 text-[14px] font-medium transition-colors ${isActive
+          ? 'bg-cream-100 text-navy-950'
+          : accent
             ? 'hover:bg-cream-100'
             : 'text-navy-700 hover:bg-cream-100 hover:text-navy-950'
         }`
