@@ -86,4 +86,4 @@ export default function BakeryBenefitsSection() {
       </Container>
     </section>
   );
-}
+}  

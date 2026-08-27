@@ -1,336 +1,198 @@
+import React from 'react';
 import { m as motion } from 'framer-motion';
 import {
-    Database,
-    UserRoundCheck,
-    ShieldAlert,
-    BellRing,
-    SearchCheck,
-    FileSpreadsheet,
-    Mail,
-    FolderOpen,
-    MoreHorizontal,
-    CheckCircle2,
-    CircleAlert,
-    ArrowRight,
-    Clock3,
-    Award,
+  Mail,
+  Star,
+  CreditCard,
+  FileCheck,
+  ChevronRight,
 } from 'lucide-react';
+
 import Container from '../ui/Container.jsx';
 import Eyebrow from '../ui/Eyebrow.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
 
-const realities = [
-    {
-        number: '01',
-        icon: Database,
-        title: 'Vendor Information Lives Everywhere',
-        desc: 'Profiles, contacts, bank details, documents, and communication history often sit across multiple files, systems, and inboxes.',
-        type: 'sources',
-    },
-    {
-        number: '02',
-        icon: UserRoundCheck,
-        title: 'Approvals Lose Clear Ownership',
-        desc: 'Without structured workflows, teams struggle to identify who needs to review, approve, or take the next action.',
-        type: 'workflow',
-    },
-    {
-        number: '03',
-        icon: ShieldAlert,
-        title: 'Compliance Is Easy to Miss',
-        desc: 'Document expiries, renewals, certificates, and regulatory requirements can go unnoticed until they create operational risk.',
-        type: 'compliance',
-    },
-    {
-        number: '04',
-        icon: BellRing,
-        title: 'Follow-Ups Become Manual Work',
-        desc: 'Teams spend valuable time chasing vendors and internal stakeholders for updates, missing documents, and approvals.',
-        type: 'followup',
-    },
+const PAIN_POINTS = [
+  {
+    id: 'rfq',
+    number: '01',
+    title: 'RFQs Over Email & WhatsApp',
+    description:
+      'RFQs, quotes, follow-ups, and vendor responses scattered across inboxes and chat threads.',
+    icon: Mail,
+    image: '/images/vms_rfq.webp',
+  },
+  {
+    id: 'quality',
+    number: '02',
+    title: 'Vendor Quality Tracked in Someone’s Head',
+    description:
+      'Vendor reliability is judged informally instead of being consistently scored against every delivery.',
+    icon: Star,
+    image: '/images/vms_tracked.webp',
+  },
+  {
+    id: 'payment',
+    number: '03',
+    title: 'Payment Status Requires a Phone Call',
+    description:
+      'Vendors repeatedly call your team to ask about payment status, purchase orders, and pending updates.',
+    icon: CreditCard,
+    image: '/images/vms_phone_call.webp',
+  },
+  {
+    id: 'compliance',
+    number: '04',
+    title: 'KYC & Compliance Documents Everywhere',
+    description:
+      'Certificates, KYC records, approvals, and compliance documents are scattered across folders.',
+    icon: FileCheck,
+    image: '/images/vms_document_everywhere.webp',
+  },
 ];
-
-const trustItems = [
-    {
-        icon: SearchCheck,
-        title: 'One Connected View',
-        desc: 'Bring vendor onboarding, documents, approvals, compliance, and pending actions into one operational view.',
-    },
-    {
-        icon: CheckCircle2,
-        title: 'Clear Next Actions',
-        desc: 'Make ownership and follow-ups easier to understand across every stage of the vendor lifecycle.',
-    },
-];
-
-function VisualPanel({ type }) {
-    if (type === 'sources') {
-        return (
-            <div className="mt-6 flex items-center justify-between rounded-xl border border-navy-100 bg-navy-50/70 px-4 py-4">
-                <div className="flex flex-col items-center gap-1 text-[10px] font-semibold text-navy-600">
-                    <FileSpreadsheet className="h-6 w-6 text-emerald-600" />
-                    <span>Excel Files</span>
-                </div>
-
-                <div className="flex flex-col items-center gap-1 text-[10px] font-semibold text-navy-600">
-                    <Mail className="h-6 w-6 text-blue-600" />
-                    <span>Emails</span>
-                </div>
-
-                <div className="flex flex-col items-center gap-1 text-[10px] font-semibold text-navy-600">
-                    <FolderOpen className="h-6 w-6 text-orange-500" />
-                    <span>Shared Drives</span>
-                </div>
-
-                <div className="flex flex-col items-center gap-1 text-[10px] font-semibold text-navy-600">
-                    <MoreHorizontal className="h-6 w-6" />
-                    <span>Others</span>
-                </div>
-            </div>
-        );
-    }
-
-    if (type === 'workflow') {
-        return (
-            <div className="mt-6 flex items-center justify-between rounded-xl border border-emerald-100 bg-emerald-50/60 px-4 py-4">
-                {[
-                    { icon: UserRoundCheck, label: 'Submitted' },
-                    { icon: UserRoundCheck, label: 'In Review' },
-                    { icon: SearchCheck, label: 'Who Next?' },
-                    { icon: SearchCheck, label: 'Approved By?' },
-                ].map((step, index) => {
-                    const StepIcon = step.icon;
-
-                    return (
-                        <div key={step.label} className="flex items-center gap-2">
-                            <div className="flex flex-col items-center gap-1">
-                                <div className="flex h-9 w-9 items-center justify-center rounded-full border border-emerald-200 bg-white">
-                                    <StepIcon className="h-4 w-4 text-emerald-700" />
-                                </div>
-                                <span className="whitespace-nowrap text-[9px] font-semibold text-navy-600">
-                                    {step.label}
-                                </span>
-                            </div>
-
-                            {index < 3 && (
-                                <ArrowRight className="mb-4 h-4 w-4 text-navy-300" />
-                            )}
-                        </div>
-                    );
-                })}
-            </div>
-        );
-    }
-
-    if (type === 'compliance') {
-        return (
-            <div className="mt-6 flex items-center gap-3 rounded-xl border border-orange-200 bg-orange-50/70 px-4 py-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-100">
-                    <CircleAlert className="h-6 w-6 text-orange-600" />
-                </div>
-
-                <div>
-                    <p className="text-xs font-bold text-navy-950">
-                        GST Certificate
-                    </p>
-                    <p className="mt-1 text-[11px] font-medium text-orange-600">
-                        03 Days Left
-                    </p>
-                    <p className="mt-1 text-[10px] text-navy-500">
-                        Expires soon • Action required
-                    </p>
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="mt-6 flex items-center justify-between rounded-xl border border-violet-100 bg-violet-50/60 px-4 py-4">
-            {[
-                { icon: BellRing, label: 'Follow Up' },
-                { icon: Mail, label: 'Reminder' },
-                { icon: Clock3, label: 'Follow Up Again' },
-                { icon: Clock3, label: 'Still Pending' },
-            ].map((step, index) => {
-                const StepIcon = step.icon;
-
-                return (
-                    <div key={step.label} className="flex items-center gap-2">
-                        <div className="flex flex-col items-center gap-1">
-                            <StepIcon className="h-5 w-5 text-violet-600" />
-                            <span className="max-w-[50px] text-center text-[9px] font-semibold leading-tight text-navy-600">
-                                {step.label}
-                            </span>
-                        </div>
-
-                        {index < 3 && (
-                            <ArrowRight className="h-4 w-4 text-navy-300" />
-                        )}
-                    </div>
-                );
-            })}
-        </div>
-    );
-}
-
-function RealityCard({ item, index }) {
-    const Icon = item.icon;
-
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-40px' }}
-            transition={{
-                duration: 0.55,
-                delay: index * 0.08,
-                ease: EASE,
-            }}
-            className="group rounded-[22px] border border-navy-200/70 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-enterprise"
-        >
-            <div className="flex items-start gap-4">
-                {/* Number */}
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-navy-100 bg-navy-50">
-                    <span className="text-lg font-bold text-navy-700">
-                        {item.number}
-                    </span>
-                </div>
-
-                <div className="flex-1">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cream-100">
-                        <Icon className="h-5 w-5 text-navy-700" />
-                    </div>
-
-                    <h3 className="mt-4 text-[18px] font-bold leading-snug text-navy-950">
-                        {item.title}
-                    </h3>
-
-                    <p className="mt-3 text-[14px] leading-relaxed text-navy-600">
-                        {item.desc}
-                    </p>
-                </div>
-            </div>
-
-            <VisualPanel type={item.type} />
-        </motion.div>
-    );
-}
-
-function TrustItem({ item, index }) {
-    const Icon = item.icon;
-
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{
-                duration: 0.5,
-                delay: index * 0.1,
-                ease: EASE,
-            }}
-            className="flex items-start gap-3"
-        >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-50">
-                <Icon className="h-5 w-5 text-navy-700" />
-            </div>
-
-            <div>
-                <h4 className="text-[15px] font-bold text-navy-950">
-                    {item.title}
-                </h4>
-
-                <p className="mt-1 text-[13px] leading-relaxed text-navy-600">
-                    {item.desc}
-                </p>
-            </div>
-        </motion.div>
-    );
-}
 
 export default function VmsOperationalReality() {
-    return (
-        <section className="relative overflow-hidden bg-white py-16 md:py-20">
-            {/* Background decoration */}
-            <div className="pointer-events-none absolute left-0 top-20 h-72 w-72 rounded-full bg-orange-50/50 blur-3xl" />
-            <div className="pointer-events-none absolute right-0 bottom-0 h-80 w-80 rounded-full bg-blue-50/60 blur-3xl" />
+  const [activeId, setActiveId] = React.useState('rfq');
 
-            <Container className="relative">
-                <div className="grid gap-10 lg:grid-cols-[0.9fr_1.6fr] lg:gap-16">
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveId((currentId) => {
+        const currentIndex = PAIN_POINTS.findIndex(
+          (item) => item.id === currentId
+        );
 
-                    {/* LEFT SIDE - LIKE FIRST IMAGE */}
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true, margin: '-60px' }}
-                        transition={{ duration: 0.6, ease: EASE }}
-                        className="flex flex-col lg:sticky lg:top-28 lg:h-fit"
-                    >
-                        <Eyebrow>
-                            Operational Reality of VMS
-                        </Eyebrow>
+        const nextIndex =
+          currentIndex === PAIN_POINTS.length - 1
+            ? 0
+            : currentIndex + 1;
 
-          <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-                            Vendor Operations Get Complicated{' '}
-                            <span className="gradient-text-orange">
-                                Faster Than Spreadsheets Can Handle.
-                            </span>
-                        </h2>
+        return PAIN_POINTS[nextIndex].id;
+      });
+    }, 3500);
 
-                        <p className="mt-5 max-w-md text-[16px] leading-relaxed text-navy-600">
-                            Vendor management is rarely difficult because of one major problem.
-                            It becomes difficult when onboarding, documents, approvals,
-                            compliance renewals, ownership, and follow-ups are managed
-                            across emails, spreadsheets, and disconnected teams.
-                        </p>
+    return () => clearInterval(interval);
+  }, []);
 
-                        <div className="mt-8">
-                            <button className="inline-flex items-center gap-3 rounded-full bg-navy-950 px-6 py-3.5 text-sm font-semibold text-white transition-transform duration-300 hover:scale-[1.03]">
-                                See VMS in Action
-                                <ArrowRight className="h-4 w-4" />
-                            </button>
-                        </div>
+  const activeItem =
+    PAIN_POINTS.find((item) => item.id === activeId) || PAIN_POINTS[0];
 
-                        {/* Bottom supporting information */}
-                        <div className="mt-14 grid gap-6 border-t border-navy-100 pt-7 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                            {trustItems.map((item, index) => (
-                                <TrustItem
-                                    key={item.title}
-                                    item={item}
-                                    index={index}
-                                />
-                            ))}
-                        </div>
+  return (
+    <section className="relative overflow-hidden bg-[#f5f6f8] py-16 sm:py-20 lg:py-24">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute left-[-180px] top-[180px] h-[420px] w-[420px] rounded-full bg-[#dce3f3]/50 blur-[130px]" />
+        <div className="absolute bottom-[-220px] right-[-180px] h-[500px] w-[500px] rounded-full bg-[#e3e8f5]/60 blur-[140px]" />
+      </div>
 
-                        {/* Small trust badges */}
-                        <div className="mt-8 flex items-center gap-4 border-t border-navy-100 pt-6">
-                            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-navy-200">
-                                <Award className="h-5 w-5 text-navy-700" />
-                            </div>
-                            <div>
-                                <p className="text-xs font-bold text-navy-950">
-                                    Built for controlled vendor operations
-                                </p>
-                                <p className="mt-1 text-[11px] text-navy-500">
-                                    Structured. Traceable. Accountable.
-                                </p>
-                            </div>
-                        </div>
-                    </motion.div>
+      <Container className="relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{
+            duration: 0.6,
+            ease: EASE,
+          }}
+          className="max-w-[860px]"
+        >
+          <Eyebrow>
+            OPERATIONAL REALITY
+          </Eyebrow>
 
-                    {/* RIGHT SIDE - 2 x 2 CARDS */}
-                    <div className="grid gap-6 md:grid-cols-2">
-                        {realities.map((item, index) => (
-                            <RealityCard
-                                key={item.title}
-                                item={item}
-                                index={index}
-                            />
-                        ))}
-                    </div>
-                </div>
-            </Container>
-        </section>
-    );
+          <h2 className="mt-3 h-display text-[32px] leading-[1.1] tracking-tight text-navy-950 sm:text-[36.8px]">
+            Sound Familiar?{' '}
+            <span className="gradient-text-orange">
+              Your Procurement Reality
+            </span>{' '}
+            Is Running Across Too Many Places.
+          </h2>
+
+          <p className="mt-5 max-w-[800px] text-[15px] leading-[1.55] text-[#344561] sm:text-base lg:text-[17px]">
+            RFQs and quotes scattered across email threads. Vendor reliability
+            judged from memory instead of measured performance. Payment updates
+            answered through phone calls. KYC and compliance documents buried
+            across folders.
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{
+            duration: 0.7,
+            delay: 0.1,
+            ease: EASE,
+          }}
+          className="mx-auto mt-12 grid max-w-[1240px] grid-cols-1 overflow-hidden lg:h-[608px] lg:grid-cols-[670px_1fr]"
+        >
+          {/* Left Image */}
+          <div className="relative overflow-hidden bg-white lg:h-full">
+            <motion.img
+              key={activeItem.id}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              src={activeItem.image}
+              alt={activeItem.title}
+              className="block h-auto w-full lg:absolute lg:inset-0 lg:h-full lg:w-full lg:object-cover lg:object-center"
+            />
+          </div>
+
+          {/* Right 4 Cards */}
+          <div className="grid h-full grid-rows-4 bg-white">
+            {PAIN_POINTS.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeId === item.id;
+
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setActiveId(item.id)}
+                  className={`group relative flex min-h-[152px] items-start border-b border-[#dce1ea] px-7 py-6 text-left transition-all duration-300 sm:px-8 lg:min-h-0 lg:px-7 ${
+                    isActive
+                      ? 'bg-[#ffffff]'
+                      : 'bg-[#ffffff] hover:bg-[#fafbfe]'
+                  } ${item.number === '04' ? 'border-b-0' : ''}`}
+                >
+                  {isActive && (
+                    <span className="absolute left-0 top-0 h-[3px] w-full bg-[#31559b]" />
+                  )}
+
+                  <div
+                    className={`flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-[13px] transition-all duration-300 ${
+                      isActive
+                        ? 'bg-[#31559b] text-white'
+                        : 'bg-[#eef1f5] text-[#53657c]'
+                    }`}
+                  >
+                    <Icon size={20} strokeWidth={1.7} />
+                  </div>
+
+                  <div className="ml-5 flex-1 pr-5">
+                    <span className="block text-[9px] font-bold tracking-[0.2em] text-[#6e7e95]">
+                      {item.number}
+                    </span>
+
+                    <h3 className="mt-2 text-[18px] font-bold leading-[1.3] tracking-tight text-[#1e2e49] sm:text-[19px]">
+                      {item.title}
+                    </h3>
+
+                    <p className="mt-2 max-w-[490px] text-[13px] leading-[1.65] text-[#607087] sm:text-[14px]">
+                      {item.description}
+                    </p>
+                  </div>
+
+                  <div className="mt-1 flex shrink-0 items-center text-[#7f8da0] transition-all duration-300 group-hover:translate-x-1">
+                    <ChevronRight size={17} strokeWidth={1.5} />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </motion.div>
+      </Container>
+    </section>
+  );
 }

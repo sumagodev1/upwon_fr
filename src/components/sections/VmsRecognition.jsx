@@ -1,223 +1,262 @@
 import { m as motion } from 'framer-motion';
+import {
+  TrendingUp,
+  FlaskConical,
+  Factory,
+  Package,
+} from 'lucide-react';
 import Container from '../ui/Container.jsx';
 import Eyebrow from '../ui/Eyebrow.jsx';
 
-/*
-  VMS "Recognition & Trust" — highlights the four core areas where vendor
-  operations need structure: centralized vendor records, accountable workflows,
-  compliance visibility and operational continuity.
-*/
-
 const EASE = [0.22, 1, 0.3, 1];
 
-const VMS_TYPES = [
-  {
-    title: 'One Vendor Record',
-    desc: 'All vendor information, contacts, documents and history in one connected record.',
-    img: '/images/vms_one_vendor_record.png',
+const VENDOR_TYPES = {
+  commodity: {
+    number: '01',
+    title: 'Raw Material & Commodity Vendors',
+    desc: 'Track commodity price volatility, supplier trends, and purchasing visibility before changing costs impact production.',
+    img: '/images/vms_commodity.webp',
+    icon: TrendingUp,
+    reality: 'Price volatility alerts and hedging visibility',
   },
-  {
-    title: 'Workflow Accountability',
-    desc: 'Define workflows, clear ownership and real-time status for every approval and update.',
-    img: '/images/vms_workflow_accountability.png',
-  },
-  {
-    title: 'Compliance Visibility',
-    desc: 'Track document validity, renewals and compliance requirements with intelligent alerts.',
-    img: '/images/vms_compliance_visibility.png',
-  },
-  {
-    title: 'Operational Continuity',
-    desc: 'Reduce manual follow-ups and spreadsheet dependency across vendor operations.',
-    img: '/images/vms_operational_continuity.png',
-  },
-];
 
-const TRUST_ITEMS = [
-  {
-    title: 'Enterprise Grade',
-    desc: 'Secure, scalable and built for complex operations.',
-    img: '/images/vms_enterprise.png',
+  additive: {
+    number: '02',
+    title: 'Ingredient & Additive Vendors',
+    desc: 'Keep ingredient quality, compliance documents, approvals, and supplier performance visible in one connected workflow.',
+    img: '/images/vms_addective.webp',
+    icon: FlaskConical,
+    reality: 'Quality, compliance and approval control',
   },
-  {
-    title: 'Data Security',
-    desc: 'Role-based access and compliance by design.',
-    img: '/images/vms_data_security.png',
-  },
-  {
-    title: 'Cloud Ready',
-    desc: 'Accessible anytime, anywhere with high availability.',
-    img: '/images/vms_cloud_ready.png',
-  },
-  {
-    title: 'Customer Confidence',
-    desc: 'Designed for long-term value and operational control.',
-    img: '/images/vms_customer_confidence.png',
-  },
-];
 
-function TypeCard({ item, index }) {
+  manufacturing: {
+    number: '03',
+    title: 'Contract Manufacturing & Co-Packers',
+    desc: 'Coordinate production partners, specifications, delivery timelines, and operational performance with greater control.',
+    img: '/images/vms_manfacturing.webp',
+    icon: Factory,
+    reality: 'Production coordination and partner performance',
+  },
+
+  packaging: {
+    number: '04',
+    title: 'Packaging Suppliers',
+    desc: 'Manage packaging specifications, quality requirements, supplier commitments, and delivery expectations in one place.',
+    img: '/images/vms_packaging.webp',
+    icon: Package,
+    reality: 'Specifications, quality and supply reliability',
+  },
+};
+
+
+
+function FeaturedVendorCard({ item }) {
+  const Icon = item.icon;
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
+    <motion.article
+      initial={{ opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-40px' }}
-      transition={{
-        duration: 0.5,
-        delay: index * 0.08,
-        ease: EASE,
-      }}
-      className="group flex w-full flex-col items-center rounded-2xl border border-cream-300 bg-white/85 p-6 text-center shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-enterprise md:w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.125rem)]"
+      viewport={{ once: true, margin: '-60px' }}
+      transition={{ duration: 0.7, ease: EASE }}
+      className="group relative min-h-[560px] overflow-hidden rounded-[30px] bg-[#142044] shadow-[0_25px_70px_rgba(15,25,55,0.18)] lg:min-h-[650px]"
     >
-      {/* VMS Feature Image */}
-      <div className="relative flex h-36 w-full items-center justify-center overflow-hidden">
-        <img
-          src={item.img}
-          alt={item.title}
-          loading="lazy"
-          decoding="async"
-          className="h-32 w-full object-contain transition-transform duration-500 group-hover:scale-105 md:h-36"
-        />
-      </div>
 
-      {/* Number */}
-      <span className="mt-4 text-sm font-bold tracking-[0.14em] text-orange-500">
-        {String(index + 1).padStart(2, '0')}
-      </span>
-
-      {/* Title */}
-      <h3 className="mt-2 text-[1.08rem] font-bold leading-tight tracking-tight text-navy-950">
-        {item.title}
-      </h3>
-
-
-
-      {/* Description */}
-      <p className="mt-3 text-[14px] leading-snug text-navy-600">
-        {item.desc}
-      </p>
-    </motion.div>
-  );
-}
-
-function TrustItem({ item, index }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-40px' }}
-      transition={{
-        duration: 0.5,
-        delay: index * 0.08,
-        ease: EASE,
-      }}
-      className="flex flex-1 items-start gap-4"
-    >
       <img
         src={item.img}
         alt={item.title}
         loading="lazy"
         decoding="async"
-        className="h-12 w-12 shrink-0 object-contain"
+        className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.025]"
       />
 
-      <div>
-        <h4 className="text-[15px] font-bold text-navy-950">
-          {item.title}
-        </h4>
 
-        <p className="mt-1 text-[13px] leading-relaxed text-navy-600">
+      <div className="absolute inset-0 bg-gradient-to-r from-[#0b1738]/95 via-[#10204a]/82 via-[38%] to-[#10204a]/15" />
+
+      {/* Top subtle gradient */}
+      <div className="absolute inset-x-0 top-0 h-[18%] bg-gradient-to-b from-[#0a1532]/25 to-transparent" />
+
+      {/* Bottom subtle gradient */}
+      <div className="absolute inset-x-0 bottom-0 h-[25%] bg-gradient-to-t from-[#0a1532]/35 to-transparent" />
+
+
+      <div className="relative z-10 flex min-h-[560px] w-full flex-col justify-center px-7 py-10 sm:px-10 lg:min-h-[650px] lg:w-[40%] lg:px-14 xl:px-16">
+
+        {/* Title */}
+        <h3 className="mt-6 max-w-[350px] text-[25px] font-bold leading-[1.18] tracking-tight text-white lg:text-[29px]">
+          {item.title}
+        </h3>
+
+        {/* White line */}
+        <div className="mt-6 h-[3px] w-14 rounded-full bg-white/90" />
+
+        {/* Description */}
+        <p className="mt-6 max-w-[440px] text-[15px] leading-[1.7] text-white/85 sm:text-[16px]">
           {item.desc}
         </p>
+
+        {/* Procurement Reality */}
+        <div className="mt-8 flex items-start gap-4">
+          <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-white" />
+
+          <div>
+            <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-white/55">
+              Procurement Reality
+            </span>
+
+            <p className="mt-2 text-[14px] font-semibold leading-relaxed text-white">
+              {item.reality}
+            </p>
+          </div>
+        </div>
       </div>
-    </motion.div>
+    </motion.article>
   );
 }
 
-export default function VmsRecognition() {
-  return (
-    <section className="relative overflow-hidden bg-white py-12 md:py-16">
-     
 
-      <Container className="relative">
-        {/* Heading */}
+function VendorCard({ item, index }) {
+  const Icon = item.icon;
+
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={{
+        duration: 0.6,
+        delay: index * 0.1,
+        ease: EASE,
+      }}
+      className="group relative min-h-[500px] overflow-hidden rounded-[26px] bg-[#142044] shadow-[0_20px_55px_rgba(20,28,50,0.16)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_28px_65px_rgba(20,28,50,0.24)]"
+    >
+      {/* Full Background Image */}
+      <img
+        src={item.img}
+        alt={item.title}
+        loading="lazy"
+        decoding="async"
+        className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.05]"
+      />
+
+      {/* Main dark gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0b1738]/82 via-[#0d1b3f]/50 to-[#091530]/88" />
+
+      {/* Left readability gradient */}
+      <div className="absolute inset-y-0 left-0 w-[75%] bg-gradient-to-r from-[#0b1738]/35 to-transparent" />
+
+      {/* Content */}
+      <div className="relative z-10 flex min-h-[500px] flex-col px-7 py-8 sm:px-8">
+
+        {/* Header */}
+        <div className="flex items-center justify-between">
+        </div>
+
+        {/* Fixed Title Area - SAME LEVEL */}
+        <div className="mt-6 min-h-[68px]">
+          <h3 className="max-w-[350px] text-[25px] font-bold leading-[1.18] tracking-tight text-white lg:text-[29px]">
+            {item.title}
+          </h3>
+        </div>
+
+        {/* Line */}
+        <div className="mt-5 h-[2px] w-12 rounded-full bg-white/90" />
+
+        {/* Fixed Description Area - SAME LEVEL */}
+        <div className="mt-5 min-h-[190px]">
+          <p className="max-w-[130px] text-[14px] leading-[1.7] text-white/85">
+            {item.desc}
+          </p>
+        </div>
+
+        {/* Bottom Reality */}
+        <div className="mt-auto pt-8">
+          <div className="flex items-start gap-3">
+            <span className="mt-[6px] h-2 w-2 shrink-0 rounded-full bg-white" />
+
+            <div>
+              <span className="block text-[9px] font-bold uppercase tracking-[0.16em] text-white/55">
+                Procurement Reality
+              </span>
+
+              <p className="mt-2 text-[11px] font-semibold leading-relaxed text-white">
+                {item.reality}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
+
+
+export default function VmsRecognition() {
+  const featuredVendor = VENDOR_TYPES.commodity;
+
+  const bottomVendors = [
+    VENDOR_TYPES.additive,
+    VENDOR_TYPES.manufacturing,
+    VENDOR_TYPES.packaging,
+  ];
+
+  return (
+    <section className="relative overflow-hidden bg-[#f5f6f8] py-16 sm:py-20 lg:py-24">
+
+
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute left-[-180px] top-[180px] h-[420px] w-[420px] rounded-full bg-[#dce3f3]/50 blur-[130px]" />
+
+        <div className="absolute bottom-[-220px] right-[-180px] h-[500px] w-[500px] rounded-full bg-[#e3e8f5]/60 blur-[140px]" />
+      </div>
+
+      <Container className="relative z-10">
+
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-60px' }}
-          transition={{ duration: 0.6, ease: EASE }}
-          className="mx-auto max-w-3xl text-center"
+          transition={{
+            duration: 0.6,
+            ease: EASE,
+          }}
+          className="mx-auto max-w-4xl text-center"
         >
           <Eyebrow className="justify-center">
-            Recognition & Trust
+            BUILT FOR EVERY VENDOR TYPE
           </Eyebrow>
 
-          <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-            Built for Vendor Operations That{' '}
+          <h2 className="mt-3 h-display text-[32px] leading-[1.1] tracking-tight text-navy-950 sm:text-[36.8px]">
+            Built for Businesses Handling{' '}
             <span className="gradient-text-orange">
-              Can’t Run on Spreadsheets
+              Variety of Vendors
             </span>
           </h2>
 
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
-            UpWon VMS brings structure, accountability and visibility to every
-            step of your vendor lifecycle — from onboarding to ongoing
-            performance.
+          <p className="mx-auto mt-5 max-w-3xl text-[15px] leading-relaxed text-navy-600 sm:text-base lg:text-[17px]">
+            Different vendor categories come with different procurement
+            realities, quality requirements, compliance needs, and performance
+            expectations. UpWon VMS helps manage them all with greater
+            visibility and control.
           </p>
         </motion.div>
 
-        {/* Four Recognition Cards */}
-        <div className="mt-12 flex flex-wrap justify-center gap-6">
-          {VMS_TYPES.map((item, index) => (
-            <TypeCard
-              key={item.title}
+  
+        <div className="mx-auto mt-12 max-w-[1380px]">
+          <FeaturedVendorCard item={featuredVendor} />
+        </div>
+
+    
+        <div className="mx-auto mt-5 grid max-w-[1380px] grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {bottomVendors.map((item, index) => (
+            <VendorCard
+              key={item.number}
               item={item}
               index={index}
             />
           ))}
         </div>
-
-        {/* Trust Bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-40px' }}
-          transition={{ duration: 0.6, ease: EASE }}
-          className="mt-8 rounded-2xl border border-cream-300 bg-white/85 p-6 shadow-sm backdrop-blur-sm md:p-8"
-        >
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-center">
-            {/* Trust Heading */}
-            <div className="flex shrink-0 items-center gap-4 border-b border-cream-300 pb-6 lg:w-[28%] lg:border-b-0 lg:border-r lg:pb-0 lg:pr-8">
-              <img
-                src="/images/vms_verified.png"
-                alt="Verified"
-                loading="lazy"
-                decoding="async"
-                className="h-16 w-16 object-contain"
-              />
-
-              <h3 className="text-xl font-bold leading-tight text-navy-950">
-                Trusted by teams
-                <br />
-                across industries
-              </h3>
-            </div>
-
-            {/* Trust Points */}
-            <div className="grid flex-1 gap-6 sm:grid-cols-2 xl:grid-cols-4" >
-              {TRUST_ITEMS.map((item, index) => (
-                <TrustItem
-                
-                  key={item.title}
-                  item={item}
-                  index={index}
-                />
-              ))}
-            </div>
-          </div>
-        </motion.div>
-
-       
       </Container>
     </section>
   );
