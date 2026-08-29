@@ -128,6 +128,7 @@ function CapabilityItem({ item, index, activeIndex, onActive }) {
                     {item.number}
                 </div>
             </div>
+            
 
 
             {/* TEXT CONTENT */}

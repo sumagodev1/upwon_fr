@@ -7,6 +7,11 @@ import VmsApproch from '../components/sections/VmsApproch.jsx';
 import VmsCoreCapabilities from '../components/sections/VmsCoreCapabilities.jsx';
 import VmsConnectedDesign from '../components/sections/VmsConnectedDesign.jsx';
 // import VmsOneSuite from '../components/sections/VmsOneSuite.jsx';
+import VmsImplementationAndPartnership from '../components/sections/VmsImplementationAndPartnership.jsx';
+import VmsSecureAccountableSection from '../components/sections/VmsSecureAccountableSection.jsx';
+import VmsCustomerOutcomeSection from '../components/sections/VmsCustomerOutcomeSection.jsx';
+import VmsCtaSection from '../components/sections/VmsCtaSection.jsx';
+import VmsFaqSection from '../components/sections/VmsFaqSection.jsx';
 
 
 
@@ -31,6 +36,16 @@ export default function VmsPage() {
       <VmsConnectedDesign />
 
       {/* <VmsOneSuite /> */}
+
+      <VmsImplementationAndPartnership />
+      
+      <VmsSecureAccountableSection />
+
+      <VmsCustomerOutcomeSection />
+
+      <VmsFaqSection />
+
+      <VmsCtaSection />
 
     </>
   );
