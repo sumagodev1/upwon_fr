@@ -360,9 +360,16 @@ const bakeryConfectioneryPageLazy = async () => ({
   ).default,
 });
 
+const fmcgDistributionPageLazy = async () => ({
+  Component: (
+    await import('./pages/industry_pages/FmcgDistribution.jsx')
+  ).default,
+});
+
 // Industries that have their own dedicated page/route.
 const DEDICATED_INDUSTRY_SLUGS = [
   'bakery-and-confectionery',
+   'fmcg-distribution',
 ];
 
 // ============================================================
@@ -595,6 +602,17 @@ export const routes = [
           '/industries/bakery-and-confectionery',
         ],
       },
+
+      {
+        path: 'industries/fmcg-distribution',
+        lazy: fmcgDistributionPageLazy,
+        entry: 'src/pages/industry_pages/FmcgDistribution.jsx',
+        getStaticPaths: async () => [
+          '/industries/fmcg-distribution',
+        ],
+      },
+
+
 
       // ------------------------------------------------------
       // Dynamic fallback for remaining Industries

@@ -21,7 +21,7 @@ const PAIN_POINTS = [
     description:
       'RFQs, quotes, follow-ups, and vendor responses scattered across inboxes and chat threads.',
     icon: Mail,
-    image: '/images/vms_rfq.webp',
+    image: '/images/rfq_oper.webp',
   },
   {
     id: 'quality',
@@ -30,7 +30,7 @@ const PAIN_POINTS = [
     description:
       'Vendor reliability is judged informally instead of being consistently scored against every delivery.',
     icon: Star,
-    image: '/images/vms_tracked.webp',
+    image: '/images/vedor_quality_oper.webp',
   },
   {
     id: 'payment',
@@ -39,7 +39,7 @@ const PAIN_POINTS = [
     description:
       'Vendors repeatedly call your team to ask about payment status, purchase orders, and pending updates.',
     icon: CreditCard,
-    image: '/images/vms_phone_call.webp',
+    image: '/images/payment_oper.webp',
   },
   {
     id: 'compliance',
@@ -48,7 +48,7 @@ const PAIN_POINTS = [
     description:
       'Certificates, KYC records, approvals, and compliance documents are scattered across folders.',
     icon: FileCheck,
-    image: '/images/vms_document_everywhere.webp',
+    image: '/images/kyc_oper.webp',
   },
 ];
 
