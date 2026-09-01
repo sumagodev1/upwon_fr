@@ -10,7 +10,7 @@ const heroSlides = [
   {
     eyebrow: 'BAKERY & CONFECTIONERY',
 
-    headline: 'Bake Better. Manage Smarter. Deliver Fresh Every Time.',
+    headline: 'Bake Better. Manage Smarter — Deliver Fresh Every Time.',
 
     subhead:
       'From ingredient procurement and batch production to inventory, sales, and delivery, UpWon helps bakeries and confectionery businesses bring every operation into one connected system.',
@@ -34,7 +34,7 @@ const heroSlides = [
     eyebrow: 'BAKERY & CONFECTIONERY',
 
     headline:
-      'From Fresh Ingredients to Finished Delights, Keep Every Operation Connected.',
+      'From Fresh Ingredients to Finished Delights — Keep Every Operation Connected.',
 
     subhead:
       'Manage procurement, inventory, production, batch planning, and multi-location operations through one connected platform built to bring greater visibility, control, and efficiency to your bakery business.',
@@ -57,7 +57,7 @@ const heroSlides = [
   {
     eyebrow: 'BAKERY & CONFECTIONERY',
 
-    headline: 'Bake More. Waste Less. Grow with Better Control.',
+    headline: 'Bake More. Waste Less — Grow with Better Control.',
 
     subhead:
       'UpWon helps bakery and confectionery businesses streamline ingredient management, production planning, inventory movement, and daily operations—so every batch, product, and business decision stays on track.',

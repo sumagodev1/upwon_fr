@@ -372,11 +372,18 @@ const sweetsNamkeenPageLazy = async () => ({
   ).default,
 });
 
+const foodProcessingPageLazy = async () => ({
+  Component: (
+    await import('./pages/industry_pages/FoodProcessing.jsx')
+  ).default,
+});
+
 // Industries that have their own dedicated page/route.
 const DEDICATED_INDUSTRY_SLUGS = [
   'bakery-and-confectionery',
    'fmcg-distribution',
    'sweets-namkeen',
+   'food-processing',
 ];
 
 // ============================================================
@@ -625,6 +632,15 @@ export const routes = [
         entry: 'src/pages/industry_pages/SweetsAndNamkeen.jsx',
         getStaticPaths: async () => [
           '/industries/sweets-namkeen',
+        ],
+      },
+
+      {
+        path: 'industries/food-processing',
+        lazy: foodProcessingPageLazy,
+        entry: 'src/pages/industry_pages/FoodProcessing.jsx',
+        getStaticPaths: async () => [
+          '/industries/food-processing',
         ],
       },
 

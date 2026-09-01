@@ -7,7 +7,9 @@ import SweetsHowUpwonHelps from '../../components/sections/industry_sections/Swe
 import SweetsCoreCapabilities from '../../components/sections/industry_sections/SweetsCoreCapabilities.jsx';
 import SweetsIngredientsToSales from '../../components/sections/industry_sections/SweetsIngredientsToSales.jsx';
 import SweetsBenefitsSection from '../../components/sections/industry_sections/SweetsBenefitsSection.jsx';
+import SweetsWhyUpwon from '../../components/sections/industry_sections/SweetsWhyUpwon.jsx';
 import SweetsFaqSection from '../../components/sections/industry_sections/SweetsFaqSection.jsx';
+import SweetsCtaSection from '../../components/sections/industry_sections/SweetsCtaSection.jsx';
 
 export default function SweetsAndNamkeen() {
   return (
@@ -21,7 +23,9 @@ export default function SweetsAndNamkeen() {
       <SweetsCoreCapabilities />
       <SweetsIngredientsToSales />
       <SweetsBenefitsSection />
+      <SweetsWhyUpwon />
       <SweetsFaqSection />
+      <SweetsCtaSection />
     </>
   );
 }

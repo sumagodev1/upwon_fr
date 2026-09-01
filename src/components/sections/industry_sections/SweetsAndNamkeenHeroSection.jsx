@@ -26,12 +26,13 @@ const heroSlides = [
   {
     eyebrow: EYEBROW,
 
-    headline: 'Generations of Recipe. Modern Operations.',
+    headline:
+      'From Raw Ingredients to Every Shelf — Keep Operations Connected.',
 
     subhead:
-      'Manage perishable inventory, festive production, counter billing, and multi-outlet operations through one connected platform built for mithai and namkeen brands.',
+      'Bring procurement, production, inventory, warehouse operations, sales, and distribution together so every product moves through your business with greater visibility and control.',
 
-    bg: '/images/namkeen.webp',
+    bg: '/images/sweet_hero_1.webp',
 
     accent: ACCENT,
 
@@ -42,12 +43,12 @@ const heroSlides = [
   {
     eyebrow: EYEBROW,
 
-    headline: 'Plan the Festive Surge Before It Arrives.',
+    headline: 'Make More. Move Faster — Manage Everything in One Flow.',
 
     subhead:
-      'Diwali, Eid, and Onam can lift demand several times over. Plan production, packing, and outlet stock ahead of the season instead of running the rush from memory.',
+      'Connect every stage of your sweets and namkeen operations—from raw materials and production to stock, outlets, distributors, and sales—through one integrated platform.',
 
-    bg: '/images/sweets_and_namkeen.webp',
+    bg: '/images/sweet_hero_2.webp',
 
     accent: ACCENT,
 
@@ -58,12 +59,13 @@ const heroSlides = [
   {
     eyebrow: EYEBROW,
 
-    headline: 'Every Counter, Every Outlet, One Consistent Brand.',
+    headline:
+      'Every Batch, Location, and Sales Channel — One Connected System.',
 
     subhead:
-      'Weight-based counter billing across multi-size SKUs, controlled recipe versions, and central-kitchen to outlet flows—so quality and pricing stay consistent everywhere you sell.',
+      'Keep production, inventory, warehouses, outlets, distributors, and business operations working from connected information—so your teams can move faster with better visibility across the business.',
 
-    bg: '/images/namkeens.webp',
+    bg: '/images/sweet_hero_3.webp',
 
     accent: ACCENT,
 

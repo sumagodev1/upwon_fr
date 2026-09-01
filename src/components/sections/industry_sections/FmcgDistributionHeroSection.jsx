@@ -21,7 +21,7 @@ const heroSlides = [
   {
     eyebrow: EYEBROW,
 
-    headline: 'Move Products Faster. Keep Every Channel Connected.',
+    headline: 'Move Products Faster — Keep Every Channel Connected.',
 
     subhead:
       'Manage procurement, inventory, warehouses, distributors, sales orders, and deliveries through one connected platform built to bring greater visibility, control, and efficiency to your FMCG distribution operations.',
@@ -42,7 +42,7 @@ const heroSlides = [
     eyebrow: EYEBROW,
 
     headline:
-      'From Procurement to Delivery, Move Every Order with Confidence.',
+      'From Procurement to Delivery — Move Every Order with Confidence.',
 
     subhead:
       'Connect procurement, inventory, warehouses, distributors, orders, and deliveries in one platform—so your teams can reduce delays, improve visibility, and keep products moving efficiently across every channel.',
@@ -62,7 +62,7 @@ const heroSlides = [
   {
     eyebrow: EYEBROW,
 
-    headline: 'One Connected View of Your Entire Distribution Network.',
+    headline: 'Your Entire Distribution Network — One Connected View.',
 
     subhead:
       'Bring products, inventory, warehouses, distributors, sales orders, and deliveries together in one connected platform. Gain the visibility and control you need to make faster decisions and keep your distribution operation on track.',
@@ -82,7 +82,7 @@ const heroSlides = [
   {
     eyebrow: EYEBROW,
 
-    headline: 'Build a Faster, Smarter Distribution Operation That Scales.',
+    headline: 'A Faster, Smarter Distribution Operation — Built to Scale.',
 
     subhead:
       'Simplify the flow from procurement to delivery with one connected platform for managing inventory, warehouses, distributors, sales orders, and fulfillment—helping your FMCG business operate efficiently as it grows.',
