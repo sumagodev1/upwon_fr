@@ -154,14 +154,15 @@ export default function SweetsOperationalRealitySection() {
   return (
     <section className="relative overflow-hidden bg-[#fdfaf6] py-12 sm:py-16 lg:py-20">
       {/* ================= BACKGROUND ================= */}
-      <div className="pointer-events-none absolute inset-0">
-        <img
-          src="/images/sweet_oper_reality_back.webp"
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          className="h-full w-full object-cover object-center"
-        />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage: "url('/images/sweet_oper_reality_back.webp')",
+          backgroundSize: '100% 100%',
+          backgroundPosition: 'center center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
         <div className="absolute inset-0 bg-[#fdfaf6]/70" />
       </div>
 

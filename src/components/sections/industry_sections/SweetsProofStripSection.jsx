@@ -81,14 +81,15 @@ export default function SweetsProofStripSection() {
       {/* ================= BACKGROUND ================= */}
       {/* The artwork is a decorative border of sweets and namkeen bowls, so it
           is anchored to fill the frame with the copy sitting over its centre. */}
-      <div className="pointer-events-none absolute inset-0">
-        <img
-          src="/images/sweet_proof_strip_back.webp"
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          className="h-full w-full object-cover object-center"
-        />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage: "url('/images/sweet_proof_strip_back.webp')",
+          backgroundSize: '100% 100%',
+          backgroundPosition: 'center center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
         <div className="absolute inset-0 bg-[#fdf4ea]/45" />
       </div>
 
