@@ -47,7 +47,11 @@ export default function RootLayout() {
     }
     const main = document.querySelector('main');
     if (!main) return;
-    const sections = main.querySelectorAll('section');
+    // Sections marked data-no-fade opt out: .fade-up-section carries a
+    // transform, and a transformed ancestor makes background-attachment:
+    // fixed resolve against that element instead of the viewport — which
+    // silently kills any parallax background inside it.
+    const sections = main.querySelectorAll('section:not([data-no-fade])');
     if (!sections.length) return;
 
     sections.forEach((s) => s.classList.add('fade-up-section'));

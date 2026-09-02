@@ -43,7 +43,7 @@ function CtaButtons({ compact = false }) {
       </Link>
 
       <Link
-        to="/products"
+        to="/what-is-upwon"
         className={`group inline-flex ${height} ${width} items-center justify-center gap-2 rounded-full border border-navy-300 bg-white/70 px-6 text-[14px] font-bold text-navy-900 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white active:scale-[0.99]`}
       >
         <Boxes size={19} strokeWidth={1.9} className="text-orange-500" />
@@ -64,10 +64,10 @@ export default function SweetsCtaSection() {
       {/* =========================================================
           DESKTOP CTA — copy sits in the artwork's empty left panel
       ========================================================= */}
-      <div className="relative mx-auto hidden w-full max-w-[1800px] overflow-hidden rounded-[18px] md:block lg:rounded-[22px]">
+      <div className="relative mx-auto hidden w-full max-w-[1800px] overflow-hidden rounded-[18px] lg:block lg:rounded-[22px]">
         {/* Capped height — the artwork's natural 2:1 ratio would otherwise run
             close to 960px tall on a wide screen. */}
-        <div className="relative w-full md:min-h-[560px] lg:min-h-[620px]">
+        <div className="relative w-full lg:min-h-[620px]">
           {/* object-top keeps the crop off the bottom rather than centring it */}
           <img
             src="/images/sweet_cta_desktop.webp"
@@ -78,13 +78,13 @@ export default function SweetsCtaSection() {
             className="absolute inset-0 h-full w-full object-cover object-top"
           />
 
-          <div className="relative flex min-h-[560px] w-full items-center px-6 sm:px-8 md:px-10 lg:min-h-[620px] lg:px-12">
+          <div className="relative flex w-full items-center px-6 sm:px-8 lg:min-h-[620px] lg:px-12">
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-80px' }}
               transition={{ duration: 0.7, ease: EASE }}
-              className="flex w-full max-w-[560px] flex-col items-start text-left lg:ml-[5vw] lg:max-w-[640px] xl:ml-[7vw]"
+              className="flex w-full flex-col items-start text-left lg:max-w-[36%] xl:max-w-[38%] 2xl:max-w-[40%]"
             >
               <motion.div
                 initial={{ opacity: 0, y: 14 }}
@@ -100,7 +100,7 @@ export default function SweetsCtaSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.65, delay: 0.05, ease: EASE }}
-                className="mt-4 h-display text-[28px] leading-[1.1] tracking-tight text-navy-950 lg:text-[33px] xl:text-[36.8px]"
+                className="mt-4 h-display text-[28px] leading-[1.1] tracking-tight text-navy-950 lg:text-[26px] xl:text-[31px] 2xl:text-[36.8px]"
               >
                 {HEADING}
               </motion.h2>
@@ -110,7 +110,7 @@ export default function SweetsCtaSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.1, ease: EASE }}
-                className="mt-4 max-w-[560px] text-[14px] leading-relaxed text-navy-600 lg:text-[15px] xl:text-base"
+                className="mt-4 text-[13.5px] leading-relaxed text-navy-600 xl:text-[15px] 2xl:text-base"
               >
                 {SUBTEXT}
               </motion.p>
@@ -120,7 +120,7 @@ export default function SweetsCtaSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.16, ease: EASE }}
-                className="mt-7 flex w-full flex-col items-start gap-3 sm:w-auto sm:flex-row"
+                className="mt-7 flex w-full flex-col items-stretch gap-3 xl:w-auto xl:flex-row xl:items-start"
               >
                 <CtaButtons />
               </motion.div>
@@ -134,7 +134,7 @@ export default function SweetsCtaSection() {
           MOBILE CTA — its own portrait artwork, cropped to a banner
           with the copy underneath.
       ========================================================= */}
-      <div className="block w-full overflow-hidden rounded-[18px] md:hidden">
+      <div className="block w-full overflow-hidden rounded-[18px] lg:hidden">
         <div className="relative h-[260px] w-full overflow-hidden">
           <img
             src="/images/sweet_cta_mobile.webp"

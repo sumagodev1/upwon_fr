@@ -101,7 +101,7 @@ export default function BakeryCtaSection() {
                             </Link>
 
                             <Link
-                                to="/products"
+                                to="/what-is-upwon"
                                 className="group inline-flex min-h-[54px] items-center justify-center gap-3 rounded-[13px] border border-[#d8d0c7] bg-white/70 px-6 text-[15px] font-semibold text-[#303949] backdrop-blur-sm transition duration-300 hover:border-[#e85d24]/40 hover:bg-white/90"
                             >
                                 <Boxes

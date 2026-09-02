@@ -35,7 +35,7 @@ function CtaButtons({ compact = false }) {
       </Link>
 
       <Link
-        to="/products"
+        to="/what-is-upwon"
         className={`group inline-flex ${height} ${width} items-center justify-center gap-2 rounded-[9px] border border-navy-950/20 bg-white/70 px-6 text-[14px] font-semibold text-navy-950 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-navy-950/35 hover:bg-white/90 active:scale-[0.99]`}
       >
         <Boxes size={19} strokeWidth={1.9} className="text-orange-500" />

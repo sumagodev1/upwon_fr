@@ -35,7 +35,10 @@ const FEATURES = [
 
 export default function WhoWeAreSection() {
   return (
-    <section className="relative overflow-hidden bg-[#eef1f7] py-10 md:py-14">
+    <section
+      data-no-fade
+      className="relative overflow-hidden bg-[#eef1f7] py-10 md:py-14"
+    >
       {/* Full-bleed background artwork — the dotted world map + India origin.
           `bg-fixed` on desktop pins it to the viewport, so the map stays still
           while the text column scrolls over it (parallax). Mobile keeps a
