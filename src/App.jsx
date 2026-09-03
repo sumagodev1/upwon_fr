@@ -384,6 +384,12 @@ const nonFoodFmcgPageLazy = async () => ({
   ).default,
 });
 
+const dairyIceCreamPageLazy = async () => ({
+  Component: (
+    await import('./pages/industry_pages/DairyAndIceCream.jsx')
+  ).default,
+});
+
 // Industries that have their own dedicated page/route.
 const DEDICATED_INDUSTRY_SLUGS = [
   'bakery-and-confectionery',
@@ -391,6 +397,7 @@ const DEDICATED_INDUSTRY_SLUGS = [
    'sweets-namkeen',
    'food-processing',
    'non-food-fmcg',
+   'dairy',
 ];
 
 // ============================================================
@@ -657,6 +664,15 @@ export const routes = [
         entry: 'src/pages/industry_pages/NonFoodFmcg.jsx',
         getStaticPaths: async () => [
           '/industries/non-food-fmcg',
+        ],
+      },
+
+      {
+        path: 'industries/dairy',
+        lazy: dairyIceCreamPageLazy,
+        entry: 'src/pages/industry_pages/DairyAndIceCream.jsx',
+        getStaticPaths: async () => [
+          '/industries/dairy',
         ],
       },
 
