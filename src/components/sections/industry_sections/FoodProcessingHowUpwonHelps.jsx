@@ -109,7 +109,7 @@ export default function FoodProcessingHowUpwonHelps() {
 
       {/* ================= WORKFLOW CARDS ================= */}
       {/* Wider than the shared Container so seven cards fit a row at xl */}
-      <div className="relative z-10 mx-auto w-full max-w-[1700px] px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto w-full max-w-[1240px] px-4 sm:px-6 lg:px-8">
         <motion.div
           variants={cardsGroup}
           initial="hidden"
@@ -135,7 +135,7 @@ export default function FoodProcessingHowUpwonHelps() {
 
               {/* Label sits in the blank area under the baked-in icon */}
               <div className="absolute inset-x-0 bottom-[7%] px-[9%]">
-                <h3 className="h-display text-center font-semibold leading-snug text-navy-950 [font-size:clamp(9.5px,5.8cqw,13px)]">
+                <h3 className="h-display text-center font-semibold leading-snug text-navy-950 [font-size:clamp(9px,5.8cqw,11.5px)]">
                   {lines.map((line) => (
                     <span key={line} className="block">
                       {line}
