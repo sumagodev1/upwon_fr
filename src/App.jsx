@@ -390,6 +390,12 @@ const dairyIceCreamPageLazy = async () => ({
   ).default,
 });
 
+const qsrFranchisePageLazy = async () => ({
+  Component: (
+    await import('./pages/industry_pages/QsrFranchise.jsx')
+  ).default,
+});
+
 // Industries that have their own dedicated page/route.
 const DEDICATED_INDUSTRY_SLUGS = [
   'bakery-and-confectionery',
@@ -398,6 +404,7 @@ const DEDICATED_INDUSTRY_SLUGS = [
    'food-processing',
    'non-food-fmcg',
    'dairy',
+   'qsr-franchise',
 ];
 
 // ============================================================
@@ -673,6 +680,15 @@ export const routes = [
         entry: 'src/pages/industry_pages/DairyAndIceCream.jsx',
         getStaticPaths: async () => [
           '/industries/dairy',
+        ],
+      },
+
+      {
+        path: 'industries/qsr-franchise',
+        lazy: qsrFranchisePageLazy,
+        entry: 'src/pages/industry_pages/QsrFranchise.jsx',
+        getStaticPaths: async () => [
+          '/industries/qsr-franchise',
         ],
       },
 

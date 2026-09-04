@@ -196,7 +196,9 @@ export default function DairyIceCreamChallengeSection() {
                 whileHover="hover"
                 className="relative flex min-w-0 flex-col rounded-[12px] border border-navy-950/[0.06] bg-white p-2.5 shadow-[0_8px_24px_rgba(25,35,55,0.06)] transition-shadow duration-300 hover:shadow-[0_14px_34px_rgba(25,35,55,0.11)]"
               >
-                <div className="flex min-w-0 items-start gap-2">
+                {/* Two lines' worth of height either way, so one-line labels
+                    centre against the number and every photo starts level */}
+                <div className="flex min-h-[30px] min-w-0 items-center gap-2">
                   <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-white">
                     {number}
                   </span>
