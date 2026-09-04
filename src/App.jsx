@@ -402,6 +402,12 @@ const spicesAgroPageLazy = async () => ({
   ).default,
 });
 
+const beveragesPageLazy = async () => ({
+  Component: (
+    await import('./pages/industry_pages/Beverages.jsx')
+  ).default,
+});
+
 // Industries that have their own dedicated page/route.
 const DEDICATED_INDUSTRY_SLUGS = [
   'bakery-and-confectionery',
@@ -412,6 +418,7 @@ const DEDICATED_INDUSTRY_SLUGS = [
    'dairy',
    'qsr-franchise',
    'spices-agro',
+   'beverage',
 ];
 
 // ============================================================
@@ -705,6 +712,15 @@ export const routes = [
         entry: 'src/pages/industry_pages/SpicesAgro.jsx',
         getStaticPaths: async () => [
           '/industries/spices-agro',
+        ],
+      },
+
+      {
+        path: 'industries/beverage',
+        lazy: beveragesPageLazy,
+        entry: 'src/pages/industry_pages/Beverages.jsx',
+        getStaticPaths: async () => [
+          '/industries/beverage',
         ],
       },
 

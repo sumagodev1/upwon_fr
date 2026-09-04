@@ -153,7 +153,7 @@ export default function SpicesAgroIndustryCoverage() {
                 alt={label}
                 loading="lazy"
                 decoding="async"
-                className="block aspect-square w-full max-w-[132px] rounded-full object-cover object-center ring-[5px] ring-[#fdeada]"
+                className="block aspect-square w-full max-w-[132px] rounded-full object-cover object-center"
               />
 
               <h3 className="mt-4 h-display text-[13px] font-semibold leading-snug text-navy-950 sm:text-[13.5px]">
