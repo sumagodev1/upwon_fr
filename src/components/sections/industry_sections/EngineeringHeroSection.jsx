@@ -5,9 +5,10 @@ import HeroSlider from '../../ui/HeroSlider.jsx';
   Dedicated 4-slide hero for:
   /industries/engineering-manufacturing
 
-  No dedicated hero artwork was supplied for this vertical, so these use the
-  largest manufacturing, production, quality and distribution images already
-  in public/images. Swap them for the real artwork when it lands.
+  Each slide carries its own artwork and takes one angle on the vertical —
+  the opener, then production and shop-floor visibility, planning and control,
+  and scale. Headlines split on an em-dash so the setup sits lighter and the
+  payoff carries the weight, matching the product pages.
 */
 
 const EYEBROW = 'ENGINEERING & MANUFACTURING';
@@ -33,7 +34,7 @@ const heroSlides = [
     subhead:
       'Connect procurement, raw materials, bill of materials, production planning, quality, inventory, warehouses, sales, dispatch, people, and business operations through one platform built to bring greater visibility and coordination to growing engineering and manufacturing businesses.',
 
-    bg: '/images/vms_contract_manufacturing.webp',
+    bg: '/images/eng_hero_raw_material.webp',
 
     accent: ACCENT,
 
@@ -50,7 +51,7 @@ const heroSlides = [
     subhead:
       'Connect procurement, raw materials, bill of materials, production planning, quality, inventory, warehouses, finished goods, sales, and dispatch through one platform—so teams can maintain better visibility as materials move through every stage of manufacturing.',
 
-    bg: '/images/prod_operation.webp',
+    bg: '/images/eng_hero_production_shop_visibility.webp',
 
     accent: ACCENT,
 
@@ -67,7 +68,7 @@ const heroSlides = [
     subhead:
       'Bring procurement, raw-material stores, bill of materials, production, quality inspection, inventory, warehouses, sales, and dispatch together in one connected platform. Gain better visibility across operations and make faster decisions as products move through your business.',
 
-    bg: '/images/vms_deliver_quality.webp',
+    bg: '/images/eng_hero_planning_oper_control.webp',
 
     accent: ACCENT,
 
@@ -88,7 +89,7 @@ const heroSlides = [
     subhead:
       'Simplify the journey from raw-material procurement through production, quality, storage, sales, and dispatch with one connected platform designed to help engineering and manufacturing businesses stay coordinated as they grow.',
 
-    bg: '/images/wms_auto_components_spare_parts_distribution.webp',
+    bg: '/images/eng_hero_scale_growth.webp',
 
     accent: ACCENT,
 
