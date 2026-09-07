@@ -5,11 +5,10 @@ import HeroSlider from '../../ui/HeroSlider.jsx';
   Dedicated 4-slide hero for:
   /industries/beverage
 
-  No dedicated hero artwork was supplied for this vertical, so these use the
-  largest beverage and processing images already in public/images. Copy is
-  drawn from the beverages entry in data/industries.js — blend formulation,
-  Brix and pH testing, fill-line scheduling, returnable containers and
-  distribution — so nothing new is claimed here.
+  Each slide carries its own artwork and takes one angle on the vertical —
+  the opener, then production and product visibility, quality and control, and
+  scale. Headlines split on an em-dash so the setup sits lighter and the
+  payoff carries the weight, matching the product pages.
 */
 
 const EYEBROW = 'BEVERAGES & JUICES';
@@ -30,28 +29,12 @@ const heroSlides = [
     eyebrow: EYEBROW,
 
     headline:
-      'From Concentrate to Every Bottle — Keep Your Beverage Operations Connected.',
+      'From Ingredients to Every Bottle — Keep Your Beverage Operations Connected.',
 
     subhead:
-      'Manage procurement, ingredients, blending, production, quality, inventory, warehouses, returnable containers, sales, and distribution through one connected platform built to bring greater visibility and control to beverage and juice operations.',
+      'Connect procurement, ingredients, recipes, production, quality, inventory, packaging, warehouses, sales, distribution, and business operations through one platform built to bring greater visibility and coordination to growing beverage and juice businesses.',
 
-    bg: '/images/beverages.webp',
-
-    accent: ACCENT,
-
-    cta: DEMO_CTA,
-    secondaryCta: EXPLORE_CTA,
-  },
-
-  {
-    eyebrow: EYEBROW,
-
-    headline: 'Brix, pH and Batch — Tracked, Not Estimated.',
-
-    subhead:
-      'Bring blend ratios, quality readings, batch records, and fill-line activity into the same system as production and inventory—so what was blended, under which batch, and how it tested stay together instead of living across separate registers.',
-
-    bg: '/images/food_fruits_processing.webp',
+    bg: '/images/bev_from_ingredients_to_every_bottle.webp',
 
     accent: ACCENT,
 
@@ -63,12 +46,29 @@ const heroSlides = [
     eyebrow: EYEBROW,
 
     headline:
-      'Every SKU, Every Line and Every Crate — In One Connected View.',
+      'Every Ingredient, Every Batch — Every Bottle Movement Connected.',
 
     subhead:
-      'Bring formulation, fill-line scheduling, inventory, returnable bottles and crates, warehouses, sales, and dispatch together in one platform. Gain better visibility across plants as products move from blending to the shelf.',
+      'Connect procurement, ingredients, recipes, production, quality, packaging, inventory, warehouses, sales, and distribution through one platform—so teams can maintain better visibility as beverage products move from production to every sales channel.',
 
-    bg: '/images/food_dairy_processing.webp',
+    bg: '/images/bev_production_and_product_visibility.webp',
+
+    accent: ACCENT,
+
+    cta: DEMO_CTA,
+    secondaryCta: EXPLORE_CTA,
+  },
+
+  {
+    eyebrow: EYEBROW,
+
+    headline:
+      'Every Batch, Warehouse and Product Movement — In One Connected View.',
+
+    subhead:
+      'Bring procurement, raw-material stores, recipe workflows, production, quality inspection, inventory, packaging, sales, and dispatch together in one connected platform. Gain better visibility across operations and make faster decisions as products move through your business.',
+
+    bg: '/images/bev_quality_operational_control.webp',
 
     accent: ACCENT,
 
@@ -83,12 +83,13 @@ const heroSlides = [
   {
     eyebrow: EYEBROW,
 
-    headline: 'Run More SKUs, Move Faster — Manage Every Plant in One Flow.',
+    headline:
+      'Produce Smarter, Move Faster — Manage Every Channel in One Flow.',
 
     subhead:
-      'Simplify the journey from ingredient procurement through blending, filling, storage, and sales to distributor and retail dispatch with one connected platform designed to help beverage businesses stay coordinated as they grow.',
+      'Simplify the journey from ingredient procurement through production, packaging, storage, sales, and distribution with one connected platform designed to help beverage and juice businesses stay coordinated as they grow.',
 
-    bg: '/images/multi_plant_distribution.webp',
+    bg: '/images/bev_scale_and_growth.webp',
 
     accent: ACCENT,
 

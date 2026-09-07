@@ -408,6 +408,12 @@ const beveragesPageLazy = async () => ({
   ).default,
 });
 
+const engineeringPageLazy = async () => ({
+  Component: (
+    await import('./pages/industry_pages/EngineeringManufacturing.jsx')
+  ).default,
+});
+
 // Industries that have their own dedicated page/route.
 const DEDICATED_INDUSTRY_SLUGS = [
   'bakery-and-confectionery',
@@ -419,6 +425,7 @@ const DEDICATED_INDUSTRY_SLUGS = [
    'qsr-franchise',
    'spices-agro',
    'beverage',
+   'engineering-manufacturing',
 ];
 
 // ============================================================
@@ -721,6 +728,15 @@ export const routes = [
         entry: 'src/pages/industry_pages/Beverages.jsx',
         getStaticPaths: async () => [
           '/industries/beverage',
+        ],
+      },
+
+      {
+        path: 'industries/engineering-manufacturing',
+        lazy: engineeringPageLazy,
+        entry: 'src/pages/industry_pages/EngineeringManufacturing.jsx',
+        getStaticPaths: async () => [
+          '/industries/engineering-manufacturing',
         ],
       },
 
