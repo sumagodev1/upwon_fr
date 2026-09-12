@@ -1,19 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
-import { m as motion } from 'framer-motion';
+import { m as motion, useReducedMotion } from 'framer-motion';
 import Container from '../ui/Container.jsx';
 import Eyebrow from '../ui/Eyebrow.jsx';
 
 /*
-  "Our Values. Your Foundation." — a scroll-driven layout: a sticky left column
-  (heading + a number that increments as you scroll) paired with a right column
-  of value blocks, each a beveled photo + title + one-line subtext. Light/white
-  theme (the reference is navy — this is the white variant).
+  "Values & Work Culture" — a centred heading over a plain three-up card grid,
+  each card a photo with its value and one-line subtext.
 
-  PLACEHOLDER: the photos below are stand-ins (existing product imagery). Swap in
-  real team / office photos before launch.
+  PLACEHOLDER: the photos below are stand-ins (existing product imagery). Swap
+  in real team / office photos before launch.
 */
 
 const EASE = [0.16, 1, 0.3, 1];
+
+const VIEWPORT = { once: true, amount: 0.1 };
 
 const VALUES = [
   {
@@ -48,76 +47,113 @@ const VALUES = [
   },
 ];
 
-function ValueBlock({ v, index, onActive }) {
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return undefined;
-    const obs = new IntersectionObserver(
-      (entries) => entries.forEach((e) => e.isIntersecting && onActive(index)),
-      { rootMargin: '-45% 0px -45% 0px' },
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [index, onActive]);
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 26 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.6, ease: EASE }}
-    >
-      <div className="overflow-hidden rounded-3xl bg-cream-100 shadow-[0_24px_60px_-30px_rgba(15,23,42,0.28)]">
-        <img
-          src={v.photo}
-          alt={v.title}
-          loading="lazy"
-          decoding="async"
-          className="aspect-[4/3] w-full object-cover"
-        />
-      </div>
-      <h3 className="mt-6 h-display text-[1.7rem] font-bold tracking-tight text-navy-950 md:text-[2rem]">
-        {v.title}
-      </h3>
-      <p className="mt-2 text-[15px] leading-relaxed text-navy-600 md:text-base">{v.sub}</p>
-    </motion.div>
-  );
-}
-
 export default function ValuesWorkCulture() {
-  const [active, setActive] = useState(0);
+  const reduceMotion = useReducedMotion();
+
+  const d = (value) => (reduceMotion ? 0 : value);
+  const stagger = (value) => (reduceMotion ? 0 : value);
+
+  /* ================= VARIANTS ================= */
+
+  const group = {
+    hidden: {},
+    visible: {
+      transition: { staggerChildren: stagger(0.1), delayChildren: 0.05 },
+    },
+  };
+
+  const fadeIn = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.55, ease: EASE } },
+  };
+
+  const fadeUp = {
+    hidden: { opacity: 0, y: d(16) },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } },
+  };
+
+  const cardsGroup = {
+    hidden: {},
+    visible: {
+      transition: { staggerChildren: stagger(0.08), delayChildren: 0.12 },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: d(22) },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE } },
+    hover: { y: d(-6), transition: { duration: 0.28, ease: EASE } },
+  };
 
   return (
     <section className="relative bg-white py-16 md:py-24">
       <Container>
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
-          {/* Left — sticky heading + scrolling number */}
-          <div className="lg:sticky lg:top-32 lg:self-start lg:py-10">
-            <span className="grid h-16 w-16 place-items-center rounded-full border border-navy-300 text-lg font-semibold text-navy-800">
-              {active + 1}
-            </span>
-            <div className="mt-10">
-              <Eyebrow>Our Customers Appreciate Us</Eyebrow>
-            </div>
- <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-              Values &amp;{' '}
-              <span className="gradient-text-orange">Work Culture</span>
-            </h2>
-            <p className="mt-6 max-w-sm text-[14.5px] font-semibold leading-relaxed text-navy-700 md:text-base">
-              These core values guide how we work, grow, and lead:
-            </p>
-          </div>
+        {/* ================= HEADING ================= */}
+        <motion.div
+          variants={group}
+          initial="hidden"
+          whileInView="visible"
+          viewport={VIEWPORT}
+          className="mx-auto max-w-2xl text-center"
+        >
+          <motion.div variants={fadeIn}>
+            <Eyebrow className="justify-center">
+              Our Customers Appreciate Us
+            </Eyebrow>
+          </motion.div>
 
-          {/* Right — scrolling value blocks */}
-          <div className="space-y-20 md:space-y-28 lg:border-l lg:border-cream-300 lg:pl-16">
-            {VALUES.map((v, i) => (
-              <ValueBlock key={v.title} v={v} index={i} onActive={setActive} />
-            ))}
-          </div>
-        </div>
+          <motion.h2
+            variants={fadeUp}
+            className="mt-3 h-display text-[30px] leading-[1.1] tracking-tight text-navy-950 sm:text-[34px] lg:text-[36.8px]"
+          >
+            Values &amp; <span className="gradient-text-orange">Work Culture</span>
+          </motion.h2>
+
+          <motion.p
+            variants={fadeUp}
+            className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
+          >
+            These core values guide how we work, grow, and lead.
+          </motion.p>
+        </motion.div>
+
+        {/* ================= VALUES ================= */}
+        <motion.div
+          variants={cardsGroup}
+          initial="hidden"
+          whileInView="visible"
+          viewport={VIEWPORT}
+          className="mt-12 grid auto-rows-fr gap-6 sm:grid-cols-2 lg:grid-cols-3"
+        >
+          {VALUES.map(({ title, sub, photo }) => (
+            <motion.article
+              key={title}
+              variants={cardVariants}
+              whileHover="hover"
+              className="flex h-full min-w-0 flex-col overflow-hidden rounded-[18px] border border-cream-300 bg-white shadow-[0_10px_30px_rgba(25,35,55,0.07)] transition-shadow duration-300 hover:shadow-[0_20px_46px_rgba(25,35,55,0.13)]"
+            >
+              <img
+                src={photo}
+                alt={title}
+                loading="lazy"
+                decoding="async"
+                className="aspect-[4/3] w-full object-cover"
+              />
+
+              <div className="flex flex-1 flex-col p-6">
+                {/* Two lines' worth of height either way, so every subtext
+                    starts on the same line */}
+                <h3 className="h-display min-h-[52px] text-[19px] font-bold leading-snug tracking-tight text-navy-950">
+                  {title}
+                </h3>
+
+                <p className="mt-2.5 text-[14px] leading-relaxed text-navy-600">
+                  {sub}
+                </p>
+              </div>
+            </motion.article>
+          ))}
+        </motion.div>
       </Container>
     </section>
   );

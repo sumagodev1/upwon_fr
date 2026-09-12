@@ -442,7 +442,9 @@ const VsOthersPage = lazy(() => import('./pages/VsOthersPage.jsx'));
 const NewsletterPage = lazy(() => import('./pages/NewsletterPage.jsx'));
 const NewsletterStoryPage = lazy(() => import('./pages/NewsletterStoryPage.jsx'));
 const ImplementationPage = lazy(() => import('./pages/ImplementationPage.jsx'));
-const WhyUpwonPage = lazy(() => import('./pages/WhyUpwonPage.jsx'));
+// Rebuilt Why UpWon page. The previous version is still on disk at
+// ./pages/WhyUpwonPage.jsx if any of it needs to be brought back.
+const WhyUpwon = lazy(() => import('./pages/WhyUpwon.jsx'));
 
 // ============================================================
 // Decision
@@ -833,7 +835,7 @@ export const routes = [
 
       {
         path: 'why-upwon',
-        Component: WhyUpwonPage,
+        Component: WhyUpwon,
       },
 
       // ======================================================

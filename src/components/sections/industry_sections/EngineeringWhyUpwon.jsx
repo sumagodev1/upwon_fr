@@ -163,7 +163,7 @@ export default function EngineeringWhyUpwon() {
             <motion.div
               variants={fadeUp}
               /* Straddles the photo's lower-right corner, as in the layout */
-              className="relative -mt-10 ml-auto w-[75%] rounded-[14px] bg-white p-4 shadow-[0_16px_40px_rgba(25,35,55,0.14)] sm:w-[62%] lg:absolute lg:left-[62%] lg:top-[66%] lg:mt-0 lg:w-[59%]"
+              className="relative -mt-10 ml-auto w-[75%] rounded-[14px] bg-white p-4 shadow-[0_16px_40px_rgba(25,35,55,0.14)] sm:w-[62%] lg:absolute lg:left-[56%] lg:top-[66%] lg:mt-0 lg:w-[44%]"
             >
               <span
                 aria-hidden="true"
