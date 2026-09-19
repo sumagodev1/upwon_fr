@@ -2,8 +2,8 @@ import { m as motion } from 'framer-motion';
 import { CheckCircle2, X, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Container from '../components/ui/Container.jsx';
-import PageHero from '../components/sections/PageHero.jsx';
-import SectionHeading from '../components/ui/SectionHeading.jsx';
+import HeroSlider from '../components/ui/HeroSlider.jsx';
+import SectionIntro from '../components/ui/SectionIntro.jsx';
 import ComparisonMatrix from '../components/sections/ComparisonMatrix.jsx';
 import DemoCtaCompact from '../components/sections/DemoCtaCompact.jsx';
 import Seo from '../components/common/Seo.jsx';
@@ -23,6 +23,29 @@ const KEEP_TALLY = [
   'Revenue under ₹2 Cr with no scaling plans',
 ];
 
+
+const HERO_ACCENT = '#E85A2A';
+
+/* Hero backdrops — the site’s shared hero artwork. This page has never
+   had dedicated hero photography of its own; drop a local webp in here
+   when it does and nothing else needs to change. */
+const HERO_BG_A = '/images/hero%20bg%202.webp';
+
+/* Hero slides — the page's own copy, on the site's standard slider. */
+const HERO_SLIDES = [
+  {
+    eyebrow: 'WHEN YOU OUTGROW TALLY',
+    headline:
+      'UpWon vs Tally + Zoho — When Accounting Isn\'t Enough.',
+    subhead:
+      'Tally is an excellent accounting tool. So is Zoho. Neither was built to run a food manufacturing or FMCG distribution operation. Here\'s where the line is.',
+    bg: HERO_BG_A,
+    accent: HERO_ACCENT,
+    cta: { label: 'Request a Demo', to: '/demo' },
+    secondaryCta: { label: 'Calculate Your ROI', to: '/roi-calculator' },
+  },
+];
+
 export default function VsTallyPage() {
   return (
     <>
@@ -31,30 +54,25 @@ export default function VsTallyPage() {
         description="What breaks when you scale past Tally + Zoho — and what UpWon gives you instead, without re-platforming. Honest read for growing food and FMCG businesses."
         canonical="https://upwon.in/compare/upwon-vs-tally"
       />
-      <PageHero
-        breadcrumb={[
-          { label: 'Home', to: '/' },
-          { label: 'Compare' },
-          { label: 'UpWon vs Tally + Zoho' },
-        ]}
-        eyebrow="When you outgrow Tally"
-        title={
-          <>
-            UpWon vs Tally + Zoho —{' '}
-            <span className="gradient-text-orange">when accounting isn't enough.</span>
-          </>
-        }
-        description="Tally is an excellent accounting tool. So is Zoho. Neither was built to run a food manufacturing or FMCG distribution operation. Here's where the line is."
+      <HeroSlider
+        slides={HERO_SLIDES}
+        variant="dark"
+        intervalMs={5000}
+        minHeight="min-h-[440px] sm:min-h-[480px] md:min-h-[520px]"
+        topPad="pt-32 md:pt-40"
       />
 
-      <section className="relative overflow-hidden bg-cream-100 section-pad">
+      <section className="relative overflow-hidden bg-cream-100 py-10 sm:py-12 lg:py-14">
         <div className="absolute inset-0 grid-bg-light opacity-50" />
         <Container className="relative">
-          <SectionHeading
-            align="center"
-            variant="light"
+          <SectionIntro
             eyebrow="The honest question"
-            title="Are you running a business on Tally — or building one despite it?"
+            title={
+              <>
+                Are You Running a Business on Tally —{' '}
+                <span className="gradient-text-orange">Or Building One Despite It?</span>
+              </>
+            }
           />
 
           <div className="mt-14 grid gap-5 lg:grid-cols-2">
@@ -107,15 +125,21 @@ export default function VsTallyPage() {
       <ComparisonMatrix subset={['upwon', 'odoo', 'erpnext', 'zoho']} />
 
       {/* Migration friendly */}
-      <section className="relative overflow-hidden bg-navy-950 py-20 text-white">
+      <section className="relative overflow-hidden bg-navy-950 py-10 text-white sm:py-12 lg:py-14">
         <div className="absolute inset-0 grid-bg opacity-40" />
         <Container className="relative">
-          <h2 className="text-center h-display text-3xl text-balance md:text-4xl">
-            Already using Tally? <br />
-            <span className="gradient-text-orange">
-              UpWon connects to it from day one.
-            </span>
-          </h2>
+          <SectionIntro
+            variant="dark"
+            eyebrow="MIGRATION"
+            title={
+              <>
+                Already Using Tally?{' '}
+                <span className="gradient-text-orange">
+                  UpWon Connects to It From Day One.
+                </span>
+              </>
+            }
+          />
           <p className="mx-auto mt-5 max-w-2xl text-center text-base text-cream-100/80">
             UpWon doesn't force a rip-and-replace. Keep Tally for accounting if you want — UpWon
             handles manufacturing, distribution, franchise, HR and warehouse, all integrated.

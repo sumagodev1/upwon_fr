@@ -3,9 +3,9 @@ import { m as motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ArrowUpRight, Clock, Filter, Sparkles } from 'lucide-react';
 import Container from '../components/ui/Container.jsx';
-import PageHero from '../components/sections/PageHero.jsx';
+import HeroSlider from '../components/ui/HeroSlider.jsx';
 import Seo from '../components/common/Seo.jsx';
-import SectionHeading from '../components/ui/SectionHeading.jsx';
+import SectionIntro from '../components/ui/SectionIntro.jsx';
 import {
   SORTED_POSTS,
   CATEGORIES_WITH_COUNTS,
@@ -17,6 +17,29 @@ import {
 // Brief §18.2 — the Blog. A filterable grid of operator playbooks (not vendor
 // marketing) across six SEO-targeted categories, fronted by a featured
 // latest-article hero card (§18.1). Posts deep-link to /blog/:slug.
+
+const HERO_ACCENT = '#E85A2A';
+
+/* Hero backdrops — the site’s shared hero artwork. This page has never
+   had dedicated hero photography of its own; drop a local webp in here
+   when it does and nothing else needs to change. */
+const HERO_BG_A = '/images/hero%20bg.webp';
+
+/* Hero slides — the page's own copy, on the site's standard slider. */
+const HERO_SLIDES = [
+  {
+    eyebrow: 'THE UPWON BLOG',
+    headline:
+      'Operator Playbooks for Food & FMCG.',
+    subhead:
+      'Two deep-reads a month across six lanes — the operational fixes that move real numbers. No vendor fluff.',
+    bg: HERO_BG_A,
+    accent: HERO_ACCENT,
+    cta: { label: 'Request a Demo', to: '/demo' },
+    secondaryCta: { label: 'Browse the Knowledgebase', to: '/knowledgebase' },
+  },
+];
+
 export default function BlogPage() {
   const [activeCat, setActiveCat] = useState('all');
   const featured = getFeaturedPost();
@@ -37,21 +60,12 @@ export default function BlogPage() {
         description="Operator playbooks, benchmark numbers and real wins for food manufacturers, FMCG distributors and franchise networks — across ERP, distribution, warehouse, HR and compliance."
         canonical="https://upwon.in/blog"
       />
-      <PageHero
-        breadcrumb={[
-          { label: 'Home', to: '/' },
-          { label: 'Resources', to: '/resources' },
-          { label: 'Blog' },
-        ]}
-        eyebrow="The UpWon Blog"
-        title={
-          <>
-            Operator playbooks for{' '}
-            <span className="gradient-text-orange">Food &amp; FMCG.</span>
-          </>
-        }
-        description="Two deep-reads a month across six lanes — the operational fixes that move real numbers. No vendor fluff."
-        ratings={false}
+      <HeroSlider
+        slides={HERO_SLIDES}
+        variant="dark"
+        intervalMs={5000}
+        minHeight="min-h-[440px] sm:min-h-[480px] md:min-h-[520px]"
+        topPad="pt-32 md:pt-40"
       />
 
       {/* ========== FEATURED (latest) ARTICLE — brief §18.1 ========== */}
@@ -103,13 +117,16 @@ export default function BlogPage() {
       </section>
 
       {/* ========== CATEGORY FILTER + POST GRID ========== */}
-      <section className="relative overflow-hidden bg-white section-pad">
+      <section className="relative overflow-hidden bg-white py-10 sm:py-12 lg:py-14">
         <Container className="relative">
-          <SectionHeading
-            align="center"
-            variant="light"
+          <SectionIntro
             eyebrow="Insights by Topic"
-            title="Pick the lane you operate in."
+            title={
+              <>
+                Pick the Lane{' '}
+                <span className="gradient-text-orange">You Operate In.</span>
+              </>
+            }
             description="Each category publishes operator playbooks built from real deployments."
           />
 

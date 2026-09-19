@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { m as motion } from 'framer-motion';
-import { ArrowRight, ArrowUpRight, Calendar, CheckCircle2, Building2, Mail, Phone, MapPin, MessageCircle } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, CheckCircle2, Building2, Mail, Phone, MapPin, MessageCircle } from 'lucide-react';
 import Container from '../components/ui/Container.jsx';
-import PageHero from '../components/sections/PageHero.jsx';
+import ContactHeroSection from '../components/sections/ContactHeroSection.jsx';
+import ContactCtaSection from '../components/sections/ContactCtaSection.jsx';
 import { COMPANY } from '../data/company.js';
 import Seo from '../components/common/Seo.jsx';
 
@@ -56,20 +57,7 @@ export default function ContactPage() {
         description="Call our toll-free sales line, WhatsApp us or send a message — Indian-time response. Nashik, Pune and Mumbai offices."
         canonical="https://upwon.in/contact"
       />
-      <PageHero
-        breadcrumb={[
-          { label: 'Home', to: '/' },
-          { label: 'Contact' },
-        ]}
-        eyebrow="Get in touch"
-        title={
-          <>
-            Let's talk about your{' '}
-            <span className="gradient-text-orange">operations.</span>
-          </>
-        }
-        description="Tell us your industry and your biggest pain point. A solution lead from the UpWon team will get back to you within 2 business hours."
-      />
+      <ContactHeroSection />
 
       <section className="relative overflow-hidden bg-cream-100 section-pad">
         <div className="absolute inset-0 grid-bg-light opacity-50" />
@@ -218,22 +206,6 @@ export default function ContactPage() {
             {/* Side info */}
             <div className="space-y-5">
               <SideCard
-                icon={Calendar}
-                title="Faster path: Book a demo"
-                content={
-                  <div>
-                    <p className="text-sm text-charcoal">
-                      Skip the message form. Book a 30-minute demo directly.
-                    </p>
-                    <a href="/demo" className="mt-4 btn-primary !text-[14px]">
-                      Book Free Demo
-                      <ArrowUpRight className="h-3.5 w-3.5" />
-                    </a>
-                  </div>
-                }
-              />
-
-              <SideCard
                 icon={Building2}
                 title="Where we are"
                 content={
@@ -289,6 +261,9 @@ export default function ContactPage() {
           </div>
         </Container>
       </section>
+
+      {/* Closing CTA, directly above the footer */}
+      <ContactCtaSection />
     </>
   );
 }

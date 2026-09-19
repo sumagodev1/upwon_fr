@@ -12,7 +12,7 @@ import {
   Hourglass,
 } from 'lucide-react';
 import Container from '../components/ui/Container.jsx';
-import PageHero from '../components/sections/PageHero.jsx';
+import HeroSlider from '../components/ui/HeroSlider.jsx';
 import Seo from '../components/common/Seo.jsx';
 import DemoCtaCompact from '../components/sections/DemoCtaCompact.jsx';
 
@@ -163,6 +163,29 @@ function ToggleRow({ q, value, onChange }) {
   );
 }
 
+
+const HERO_ACCENT = '#E85A2A';
+
+/* Hero backdrops — the site’s shared hero artwork. This page has never
+   had dedicated hero photography of its own; drop a local webp in here
+   when it does and nothing else needs to change. */
+const HERO_BG_A = '/images/hero%20bg%202.webp';
+
+/* Hero slides — the page's own copy, on the site's standard slider. */
+const HERO_SLIDES = [
+  {
+    eyebrow: 'STEP 1 · HONEST EVALUATION',
+    headline:
+      'Do You Really Need Software?',
+    subhead:
+      'Before we talk ROI, let\'s talk truth. This 8-question ERP readiness check tells you honestly whether a food or FMCG business like yours needs a platform now — or can wait.',
+    bg: HERO_BG_A,
+    accent: HERO_ACCENT,
+    cta: { label: 'Request a Demo', to: '/demo' },
+    secondaryCta: { label: 'Calculate Your ROI', to: '/roi-calculator' },
+  },
+];
+
 export default function SelfEvaluationPage() {
   const [answers, setAnswers] = useState({});
 
@@ -208,25 +231,15 @@ export default function SelfEvaluationPage() {
         description="Answer 8 honest questions about your operations. We tell you whether you need an ERP yet — and the ROI to expect first. Free, no sign-up."
         canonical="https://upwon.in/self-evaluation"
       />
-      <PageHero
-        breadcrumb={[
-          { label: 'Home', to: '/' },
-          { label: 'Self-Evaluation' },
-        ]}
-        eyebrow="Step 1 · Honest evaluation"
-        title={
-          <>
-            Do you really need <span className="gradient-text-orange">software?</span>
-          </>
-        }
-        description={
-          // Content update (Self-Evaluation SEO doc) — old intro:
-          // "Before talking ROI, talk truth. 8 quick questions. We tell you honestly whether you need a platform — or whether you can wait."
-          "Before we talk ROI, let's talk truth. This 8-question ERP readiness check tells you honestly whether a food or FMCG business like yours needs a platform now — or can wait."
-        }
+      <HeroSlider
+        slides={HERO_SLIDES}
+        variant="dark"
+        intervalMs={5000}
+        minHeight="min-h-[440px] sm:min-h-[480px] md:min-h-[520px]"
+        topPad="pt-32 md:pt-40"
       />
 
-      <section className="relative overflow-hidden bg-cream-100 section-pad">
+      <section className="relative overflow-hidden bg-cream-100 py-10 sm:py-12 lg:py-14">
         <div className="absolute inset-0 grid-bg-light opacity-40" />
         <Container className="relative">
           <div className="grid gap-10 lg:grid-cols-[1fr_360px]">

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Quote, Star } from 'lucide-react';
 import Container from '../ui/Container.jsx';
+import Eyebrow from '../ui/Eyebrow.jsx';
 
 /**
  * Continuous horizontal-scrolling testimonials. Two rows, same direction,
@@ -135,7 +136,7 @@ function Avatar({ src, name, color }) {
 
 function TestimonialCard({ t }) {
   return (
-    <article className="flex w-[340px] shrink-0 flex-col rounded-2xl border border-cream-300 bg-white p-6 shadow-sm transition-shadow duration-300 hover:shadow-enterprise md:w-[400px]">
+    <article className="flex w-[260px] shrink-0 flex-col rounded-2xl border border-cream-300 bg-white p-5 shadow-sm transition-shadow duration-300 hover:shadow-enterprise sm:w-[340px] sm:p-6 md:w-[400px]">
       {/* Top: rating + quote icon */}
       <div className="flex items-center justify-between">
         <StarRow rating={t.rating} />
@@ -185,7 +186,7 @@ function MarqueeRow({ items, direction = 'left', duration = 50 }) {
 }
 
 export default function TestimonialsMarquee({
-  eyebrow = 'In their words',
+  eyebrow = 'IN THEIR WORDS',
   title,
   description,
 }) {
@@ -199,25 +200,25 @@ export default function TestimonialsMarquee({
   ];
 
   return (
-    <section className="relative overflow-hidden bg-white section-pad">
+    <section className="relative overflow-hidden bg-white py-10 sm:py-12 lg:py-14">
       <div className="absolute inset-0 grid-bg-light opacity-30" />
 
       <Container className="relative">
+        {/* Same eyebrow / headline / subtext cadence as every other section */}
         <div className="mx-auto max-w-3xl text-center">
-          <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-orange-600">
-            <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse-slow" />
-            {eyebrow}
-          </p>
- <h2 className="mt-4 h-display text-[36.8px] text-balance text-navy-950">
+          <Eyebrow className="justify-center">{eyebrow}</Eyebrow>
+
+          <h2 className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]">
             {title || (
               <>
-                Operators talk.{' '}
-                <span className="gradient-text-orange">We listen.</span>
+                Operators Talk.{' '}
+                <span className="gradient-text-orange">We Listen.</span>
               </>
             )}
           </h2>
+
           {description && (
-            <p className="mx-auto mt-4 max-w-2xl text-balance text-base leading-relaxed text-navy-600 md:text-lg">
+            <p className="mx-auto mt-4 max-w-2xl text-[14.5px] leading-relaxed text-navy-600 sm:text-[15px]">
               {description}
             </p>
           )}

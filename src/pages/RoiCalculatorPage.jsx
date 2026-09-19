@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Container from '../components/ui/Container.jsx';
-import PageHero from '../components/sections/PageHero.jsx';
+import HeroSlider from '../components/ui/HeroSlider.jsx';
 import DemoCtaCompact from '../components/sections/DemoCtaCompact.jsx';
 import { submitLead } from '../lib/leads.js';
 import Seo from '../components/common/Seo.jsx';
@@ -223,6 +223,29 @@ function initialInputs(type) {
   return INPUT_SCHEMAS[type].reduce((acc, s) => ((acc[s.key] = s.init), acc), {});
 }
 
+
+const HERO_ACCENT = '#E85A2A';
+
+/* Hero backdrops — the site’s shared hero artwork. This page has never
+   had dedicated hero photography of its own; drop a local webp in here
+   when it does and nothing else needs to change. */
+const HERO_BG_A = '/images/hero%20bg3.webp';
+
+/* Hero slides — the page's own copy, on the site's standard slider. */
+const HERO_SLIDES = [
+  {
+    eyebrow: 'ROI CALCULATOR',
+    headline:
+      'Calculate What UpWon Will Save Your Business — In 3 Minutes.',
+    subhead:
+      'Pick your business type. Move the sliders. See your personalised ROI. Based on outcomes across 50+ deployments.',
+    bg: HERO_BG_A,
+    accent: HERO_ACCENT,
+    cta: { label: 'Request a Demo', to: '/demo' },
+    secondaryCta: { label: 'Take the Self-Evaluation', to: '/self-evaluation' },
+  },
+];
+
 export default function RoiCalculatorPage() {
   const [businessType, setBusinessType] = useState('food-mfg');
   const [inputs, setInputs] = useState(() => initialInputs('food-mfg'));
@@ -246,19 +269,12 @@ export default function RoiCalculatorPage() {
         description="Quantify UpWon's rupee impact across wastage, billing time and finance close — 8 inputs, your numbers, your industry. 2-minute self-serve calculator."
         canonical="https://upwon.in/roi-calculator"
       />
-      <PageHero
-        breadcrumb={[
-          { label: 'Home', to: '/' },
-          { label: 'ROI Calculator' },
-        ]}
-        eyebrow="ROI Calculator"
-        title={
-          <>
-            Calculate what UpWon will save your <br />
-            business — in <span className="gradient-text-orange">3 minutes.</span>
-          </>
-        }
-        description="Pick your business type. Move the sliders. See your personalised ROI. Based on outcomes across 50+ deployments."
+      <HeroSlider
+        slides={HERO_SLIDES}
+        variant="dark"
+        intervalMs={5000}
+        minHeight="min-h-[440px] sm:min-h-[480px] md:min-h-[520px]"
+        topPad="pt-32 md:pt-40"
       />
 
       {/* Brief §17.2 — Business type selector */}
@@ -313,7 +329,7 @@ export default function RoiCalculatorPage() {
         </Container>
       </section>
 
-      <section className="relative overflow-hidden bg-white section-pad">
+      <section className="relative overflow-hidden bg-white py-10 sm:py-12 lg:py-14">
         <div className="absolute inset-0 grid-bg-light opacity-40" />
         <Container className="relative">
           <p className="mb-6 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-navy-500">

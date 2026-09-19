@@ -335,6 +335,8 @@ export default function HeroSection() {
 
           {/* Headline — cycles with the slide, crossfading every rotation.
               min-h is sized to comfortably fit the longest slide's headline
+              0
+              
               at each breakpoint, so the subhead below never gets overlapped. */}
           <div className="relative mt-6 flex min-h-[180px] w-full items-center justify-center sm:min-h-[150px] md:min-h-[200px] lg:min-h-[200px]">
             <AnimatePresence mode="wait">

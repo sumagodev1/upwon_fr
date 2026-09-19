@@ -1,8 +1,8 @@
 import { m as motion } from 'framer-motion';
 import { CheckCircle2, ShieldCheck, UserCheck, ClipboardCheck, Gauge, Headset, Timer, GitFork } from 'lucide-react';
 import Container from '../components/ui/Container.jsx';
-import PageHero from '../components/sections/PageHero.jsx';
-import SectionHeading from '../components/ui/SectionHeading.jsx';
+import HeroSlider from '../components/ui/HeroSlider.jsx';
+import SectionIntro from '../components/ui/SectionIntro.jsx';
 import DemoCtaCompact from '../components/sections/DemoCtaCompact.jsx';
 import { IMPLEMENTATION_PHASES, GOVERNANCE } from '../data/implementation.js';
 import Seo from '../components/common/Seo.jsx';
@@ -14,6 +14,29 @@ const SLAS = [
   { icon: GitFork, label: 'Release cadence', value: 'Fortnightly' },
 ];
 
+
+const HERO_ACCENT = '#E85A2A';
+
+/* Hero backdrops — the site’s shared hero artwork. This page has never
+   had dedicated hero photography of its own; drop a local webp in here
+   when it does and nothing else needs to change. */
+const HERO_BG_A = '/images/hero%20bg3.webp';
+
+/* Hero slides — the page's own copy, on the site's standard slider. */
+const HERO_SLIDES = [
+  {
+    eyebrow: 'IMPLEMENTATION METHODOLOGY',
+    headline:
+      'From Contract Signed to Fully Live — In 30 to 45 Days.',
+    subhead:
+      '93% of UpWon projects go live on time. Implementation, training, and 90-day hyper-care are included as standard — not added as line items.',
+    bg: HERO_BG_A,
+    accent: HERO_ACCENT,
+    cta: { label: 'Request a Demo', to: '/demo' },
+    secondaryCta: { label: 'Read the Case Studies', to: '/clients' },
+  },
+];
+
 export default function ImplementationPage() {
   return (
     <>
@@ -22,39 +45,26 @@ export default function ImplementationPage() {
         description="The UpWon go-live playbook — discovery, configuration, data migration, training and go-live. Indian food ops in 30-45 days, not 18 months."
         canonical="https://upwon.in/implementation"
       />
-      <PageHero
-        breadcrumb={[
-          { label: 'Home', to: '/' },
-          { label: 'Implementation' },
-        ]}
-        eyebrow="Implementation Methodology"
-        title={
-          <>
-            From contract signed to fully live —{' '}
-            <span className="gradient-text-orange">in 30 to 45 days.</span>
-          </>
-        }
-        description="93% of UpWon projects go live on time. Implementation, training, and 90-day hyper-care are included as standard — not added as line items."
-        meta={
-          <>
-            <span>30-45 day standard go-live</span>
-            <span className="h-3 w-px bg-navy-200" />
-            <span>Dedicated SPOC · single accountability</span>
-            <span className="h-3 w-px bg-navy-200" />
-            <span>CMM L3 · ISO-aligned SOPs</span>
-          </>
-        }
+      <HeroSlider
+        slides={HERO_SLIDES}
+        variant="dark"
+        intervalMs={5000}
+        minHeight="min-h-[440px] sm:min-h-[480px] md:min-h-[520px]"
+        topPad="pt-32 md:pt-40"
       />
 
       {/* 4 Phases */}
-      <section className="relative overflow-hidden bg-cream-100 section-pad">
+      <section className="relative overflow-hidden bg-cream-100 py-10 sm:py-12 lg:py-14">
         <div className="absolute inset-0 grid-bg-light opacity-50" />
         <Container className="relative">
-          <SectionHeading
-            align="center"
-            variant="light"
+          <SectionIntro
             eyebrow="The four phases"
-            title="From kickoff to scale, every phase is governed."
+            title={
+              <>
+                From Kickoff to Scale,{' '}
+                <span className="gradient-text-orange">Every Phase Is Governed.</span>
+              </>
+            }
             description="Each phase has named owners, signed-off artefacts, and a defined exit criteria. No phase begins until the previous one's gate is cleared."
           />
 
@@ -106,13 +116,16 @@ export default function ImplementationPage() {
       </section>
 
       {/* Governance */}
-      <section className="relative overflow-hidden bg-white section-pad">
+      <section className="relative overflow-hidden bg-white py-10 sm:py-12 lg:py-14">
         <Container className="relative">
-          <SectionHeading
-            align="center"
-            variant="light"
+          <SectionIntro
             eyebrow="Enterprise Governance"
-            title="Accountability, not aspiration."
+            title={
+              <>
+                Accountability,{' '}
+                <span className="gradient-text-orange">Not Aspiration.</span>
+              </>
+            }
             description="UpWon implementations are governed by named accountability, fortnightly executive review, and quarterly business reviews."
           />
           <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
@@ -141,13 +154,18 @@ export default function ImplementationPage() {
       </section>
 
       {/* SLAs */}
-      <section className="relative overflow-hidden bg-cream-200 section-pad">
+      <section className="relative overflow-hidden bg-cream-200 py-10 sm:py-12 lg:py-14">
         <Container className="relative">
           <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:items-center">
-            <SectionHeading
-              variant="light"
+            <SectionIntro
+              align="left"
               eyebrow="Enterprise SLAs"
-              title="Operations don't sleep. Neither does UpWon."
+              title={
+                <>
+                  Operations Don&rsquo;t Sleep.{' '}
+                  <span className="gradient-text-orange">Neither Does UpWon.</span>
+                </>
+              }
               description="Every UpWon deployment is backed by defined response, resolution and uptime SLAs."
             />
             <div className="grid gap-px overflow-hidden rounded-2xl border border-cream-300 bg-cream-300 shadow-enterprise sm:grid-cols-2">

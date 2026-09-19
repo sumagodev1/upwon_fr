@@ -2,16 +2,40 @@ import { m as motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, MapPin } from 'lucide-react';
 import Container from '../components/ui/Container.jsx';
-import PageHero from '../components/sections/PageHero.jsx';
-import SectionHeading from '../components/ui/SectionHeading.jsx';
-import DemoCtaCompact from '../components/sections/DemoCtaCompact.jsx';
+import Eyebrow from '../components/ui/Eyebrow.jsx';
+import ClientsHeroSection from '../components/sections/ClientsHeroSection.jsx';
 import TestimonialsMarquee from '../components/sections/TestimonialsMarquee.jsx';
 import DeploymentMap from '../components/sections/DeploymentMap.jsx';
 // Trust marquee swap (design review): the styled colour/font logo marquee now
 // anchors the Clients roster; the plain-text version it replaced moved to home.
-import TrustStrip from '../components/sections/TrustStrip.jsx';
+import TrustStrip, { CLIENT_LOGOS } from '../components/sections/TrustStrip.jsx';
 import { ALL_CASES } from '../data/caseStudy.js';
 import Seo from '../components/common/Seo.jsx';
+
+/*
+  Section heading motion, shared by every heading block on this page so the
+  eyebrow / headline / subtext cadence matches the rest of the site.
+*/
+const EASE = [0.22, 1, 0.3, 1];
+
+const HEADING_VIEWPORT = { once: true, amount: 0.1 };
+
+const HEADING_GROUP = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.1, delayChildren: 0.05 },
+  },
+};
+
+const FADE_IN = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.55, ease: EASE } },
+};
+
+const FADE_UP = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } },
+};
 
 export default function ClientsHubPage() {
   return (
@@ -21,51 +45,44 @@ export default function ClientsHubPage() {
         description="Monginis, Kaka Halwai, U2 Cake, BrownBear, Mr Puff, Gokul Dairy and 40+ more — real outcomes, real numbers, named clients."
         canonical="https://upwon.in/clients"
       />
-      <PageHero
-        breadcrumb={[
-          { label: 'Home', to: '/' },
-          { label: 'Clients' },
-        ]}
-        // eyebrow="Client Success Stories"
-        eyebrow="TRUSTED BY FOOD BUSINESSES ACROSS INDIA"
-        // title={
-        //   <>
-        //     50+ food & FMCG enterprises run on UpWon. <br />
-        //     <span className="gradient-text-orange">Real numbers. Named clients.</span>
-        //   </>
-        // }
-
-        title={
-          <>
-            The ERP 50+ food & FMCG <br />
-            <span className="gradient-text-orange">enterprises chose over the rest.</span>
-          </>
-        }
-        // description="Bakery chains, dairy brands, beverage manufacturers, FMCG distributors and QSR networks — across 10 states in India."
-        description=" From bakery chains and dairy brands to QSR networks and FMCG distributors — operating across 10 states and counting."
-
-        bgImages={[
-          'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=1600&q=60',
-          'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1600&q=60',
-          'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1600&q=60',
-        ]}
-      />
+      <ClientsHeroSection />
 
       {/* Featured cases */}
-      <section className="relative overflow-hidden bg-cream-100 section-pad">
+      <section className="relative overflow-hidden bg-cream-100 py-10 sm:py-12 lg:py-14">
         <div className="absolute inset-0 grid-bg-light opacity-50" />
         <Container className="relative">
-          <SectionHeading
-            align="center"
-            variant="light"
-            // eyebrow="Featured case studies"
-            eyebrow="RESULTS THAT SPEAK FOR THEMSELVES"
-            // title="Operational transformations across food businesses."
-            title="What growth actually looks like on UpWon."
-            
-          />
+          <motion.div
+            variants={HEADING_GROUP}
+            initial="hidden"
+            whileInView="visible"
+            viewport={HEADING_VIEWPORT}
+            className="mx-auto max-w-3xl text-center"
+          >
+            <motion.div variants={FADE_IN}>
+              <Eyebrow className="justify-center">
+                RESULTS THAT SPEAK FOR THEMSELVES
+              </Eyebrow>
+            </motion.div>
 
-          <div className="mt-14 grid gap-6 lg:grid-cols-3">
+            <motion.h2
+              variants={FADE_UP}
+              className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]"
+            >
+              What Growth Actually Looks Like{' '}
+              <span className="gradient-text-orange">on UpWon.</span>
+            </motion.h2>
+
+            <motion.p
+              variants={FADE_UP}
+              className="mx-auto mt-4 max-w-2xl text-[14.5px] leading-relaxed text-navy-600 sm:text-[15px]"
+            >
+              Three businesses, named and on the record — what each one was
+              wrestling with, and what changed once their operations came
+              together on one platform.
+            </motion.p>
+          </motion.div>
+
+          <div className="mt-8 grid gap-6 lg:mt-10 lg:grid-cols-3">
             {ALL_CASES.map((c, i) => (
               <motion.div
                 key={c.slug}
@@ -113,24 +130,48 @@ export default function ClientsHubPage() {
       </section>
 
       {/* Client roster */}
-      <section className="relative overflow-hidden bg-white section-pad">
+      <section className="relative overflow-hidden bg-white py-10 sm:py-12 lg:py-14">
         <Container className="relative">
-          <SectionHeading
-            align="center"
-            variant="light"
-            eyebrow="The UpWon roster"
-            title="Trusted by India's leading food & FMCG brands."
-          />
+          <motion.div
+            variants={HEADING_GROUP}
+            initial="hidden"
+            whileInView="visible"
+            viewport={HEADING_VIEWPORT}
+            className="mx-auto max-w-3xl text-center"
+          >
+            <motion.div variants={FADE_IN}>
+              <Eyebrow className="justify-center">THE UPWON ROSTER</Eyebrow>
+            </motion.div>
 
-          {/* Styled colour/font brand-logo marquee (swapped in from the home
-              page per the design review) — richer than the plain-text rows it
-              replaced. */}
-          <div className="mt-12">
+            <motion.h2
+              variants={FADE_UP}
+              className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]"
+            >
+              Trusted by India&rsquo;s Leading{' '}
+              <span className="gradient-text-orange">
+                Food &amp; FMCG Brands.
+              </span>
+            </motion.h2>
+
+            <motion.p
+              variants={FADE_UP}
+              className="mx-auto mt-4 max-w-2xl text-[14.5px] leading-relaxed text-navy-600 sm:text-[15px]"
+            >
+              Bakery chains, dairy brands, sweet houses, beverage makers, QSR
+              networks and FMCG distributors — running live across 10 states
+              and counting.
+            </motion.p>
+          </motion.div>
+
+          {/* Real client artwork rather than TrustStrip's default typographic
+              brand marks — this is the roster page, so the logos themselves
+              carry it. */}
+          <div className="mt-8 lg:mt-10">
             <p className="text-center text-[11px] font-semibold uppercase tracking-[0.22em] text-navy-500">
               Trusted by operations leaders at
             </p>
             <div className="mt-6">
-              <TrustStrip embedded />
+              <TrustStrip embedded logos={CLIENT_LOGOS} />
             </div>
           </div>
 
@@ -140,16 +181,15 @@ export default function ClientsHubPage() {
       </section>
 
       <TestimonialsMarquee
-        eyebrow="Voices from the network"
+        eyebrow="VOICES FROM THE NETWORK"
         title={
           <>
-            Real teams.{' '}
-            <span className="gradient-text-orange">Real outcomes.</span>
+            Real Teams.{' '}
+            <span className="gradient-text-orange">Real Outcomes.</span>
           </>
         }
+        description="What operations, finance and franchise leaders say about running their business on one connected platform."
       />
-
-      {/* <DemoCtaCompact /> */}
     </>
   );
 }

@@ -6,7 +6,6 @@ import Seo, {
   articleJsonLd,
   breadcrumbJsonLd,
 } from '../components/common/Seo.jsx';
-import Breadcrumbs from '../components/common/Breadcrumbs.jsx';
 import Faq from '../components/common/Faq.jsx';
 import {
   getCategory,
@@ -87,10 +86,7 @@ export default function KnowledgebaseArticlePage() {
         <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-navy-950/85 to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-orange-500/40 to-transparent" />
         <Container className="relative w-full">
-          <div className="flex justify-center">
-            <Breadcrumbs items={trail} className="[&_ol]:text-white/80 [&_[aria-current]]:text-white [&_svg]:text-white/50 [&_a:hover]:text-orange-300" />
-          </div>
-          <div className="mx-auto mt-6 max-w-3xl text-center">
+          <div className="mx-auto max-w-3xl text-center">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-300">
               {category.name}
             </p>

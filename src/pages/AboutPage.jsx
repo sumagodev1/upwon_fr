@@ -3,9 +3,10 @@ import { m as motion, AnimatePresence } from 'framer-motion';
 import { Quote, MapPin, ArrowUpRight, Calendar, Users, Boxes, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Container from '../components/ui/Container.jsx';
-import PageHero from '../components/sections/PageHero.jsx';
-import SectionHeading from '../components/ui/SectionHeading.jsx';
-import MasterBrandStatement from '../components/sections/MasterBrandStatement.jsx';
+import AboutHeroSection from '../components/sections/AboutHeroSection.jsx';
+import AboutCtaSection from '../components/sections/AboutCtaSection.jsx';
+import SectionIntro from '../components/ui/SectionIntro.jsx';
+import Eyebrow from '../components/ui/Eyebrow.jsx';
 import { COMPANY, GLOBAL_MARKETS, GLOBAL_READINESS } from '../data/company.js';
 import Seo from '../components/common/Seo.jsx';
 // Brief §19 sections — restored in canonical order so the About page
@@ -156,21 +157,6 @@ function HorizontalTimeline({ items }) {
         </AnimatePresence>
       </div>
 
-      {/* Status hint + auto-progress bar */}
-      <div className="mt-6 flex flex-col items-center gap-2">
-        <div className="relative h-1 w-32 overflow-hidden rounded-full bg-cream-200">
-          <motion.div
-            key={`${current.year}-${paused ? 'p' : 'r'}`}
-            initial={{ width: '0%' }}
-            animate={{ width: paused ? '100%' : '100%' }}
-            transition={{ duration: paused ? 0 : STEP_MS / 1000, ease: 'linear' }}
-            className="h-full bg-orange-500"
-          />
-        </div>
-        <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-navy-500">
-          {paused ? 'Paused · click a year to jump' : 'Auto-playing · hover to pause'}
-        </p>
-      </div>
     </div>
   );
 }
@@ -194,34 +180,10 @@ export default function AboutPage() {
           "Because we've lived in it" framing. Bootstrapped / Nashik-born /
           customer-funded trust callout sits below as a pill row instead of
           being buried in body copy. */}
-      <PageHero
-        breadcrumb={[
-          { label: 'Home', to: '/' },
-          { label: 'About' },
-        ]}
-        eyebrow="About UpWon & Byte Elephants Technologies"
-        title={
-          <>
-            We build software that{' '}
-            <span className="gradient-text-orange">understands your business.</span>{' '}
-            <br />
-            Because we've lived in it.
-          </>
-        }
-        description={
-          // Content update (About Page SEO doc) — old intro:
-          // "UpWon is a bootstrapped, customer-funded ERP and business management software company based in Nashik, India. We build integrated software solutions for food manufacturers, FMCG distributors, and franchise brands — created by industry professionals who have worked on factory floors, managed delivery operations, and run franchise counters long before writing a single line of code."
-          'UpWon is a bootstrapped Food & FMCG ERP built in Nashik by people who ran factory floors, delivery routes and franchise counters long before writing a line of code. Seven integrated platforms — ERP, SFA-DMS, FMS, POS, HRMS, WMS and Vendor Portal — on one data spine.'
-        }
-        bgImages={[
-          'https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1600&q=60',
-          'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1600&q=60',
-          'https://images.unsplash.com/photo-1517433367423-c7e5b0f35086?auto=format&fit=crop&w=1600&q=60',
-        ]}
-      />
+      <AboutHeroSection />
 
       {/* Founder section */}
-      <section className="relative overflow-hidden bg-cream-100 section-pad">
+      <section className="relative overflow-hidden bg-cream-100 py-10 sm:py-12 lg:py-14">
         <div className="absolute inset-0 grid-bg-light opacity-50" />
         <Container className="relative">
           <div className="grid items-center gap-10 lg:grid-cols-[1fr_1.2fr]">
@@ -250,13 +212,18 @@ export default function AboutPage() {
             </motion.div>
 
             <div>
-              <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-orange-600">
-                <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse-slow" />
-                Founder's note
-              </p>
+              {/* Eyebrow component rather than a hand-rolled copy of its
+                  markup, so the founder's note leads the same way every
+                  other section does. */}
+              <Eyebrow>FOUNDER&rsquo;S NOTE</Eyebrow>
+
               <Quote className="mt-6 h-10 w-10 text-orange-500/40" />
-              <p className="mt-3 h-display text-balance text-2xl leading-snug text-navy-950 md:text-3xl">
-                "{COMPANY.founder.quote}"
+
+              {/* A pull-quote, not a section headline — kept one step below
+                  the h2 ramp so it does not compete with the section
+                  headings above and below it. */}
+              <p className="mt-3 h-display text-[22px] leading-[1.25] tracking-tight text-navy-950 sm:text-[26px] lg:text-[28px]">
+                &ldquo;{COMPANY.founder.quote}&rdquo;
               </p>
               {/* Content update (About Page SEO doc) — original founder paragraph:
               <p className="mt-6 text-sm text-charcoal">
@@ -286,17 +253,43 @@ export default function AboutPage() {
       </section>
 
       {/* Timeline */}
-      <section className="relative overflow-hidden bg-white section-pad">
-        <div className="absolute inset-0 grid-bg-light opacity-40" />
+      <section className="relative overflow-hidden bg-white py-10 sm:py-12 lg:py-14">
+        {/* The road illustration runs behind the timeline — Nashik on the
+            left, the skyline and growth arrow on the right, with the journey
+            between them. Anchored to the bottom so the road always meets the
+            section's lower edge however tall the content grows. The artwork
+            is pale enough to sit under the copy without a scrim. */}
+        <picture className="pointer-events-none absolute inset-0">
+          <source
+            media="(min-width: 768px)"
+            srcSet="/images/about_path_desktop.webp"
+            width={2039}
+            height={771}
+          />
+          <img
+            src="/images/about_path_mobile.webp"
+            alt=""
+            aria-hidden="true"
+            width={778}
+            height={2020}
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-cover object-bottom"
+          />
+        </picture>
+
         <Container className="relative">
-          <SectionHeading
-            align="center"
-            variant="light"
+          <SectionIntro
             eyebrow="The journey so far"
-            title="From a Nashik garage to ₹16 Cr in daily transactions."
+            title={
+              <>
+                From a Nashik Garage to{' '}
+                <span className="gradient-text-orange">₹16 Cr in Daily Transactions.</span>
+              </>
+            }
             description="A decade of building inside food businesses — not from the outside in."
           />
-          <div className="mt-14">
+          <div className="mt-8 lg:mt-10">
             <HorizontalTimeline items={TIMELINE} />
           </div>
         </Container>
@@ -312,17 +305,43 @@ export default function AboutPage() {
       <NashikPrideSection />
 
       {/* Byte Elephants company facts */}
-      <section className="relative overflow-hidden bg-cream-200 section-pad">
+      {/* The cream ground gives way to the campus backdrop — the office on
+          the left, the India pin on the right, and open sky through the
+          middle where the copy and fact tiles sit. Pale enough to carry navy
+          type without a scrim. */}
+      <section className="relative overflow-hidden bg-[#eaf3fb] py-10 sm:py-12 lg:py-14">
+        <picture className="pointer-events-none absolute inset-0">
+          <source
+            media="(min-width: 768px)"
+            srcSet="/images/team_desktop.webp"
+            width={2078}
+            height={757}
+          />
+          <img
+            src="/images/team_mobile.webp"
+            alt=""
+            aria-hidden="true"
+            width={731}
+            height={2152}
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-cover object-top"
+          />
+        </picture>
+
         <Container className="relative">
-          <SectionHeading
-            align="center"
-            variant="light"
+          <SectionIntro
             eyebrow="The team behind UpWon"
-            title="Byte Elephants Technologies."
+            title={
+              <>
+                The Product House Behind UpWon —{' '}
+                <span className="gradient-text-orange">Byte Elephants Technologies.</span>
+              </>
+            }
             description={`Premium technology built in India. Vision: ${COMPANY.vision}`}
           />
 
-          <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-cream-300 bg-cream-300 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-8 grid lg:mt-10 gap-px overflow-hidden rounded-2xl border border-cream-300 bg-cream-300 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { icon: Calendar, label: 'Founded', value: COMPANY.founded },
               { icon: MapPin, label: 'HQ', value: COMPANY.hq },
@@ -368,18 +387,23 @@ export default function AboutPage() {
       <DiscoveryCallCta />
 
       {/* Global */}
-      <section className="relative overflow-hidden bg-navy-950 section-pad text-white">
+      <section className="relative overflow-hidden bg-navy-950 py-10 sm:py-12 lg:py-14 text-white">
         <div className="absolute inset-0 grid-bg opacity-40" />
         <div className="pointer-events-none absolute -top-32 left-1/2 h-96 w-[700px] -translate-x-1/2 rounded-full bg-navy-400/[0.1] blur-3xl" />
         <Container className="relative">
-          <p className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-orange-400">
-            Global ambition
-          </p>
-          <h2 className="mt-4 text-center h-display text-3xl text-balance md:text-4xl">
-            Built in India. <span className="gradient-text-orange">Trusted beyond it.</span>
-          </h2>
+          <SectionIntro
+            variant="dark"
+            eyebrow="GLOBAL AMBITION"
+            title={
+              <>
+                Built in India.{' '}
+                <span className="gradient-text-orange">Trusted Beyond It.</span>
+              </>
+            }
+            description="The architecture, the compliance model and the rollout method were built for multi-country operations from the start — here is where that goes next."
+          />
 
-          <div className="mt-12 grid gap-5 lg:grid-cols-2">
+          <div className="mt-8 grid gap-5 lg:mt-10 lg:grid-cols-2">
             <div>
               <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-orange-300">
                 Why UpWon is ready for global markets
@@ -425,8 +449,8 @@ export default function AboutPage() {
         </Container>
       </section>
 
-      <MasterBrandStatement />
-
+      {/* Closing CTA, directly above the footer */}
+      <AboutCtaSection />
     </>
   );
 }

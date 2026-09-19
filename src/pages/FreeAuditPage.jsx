@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { m as motion } from 'framer-motion';
 import { CheckCircle2, ArrowRight, Clock, Shield, FileText, Phone } from 'lucide-react';
 import Container from '../components/ui/Container.jsx';
-import PageHero from '../components/sections/PageHero.jsx';
+import Eyebrow from '../components/ui/Eyebrow.jsx';
+import HeroSlider from '../components/ui/HeroSlider.jsx';
 import Seo from '../components/common/Seo.jsx';
 
 const STEPS = [
@@ -19,6 +20,29 @@ const AUDIT_OUTPUTS = [
   'Recommended UpWon platforms (which, in what order)',
   'Projected go-live timeline and 12-month ROI',
   'Specific industry benchmarks you can compare against',
+];
+
+
+const HERO_ACCENT = '#E85A2A';
+
+/* Hero backdrops — the site’s shared hero artwork. This page has never
+   had dedicated hero photography of its own; drop a local webp in here
+   when it does and nothing else needs to change. */
+const HERO_BG_A = '/images/home_hero_bg.webp';
+
+/* Hero slides — the page's own copy, on the site's standard slider. */
+const HERO_SLIDES = [
+  {
+    eyebrow: 'FREE · 60 MINUTES · NO COMMITMENT',
+    headline:
+      'A Free Operational Audit for Your Food or FMCG Business.',
+    subhead:
+      'Not a sales call. A genuine audit of where your operations are leaking margin — and what a fix would look like. You walk away with a written blueprint either way.',
+    bg: HERO_BG_A,
+    accent: HERO_ACCENT,
+    cta: { label: 'Book the Audit', to: '/demo' },
+    secondaryCta: { label: 'Take the Self-Evaluation', to: '/self-evaluation' },
+  },
 ];
 
 export default function FreeAuditPage() {
@@ -40,22 +64,15 @@ export default function FreeAuditPage() {
         description="Share your setup. Our food-industry team returns a one-page audit with the top 3 operational leaks and the highest-ROI fix to prioritise. No cost, no pitch."
         canonical="https://upwon.in/free-audit"
       />
-      <PageHero
-        breadcrumb={[
-          { label: 'Home', to: '/' },
-          { label: 'Free Business Audit' },
-        ]}
-        eyebrow="Free · 60 minutes · No commitment"
-        title={
-          <>
-            A free operational audit for your <br />
-            <span className="gradient-text-orange">food or FMCG business.</span>
-          </>
-        }
-        description="Not a sales call. A genuine audit of where your operations are leaking margin — and what a fix would look like. You walk away with a written blueprint either way."
+      <HeroSlider
+        slides={HERO_SLIDES}
+        variant="dark"
+        intervalMs={5000}
+        minHeight="min-h-[440px] sm:min-h-[480px] md:min-h-[520px]"
+        topPad="pt-32 md:pt-40"
       />
 
-      <section className="relative overflow-hidden bg-cream-100 section-pad">
+      <section className="relative overflow-hidden bg-cream-100 py-10 sm:py-12 lg:py-14">
         <div className="absolute inset-0 grid-bg-light opacity-50" />
         <Container className="relative">
           <div className="grid gap-10 lg:grid-cols-[1.2fr_1fr]">
@@ -66,7 +83,7 @@ export default function FreeAuditPage() {
                   <div className="grid h-14 w-14 place-items-center rounded-2xl bg-orange-100 text-orange-600">
                     <CheckCircle2 className="h-7 w-7" />
                   </div>
-                  <h2 className="mt-6 h-display text-3xl text-navy-950">
+                  <h2 className="mt-6 h-display text-[22px] leading-[1.2] tracking-tight text-navy-950 sm:text-[26px]">
                     Audit request received.
                   </h2>
                   <p className="mt-3 text-sm text-charcoal">
@@ -76,11 +93,8 @@ export default function FreeAuditPage() {
               ) : (
                 <form onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }} className="space-y-5">
                   <div>
-                    <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-orange-600">
-                      <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse-slow" />
-                      Request your audit
-                    </p>
-                    <h2 className="mt-3 h-display text-2xl text-navy-950 md:text-3xl">
+                    <Eyebrow>REQUEST YOUR AUDIT</Eyebrow>
+                    <h2 className="mt-3 h-display text-[22px] leading-[1.2] tracking-tight text-navy-950 sm:text-[26px]">
                       Tell us about your business.
                     </h2>
                   </div>

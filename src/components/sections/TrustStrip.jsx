@@ -22,6 +22,18 @@ const BRANDS = [
   { name: 'OFC',            color: '#388E3C', font: 'font-display font-extrabold uppercase tracking-widest' },
 ];
 
+// The clients whose real logo files ship with the site. Pass this to
+// `logos` on any page that should show artwork rather than the typographic
+// marks above.
+export const CLIENT_LOGOS = [
+  { name: 'Monginis', src: '/images/testimonial/mongignis.webp' },
+  { name: 'Kaka Halwai', src: '/images/testimonial/kaka%20halwai.webp' },
+  { name: 'U2 Cake', src: '/images/testimonial/u2cake.webp' },
+  { name: 'Winni', src: '/images/testimonial/winni.webp' },
+  { name: 'Gokul', src: '/images/testimonial/gokul.webp' },
+  { name: 'OFC', src: '/images/testimonial/ofc.webp' },
+];
+
 function BrandLogo({ brand }) {
   return (
     <div
@@ -55,10 +67,17 @@ function BrandLogo({ brand }) {
 // of the default typographic brand marks (used on the SFA-DMS page).
 export default function TrustStrip({ embedded = false, logos }) {
   const items = logos && logos.length ? logos : BRANDS;
+
+  // The ticker slides by half the track, so one copy of the set has to be
+  // wider than the viewport or a gap opens at the wrap. A short list (the
+  // real-logo roster is six) is repeated more times to cover that.
+  const copies = items.length < 10 ? 4 : 2;
+  const loop = Array.from({ length: copies }, () => items).flat();
+
   const marquee = (
     <div className="relative overflow-hidden mask-fade-lr">
       <div className="flex w-max items-center gap-4 px-4 animate-ticker md:gap-5">
-        {[...items, ...items].map((b, i) => (
+        {loop.map((b, i) => (
           <BrandLogo key={`${b.name}-${i}`} brand={b} />
         ))}
       </div>

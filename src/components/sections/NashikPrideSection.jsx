@@ -38,11 +38,11 @@ export default function NashikPrideSection() {
               <MapPin className="h-3 w-3" />
               Maharashtra · India
             </p>
- <h2 className="mt-5 font-display text-[36.8px] text-balance font-bold leading-[1.05]">
+            <h2 className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight sm:text-[32px] lg:text-[36.8px]">
               Built in Nashik.{' '}
               <span className="gradient-text-orange">Built for India.</span>
             </h2>
-            <p className="mt-5 max-w-xl text-[15.5px] leading-relaxed text-white/75">
+            <p className="mt-4 max-w-xl text-[14.5px] leading-relaxed text-white/75 sm:text-[15px]">
               Nine years. No VC. Not a single rupee of outside capital. We are
               built and owned by the team that wrote the code, walked the
               factory floors and answered the support calls.

@@ -256,16 +256,19 @@ export default function DeploymentMap() {
             Operational Network
           </span>
 
-          <h3 className="mx-auto mt-5 max-w-2xl text-balance font-display text-3xl font-bold leading-[1.1] text-white md:text-4xl lg:text-5xl">
+          {/* Sits inside the roster section's own h2, so it is sized one step
+              below the site's section headline rather than above it. */}
+          <h3 className="mx-auto mt-3 max-w-2xl h-display text-[26px] leading-[1.12] tracking-tight text-white sm:text-[30px] lg:text-[33px]">
             From Sambhajinagar to{' '}
             <span className="bg-gradient-to-r from-orange-300 via-orange-400 to-orange-500 bg-clip-text text-transparent">
               Kolkata
             </span>
             .
           </h3>
-          <p className="mx-auto mt-4 max-w-xl text-balance text-sm leading-relaxed text-navy-200 md:text-base">
-            Running today across India's food &amp; FMCG belt — from west-coast bakery
-            chains to eastern dairy networks.
+
+          <p className="mx-auto mt-4 max-w-xl text-[14.5px] leading-relaxed text-navy-200 sm:text-[15px]">
+            Running today across India&rsquo;s food &amp; FMCG belt — from
+            west-coast bakery chains to eastern dairy networks.
           </p>
 
           {/* Stat badges */}

@@ -68,11 +68,11 @@ export default function DiscoveryCallCta() {
                 <Clock className="h-3 w-3" />
                 20 minutes · No pitch
               </p>
- <h2 className="mt-4 font-display text-[36.8px] text-balance font-bold leading-[1.1] text-navy-950">
+              <h2 className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]">
                 Ready to work with a team that{' '}
                 <span className="gradient-text-orange">gets your industry?</span>
               </h2>
-              <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-navy-700">
+              <p className="mt-4 max-w-lg text-[14.5px] leading-relaxed text-navy-600 sm:text-[15px]">
                 Book a 20-minute discovery call — no pitch, no slides, no
                 pressure. Just one of our domain leads asking honest questions
                 about your business and telling you whether UpWon is the right

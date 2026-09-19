@@ -3,7 +3,6 @@ import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import Container from '../components/ui/Container.jsx';
 import Seo, { breadcrumbJsonLd } from '../components/common/Seo.jsx';
-import Breadcrumbs from '../components/common/Breadcrumbs.jsx';
 import {
   getCategory,
   getArticlesByCategory,
@@ -66,10 +65,7 @@ export default function KnowledgebaseCategoryPage() {
         <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-navy-950/85 to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-orange-500/40 to-transparent" />
         <Container className="relative w-full">
-          <div className="flex justify-center">
-            <Breadcrumbs items={trail} className="[&_ol]:text-white/80 [&_[aria-current]]:text-white [&_svg]:text-white/50 [&_a:hover]:text-orange-300" />
-          </div>
-          <h1 className="mx-auto mt-6 max-w-3xl text-center h-display text-balance text-[2rem] leading-tight tracking-tightest text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.45)] md:text-[2.6rem]">
+          <h1 className="mx-auto max-w-3xl text-center h-display text-balance text-[2rem] leading-tight tracking-tightest text-white drop-shadow-[0_2px_18px_rgba(0,0,0,0.45)] md:text-[2.6rem]">
             {category.name}
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-center text-balance text-base leading-relaxed text-white/80">

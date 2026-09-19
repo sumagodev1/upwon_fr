@@ -1,9 +1,9 @@
 import { m as motion } from 'framer-motion';
 import { Briefcase, Boxes, Calendar, Heart } from 'lucide-react';
 import Container from '../ui/Container.jsx';
-import SectionHeading from '../ui/SectionHeading.jsx';
+import SectionIntro from '../ui/SectionIntro.jsx';
 import useCountUp from '../../hooks/useCountUp.js';
-import TrustStrip from './TrustStrip.jsx';
+import TrustStrip, { CLIENT_LOGOS } from './TrustStrip.jsx';
 import { PLATFORM_MODULES } from '../../data/modules.js';
 
 // Brief §19.4 — UpWon in Numbers + customer logo strip.
@@ -53,15 +53,13 @@ export default function AboutNumbersSection() {
   return (
     <section
       id="numbers"
-      className="relative overflow-hidden bg-cream-100 section-pad scroll-mt-32"
+      className="relative overflow-hidden bg-cream-100 py-10 sm:py-12 lg:py-14 scroll-mt-32"
     >
       <div className="absolute inset-0 grid-bg-light opacity-40" />
       <div className="pointer-events-none absolute -left-32 top-1/3 h-[420px] w-[420px] rounded-full bg-orange-500/[0.07] blur-[140px]" />
 
       <Container className="relative">
-        <SectionHeading
-          align="center"
-          variant="light"
+        <SectionIntro
           eyebrow="UpWon in numbers"
           title={
             <>
@@ -85,7 +83,7 @@ export default function AboutNumbersSection() {
             Trusted by growing food &amp; FMCG businesses across India
           </p>
           <div className="mt-6">
-            <TrustStrip embedded />
+            <TrustStrip embedded logos={CLIENT_LOGOS} />
           </div>
           <div className="mt-8 text-center">
             <a

@@ -3,6 +3,11 @@ import WhyUpwonHeroSection from '../components/sections/why_upwon_sections/WhyUp
 import WhyUpwonProblemSection from '../components/sections/why_upwon_sections/WhyUpwonProblemSection.jsx';
 import WhyUpwonDifference from '../components/sections/why_upwon_sections/WhyUpwonDifference.jsx';
 import WhyUpwonComparison from '../components/sections/why_upwon_sections/WhyUpwonComparison.jsx';
+import WhyUpwonProductProof from '../components/sections/why_upwon_sections/WhyUpwonProductProof.jsx';
+import WhyUpwonResults from '../components/sections/why_upwon_sections/WhyUpwonResults.jsx';
+import WhyUpwonIndustryTrust from '../components/sections/why_upwon_sections/WhyUpwonIndustryTrust.jsx';
+import WhyUpwonCustomerTrust from '../components/sections/why_upwon_sections/WhyUpwonCustomerTrust.jsx';
+import WhyUpwonCtaSection from '../components/sections/why_upwon_sections/WhyUpwonCtaSection.jsx';
 
 /*
   Why UpWon — /why-upwon
@@ -24,6 +29,11 @@ export default function WhyUpwon() {
       <WhyUpwonProblemSection />
       <WhyUpwonDifference />
       <WhyUpwonComparison />
+      <WhyUpwonProductProof />
+      <WhyUpwonResults />
+      <WhyUpwonIndustryTrust />
+      <WhyUpwonCustomerTrust />
+      <WhyUpwonCtaSection />
     </>
   );
 }

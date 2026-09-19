@@ -2,8 +2,8 @@ import { m as motion } from 'framer-motion';
 import { CheckCircle2, X, ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Container from '../components/ui/Container.jsx';
-import PageHero from '../components/sections/PageHero.jsx';
-import SectionHeading from '../components/ui/SectionHeading.jsx';
+import HeroSlider from '../components/ui/HeroSlider.jsx';
+import SectionIntro from '../components/ui/SectionIntro.jsx';
 import ComparisonMatrix from '../components/sections/ComparisonMatrix.jsx';
 import DemoCtaCompact from '../components/sections/DemoCtaCompact.jsx';
 import Seo from '../components/common/Seo.jsx';
@@ -24,6 +24,29 @@ const WHEN_SAP = [
   'Budget approved at Fortune 500 levels with 18-month rollout patience',
 ];
 
+
+const HERO_ACCENT = '#E85A2A';
+
+/* Hero backdrops — the site’s shared hero artwork. This page has never
+   had dedicated hero photography of its own; drop a local webp in here
+   when it does and nothing else needs to change. */
+const HERO_BG_A = '/images/hero%20bg.webp';
+
+/* Hero slides — the page's own copy, on the site's standard slider. */
+const HERO_SLIDES = [
+  {
+    eyebrow: 'HONEST COMPARISON',
+    headline:
+      'UpWon vs SAP Business One — Where Each One Wins.',
+    subhead:
+      'The straight comparison most vendors won\'t give you. Built for Food & FMCG operators making a real evaluation decision.',
+    bg: HERO_BG_A,
+    accent: HERO_ACCENT,
+    cta: { label: 'Request a Demo', to: '/demo' },
+    secondaryCta: { label: 'Calculate Your ROI', to: '/roi-calculator' },
+  },
+];
+
 export default function VsSapPage() {
   return (
     <>
@@ -32,31 +55,26 @@ export default function VsSapPage() {
         description="Side-by-side on cost, time-to-go-live, food fit and multi-plant — when SAP wins, when UpWon wins. An honest comparison from an Indian food-ERP team."
         canonical="https://upwon.in/compare/upwon-vs-sap"
       />
-      <PageHero
-        breadcrumb={[
-          { label: 'Home', to: '/' },
-          { label: 'Compare' },
-          { label: 'UpWon vs SAP B1' },
-        ]}
-        eyebrow="Honest comparison"
-        title={
-          <>
-            UpWon vs SAP Business One —{' '}
-            <span className="gradient-text-orange">where each one wins.</span>
-          </>
-        }
-        description="The straight comparison most vendors won't give you. Built for Food & FMCG operators making a real evaluation decision."
+      <HeroSlider
+        slides={HERO_SLIDES}
+        variant="dark"
+        intervalMs={5000}
+        minHeight="min-h-[440px] sm:min-h-[480px] md:min-h-[520px]"
+        topPad="pt-32 md:pt-40"
       />
 
       {/* Side-by-side honest cards */}
-      <section className="relative overflow-hidden bg-cream-100 section-pad">
+      <section className="relative overflow-hidden bg-cream-100 py-10 sm:py-12 lg:py-14">
         <div className="absolute inset-0 grid-bg-light opacity-50" />
         <Container className="relative">
-          <SectionHeading
-            align="center"
-            variant="light"
+          <SectionIntro
             eyebrow="The straight answer"
-            title="When UpWon wins. When SAP wins. No spin."
+            title={
+              <>
+                When UpWon Wins. When SAP Wins.{' '}
+                <span className="gradient-text-orange">No Spin.</span>
+              </>
+            }
           />
 
           <div className="mt-14 grid gap-5 lg:grid-cols-2">
@@ -109,18 +127,24 @@ export default function VsSapPage() {
       <ComparisonMatrix subset={['upwon', 'sap', 'netsuite']} />
 
       {/* Cost / Time visual */}
-      <section className="relative overflow-hidden bg-navy-950 py-20 text-white">
+      <section className="relative overflow-hidden bg-navy-950 py-10 text-white sm:py-12 lg:py-14">
         <div className="absolute inset-0 grid-bg opacity-40" />
         <Container className="relative">
-          <p className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-orange-400">
-            The math
-          </p>
-          <h2 className="mt-4 text-center h-display text-3xl text-balance md:text-4xl">
-            SAP B1: 18 months, ₹2-5 Cr to go live. <br />
-            UpWon: <span className="gradient-text-orange">30-45 days, fraction of the cost.</span>
-          </h2>
+          <SectionIntro
+            variant="dark"
+            eyebrow="THE MATH"
+            title={
+              <>
+                SAP B1: 18 Months, ₹2-5 Cr to Go Live.{' '}
+                <span className="gradient-text-orange">
+                  UpWon: 30-45 Days, a Fraction of the Cost.
+                </span>
+              </>
+            }
+            description="The two numbers that decide most evaluations, side by side — before a single feature is compared."
+          />
 
-          <div className="mt-12 grid gap-4 md:grid-cols-3">
+          <div className="mt-8 grid gap-4 lg:mt-10 md:grid-cols-3">
             {[
               { label: 'Time to go-live', upwon: '30-45 days', sap: '12-18 months' },
               { label: 'Customisation depth needed', upwon: 'Near-zero', sap: 'Heavy' },

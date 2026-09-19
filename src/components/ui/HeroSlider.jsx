@@ -39,6 +39,10 @@ export default function HeroSlider({
   minHeight = 'min-h-[320px] sm:min-h-[380px] md:min-h-[500px]',
   topPad = 'pt-32 md:pt-40',
   breadcrumb = null,
+  // Optional node rendered where the CTAs would sit — for heroes whose call
+  // to action is something other than a pair of links (e.g. the Insider
+  // hero's subscribe form). Shown beneath the CTAs when a slide has both.
+  footer = null,
 }) {
   const [idx, setIdx] = useState(0);
 
@@ -185,6 +189,7 @@ export default function HeroSlider({
           </AnimatePresence>
 
           {/* CTAs */}
+          {(slide.cta || slide.secondaryCta) && (
           <AnimatePresence mode="wait">
             <motion.div
               key={`c-${idx}`}
@@ -215,6 +220,20 @@ export default function HeroSlider({
               )}
             </motion.div>
           </AnimatePresence>
+          )}
+
+          {/* Custom call to action — rendered in the CTAs' place when a hero
+              needs something other than a pair of links. */}
+          {footer && (
+            <motion.div
+              initial={mounted ? { opacity: 0, y: 10 } : false}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
+              className="mt-8 flex flex-col items-center"
+            >
+              {footer}
+            </motion.div>
+          )}
 
           {/* Micro-trust line — optional, sits just beneath the CTAs. */}
           {slide.microTrust && (

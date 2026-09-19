@@ -18,9 +18,9 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import Container from '../components/ui/Container.jsx';
-import PageHero from '../components/sections/PageHero.jsx';
+import ResourcesHeroSection from '../components/sections/ResourcesHeroSection.jsx';
 import Seo from '../components/common/Seo.jsx';
-import SectionHeading from '../components/ui/SectionHeading.jsx';
+import SectionIntro from '../components/ui/SectionIntro.jsx';
 import { submitLead } from '../lib/leads.js';
 import {
   SORTED_POSTS,
@@ -147,25 +147,7 @@ export default function ResourcesPage() {
         description="Operator playbooks, named case studies, comparison guides and the monthly Operations Insider — for food and FMCG leaders evaluating ERP."
         canonical="https://upwon.in/resources"
       />
-      <PageHero
-        breadcrumb={[
-          { label: 'Home', to: '/' },
-          { label: 'Resources' },
-        ]}
-        eyebrow="Resources for Food & FMCG Business Leaders"
-        title={
-          <>
-            Insights, playbooks and{' '}
-            <span className="gradient-text-orange">real benchmarks.</span>
-          </>
-        }
-        description="Blog, case studies, gated guides, a video shelf and the tools to build your business case — one hub for every content asset."
-        bgImages={[
-          'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=1600&q=60',
-          'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=60',
-          'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1600&q=60',
-        ]}
-      />
+      <ResourcesHeroSection />
 
       {/* ========== §18.1 HUB TAB NAV — Blog | Case Studies | Guides | Videos | Tools ========== */}
       <section className="relative bg-white pt-8">
@@ -249,19 +231,22 @@ export default function ResourcesPage() {
       </section>
 
       {/* ========== BLOG GRID — latest posts by topic (brief §18.2) ========== */}
-      <section className="relative overflow-hidden bg-cream-100 section-pad">
+      <section className="relative overflow-hidden bg-cream-100 py-10 sm:py-12 lg:py-14">
         <div className="absolute inset-0 grid-bg-light opacity-40" />
         <Container className="relative">
-          <SectionHeading
-            align="center"
-            variant="light"
+          <SectionIntro
             eyebrow="Insights by Topic"
-            title="Six lanes. Pick what you operate in."
+            title={
+              <>
+                Six Lanes.{' '}
+                <span className="gradient-text-orange">Pick What You Operate In.</span>
+              </>
+            }
             description="Operator playbooks, not vendor marketing — each lane built from real deployments."
           />
 
           {/* Category filter tabs */}
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
             <button
               type="button"
               onClick={() => setActiveCat('all')}
@@ -302,7 +287,7 @@ export default function ResourcesPage() {
           </div>
 
           {/* Post grid — deep-links each card to /blog/:slug */}
-          <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid gap-5 lg:mt-10 md:grid-cols-2 lg:grid-cols-3">
             {filteredArticles.map((p, i) => {
               const cat = getCategory(p.category);
               return (
@@ -349,17 +334,20 @@ export default function ResourcesPage() {
       </section>
 
       {/* ========== 5 GATED GUIDES (brief §18.3) ========== */}
-      <section id="guides" className="relative overflow-hidden bg-white section-pad scroll-mt-24">
+      <section id="guides" className="relative overflow-hidden bg-white py-10 sm:py-12 lg:py-14 scroll-mt-24">
         <Container className="relative">
-          <SectionHeading
-            align="center"
-            variant="light"
+          <SectionIntro
             eyebrow="In-depth Guides for Decision-Makers"
-            title="Five guides every food & FMCG operator should download."
+            title={
+              <>
+                Five Guides Every Food &amp; FMCG Operator{' '}
+                <span className="gradient-text-orange">Should Download.</span>
+              </>
+            }
             description="Email-gated PDFs. Built from real deployments — not generic vendor whitepapers."
           />
 
-          <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid gap-5 lg:mt-10 md:grid-cols-2 lg:grid-cols-3">
             {GUIDES.map((g, i) => (
               <motion.div
                 key={g.title}
@@ -391,18 +379,21 @@ export default function ResourcesPage() {
       </section>
 
       {/* ========== FILTERABLE CASE STUDY GRID (brief §18.4) ========== */}
-      <section id="case-studies" className="relative overflow-hidden bg-cream-100 section-pad scroll-mt-24">
+      <section id="case-studies" className="relative overflow-hidden bg-cream-100 py-10 sm:py-12 lg:py-14 scroll-mt-24">
         <div className="absolute inset-0 grid-bg-light opacity-40" />
         <Container className="relative">
-          <SectionHeading
-            align="center"
-            variant="light"
+          <SectionIntro
             eyebrow="Real Businesses. Real Results."
-            title="Filter customer stories by platform or industry."
+            title={
+              <>
+                Filter Customer Stories by{' '}
+                <span className="gradient-text-orange">Platform or Industry.</span>
+              </>
+            }
           />
 
           {/* Filter chips */}
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
             {CASE_FILTERS.map((f) => {
               const active = caseFilter === f.id;
               return (
@@ -423,7 +414,7 @@ export default function ResourcesPage() {
           </div>
 
           {/* Case study grid */}
-          <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid gap-5 lg:mt-10 md:grid-cols-2 lg:grid-cols-3">
             {filteredCases.map((cs, i) => (
               <motion.div
                 key={cs.id}
@@ -459,15 +450,18 @@ export default function ResourcesPage() {
       </section>
 
       {/* ========== VIDEO LIBRARY (brief §18.5) ========== */}
-      <section id="videos" className="relative overflow-hidden bg-white section-pad scroll-mt-24">
+      <section id="videos" className="relative overflow-hidden bg-white py-10 sm:py-12 lg:py-14 scroll-mt-24">
         <Container className="relative">
-          <SectionHeading
-            align="center"
-            variant="light"
+          <SectionIntro
             eyebrow="Watch UpWon in Action"
-            title="Product tours, customer stories and recorded webinars."
+            title={
+              <>
+                Product Tours, Customer Stories and{' '}
+                <span className="gradient-text-orange">Recorded Webinars.</span>
+              </>
+            }
           />
-          <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-8 grid gap-5 lg:mt-10 md:grid-cols-2 lg:grid-cols-4">
             {VIDEOS.map((v, i) => (
               <motion.div
                 key={v.title}

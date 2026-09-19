@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { m as motion, AnimatePresence } from 'framer-motion';
-import { Linkedin, Compass, HeartHandshake, Wand2, Flag, X, MapPin, Briefcase } from 'lucide-react';
+import { Linkedin, Compass, X, MapPin, Briefcase, ArrowRight } from 'lucide-react';
 import Container from '../ui/Container.jsx';
-import SectionHeading from '../ui/SectionHeading.jsx';
+import SectionIntro from '../ui/SectionIntro.jsx';
 import { COMPANY } from '../../data/company.js';
 
 // Brief §19.3 — Team & Values.
@@ -82,30 +82,44 @@ const TEAM = [
   },
 ];
 
+/*
+  Each principle carries its own illustration. NOTE: the India file ships
+  with a space in its name (`about_built_for _india.webp`), so its path is
+  percent-encoded — rename the file and this entry together if it is ever
+  cleaned up.
+*/
 const VALUES = [
   {
-    icon: Compass,
     name: 'Domain First',
     desc: 'We hire food, FMCG and franchise operators before software engineers. Code follows domain — not the other way around.',
     accent: '#E85A2A',
+    image: '/images/about_domain_first.webp',
+    width: 1326,
+    height: 1187,
   },
   {
-    icon: HeartHandshake,
     name: 'Customer Obsession',
     desc: 'Every product manager spends one week per quarter inside a customer\'s plant, route or outlet. No proxy. No second-hand stories.',
     accent: '#00695C',
+    image: '/images/about_customer_obession.webp',
+    width: 1490,
+    height: 1056,
   },
   {
-    icon: Wand2,
     name: 'Simplicity at Scale',
     desc: 'A 200-outlet franchise should be as easy to run as the first one. We refuse complexity that the owner-MD cannot operate herself.',
     accent: '#1565C0',
+    image: '/images/about_simplicity_at_scale.webp',
+    width: 1536,
+    height: 1024,
   },
   {
-    icon: Flag,
     name: 'India-Built for India',
     desc: 'Built in Nashik for the way India\'s food belt actually runs — multi-lingual, offline-first, statutory-native. No retrofits from Western templates.',
     accent: '#C8820A',
+    image: '/images/about_built_for%20_india.webp',
+    width: 1536,
+    height: 1024,
   },
 ];
 
@@ -116,13 +130,11 @@ export default function TeamAndValuesSection() {
   return (
     <section
       id="team"
-      className="relative overflow-hidden bg-white section-pad scroll-mt-32"
+      className="relative overflow-hidden bg-white py-10 sm:py-12 lg:py-14 scroll-mt-32"
     >
       <div className="absolute inset-0 grid-bg-light opacity-30" />
       <Container className="relative">
-        <SectionHeading
-          align="center"
-          variant="light"
+        <SectionIntro
           eyebrow="People & principles"
           title={
             <>
@@ -133,8 +145,11 @@ export default function TeamAndValuesSection() {
           description="Six senior leads. Four operating principles. Each principle is a hiring filter, a product gate and a customer promise — not a poster."
         />
 
-        {/* Team grid */}
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+        {/* Team grid — people, not cards: a tinted avatar circle, the name,
+            the role, and a "Learn more" control that opens the profile. No
+            border or panel, so the row reads as a set of faces rather than a
+            set of tiles. */}
+        <div className="mt-10 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:mt-12 lg:grid-cols-3">
           {TEAM.map((member, i) => {
             const initials = member.name
               .split(' ')
@@ -154,76 +169,50 @@ export default function TeamAndValuesSection() {
                   delay: i * 0.06,
                   ease: [0.22, 1, 0.36, 1],
                 }}
-                onClick={() => setSelected(member)}
-                role="button"
-                tabIndex={0}
-                aria-haspopup="dialog"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setSelected(member);
-                  }
-                }}
-                className="group relative cursor-pointer overflow-hidden rounded-2xl border bg-white p-5 shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-enterprise focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40"
-                style={{
-                  borderColor: member.pinned ? `${member.accent}55` : '#E4E7EB',
-                  boxShadow: member.pinned
-                    ? `0 16px 40px -16px ${member.accent}55`
-                    : undefined,
-                }}
+                className="group flex min-w-0 flex-col items-start"
               >
-                {member.pinned && (
+                {/* Headshots are not ready, so the monogram stands in — a
+                    tint of the person's accent rather than a solid block, to
+                    sit as quietly as a photograph would. */}
+                <span
+                  aria-hidden="true"
+                  className="grid h-[96px] w-[96px] shrink-0 place-items-center rounded-full transition-transform duration-500 group-hover:-translate-y-0.5"
+                  style={{ background: `${member.accent}1f` }}
+                >
                   <span
-                    className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.18em] text-white"
-                    style={{ background: member.accent }}
-                  >
-                    Founder
-                  </span>
-                )}
-                <div className="flex items-start gap-4">
-                  <div
-                    className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl font-display text-lg font-bold text-white"
-                    style={{
-                      background: `linear-gradient(135deg, ${member.accent}, ${member.accent}cc)`,
-                      boxShadow: `0 8px 18px -8px ${member.accent}66`,
-                    }}
-                  >
-                    {initials}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-display text-[15px] font-bold leading-tight text-navy-950">
-                      {member.name}
-                    </p>
-                    <p
-                      className="mt-0.5 text-[11.5px] font-semibold uppercase tracking-[0.16em]"
-                      style={{ color: member.accent }}
-                    >
-                      {member.role}
-                    </p>
-                    <p className="mt-1.5 text-[14px] leading-snug text-navy-600">
-                      {member.based} · {member.domain}
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center justify-between">
-                  <a
-                    href={member.linkedin}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    aria-label={`${member.name} on LinkedIn`}
-                    className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-navy-500 transition-colors hover:text-navy-900"
-                  >
-                    <Linkedin className="h-3.5 w-3.5" />
-                    Connect on LinkedIn
-                  </a>
-                  <span
-                    className="inline-flex items-center gap-1 text-[14px] font-semibold opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    className="h-display text-[26px] font-bold tracking-tight"
                     style={{ color: member.accent }}
                   >
-                    View profile →
+                    {initials}
                   </span>
-                </div>
+                </span>
+
+                <h3 className="mt-5 h-display text-[19px] font-bold leading-snug tracking-tight text-navy-950">
+                  {member.name}
+                </h3>
+
+                <p className="mt-2 text-[14.5px] leading-relaxed text-navy-700">
+                  {member.role}
+                </p>
+
+                <p className="mt-1 text-[13px] leading-relaxed text-navy-500">
+                  {member.based} · {member.domain}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => setSelected(member)}
+                  aria-haspopup="dialog"
+                  className="mt-4 inline-flex items-center gap-2 rounded-full text-[13.5px] font-semibold text-navy-950 transition-colors duration-300 hover:text-orange-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40"
+                >
+                  Learn more
+                  <span
+                    aria-hidden="true"
+                    className="grid h-6 w-6 place-items-center rounded-full bg-navy-950 text-white transition-colors duration-300 group-hover:bg-orange-500"
+                  >
+                    <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.4} />
+                  </span>
+                </button>
               </motion.article>
             );
           })}
@@ -254,37 +243,50 @@ export default function TeamAndValuesSection() {
                   delay: i * 0.08,
                   ease: [0.22, 1, 0.36, 1],
                 }}
-                className="group relative overflow-hidden rounded-2xl border bg-white p-6 shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-enterprise"
+                className="group relative flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-enterprise"
                 style={{ borderColor: '#E4E7EB' }}
               >
                 {/* Accent top edge on hover */}
                 <span
-                  className="pointer-events-none absolute inset-x-0 -top-px h-px scale-x-0 origin-left transition-transform duration-500 group-hover:scale-x-100"
+                  className="pointer-events-none absolute inset-x-0 -top-px z-10 h-px scale-x-0 origin-left transition-transform duration-500 group-hover:scale-x-100"
                   style={{
                     background: `linear-gradient(90deg, transparent, ${v.accent}, transparent)`,
                   }}
                 />
+
+                {/* Illustration. The files are drawn on white with no ground
+                    of their own, so the card supplies a tint of the accent
+                    behind them and `object-contain` keeps each scene whole. */}
                 <div
-                  className="grid h-12 w-12 place-items-center rounded-2xl transition-transform duration-500 group-hover:scale-110"
-                  style={{
-                    background: `${v.accent}14`,
-                    color: v.accent,
-                  }}
+                  className="relative w-full overflow-hidden"
+                  style={{ background: `${v.accent}0f` }}
                 >
-                  <v.icon className="h-5 w-5" strokeWidth={1.75} />
+                  <img
+                    src={v.image}
+                    alt=""
+                    aria-hidden="true"
+                    width={v.width}
+                    height={v.height}
+                    loading="lazy"
+                    decoding="async"
+                    className="mx-auto block aspect-[4/3] w-full object-contain p-3 transition-transform duration-500 group-hover:scale-[1.04]"
+                  />
                 </div>
-                <p
-                  className="mt-5 text-[10.5px] font-bold uppercase tracking-[0.22em]"
-                  style={{ color: v.accent }}
-                >
-                  Principle {String(i + 1).padStart(2, '0')}
-                </p>
-                <h4 className="mt-1 font-display text-[18px] font-bold leading-tight text-navy-950">
-                  {v.name}
-                </h4>
-                <p className="mt-2 text-[14px] leading-relaxed text-navy-700">
-                  {v.desc}
-                </p>
+
+                <div className="flex flex-1 flex-col p-6">
+                  <p
+                    className="text-[10.5px] font-bold uppercase tracking-[0.22em]"
+                    style={{ color: v.accent }}
+                  >
+                    Principle {String(i + 1).padStart(2, '0')}
+                  </p>
+                  <h4 className="mt-1 font-display text-[18px] font-bold leading-tight text-navy-950">
+                    {v.name}
+                  </h4>
+                  <p className="mt-2 text-[14px] leading-relaxed text-navy-700">
+                    {v.desc}
+                  </p>
+                </div>
               </motion.article>
             ))}
           </div>

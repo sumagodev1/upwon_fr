@@ -3,7 +3,7 @@ import { m as motion } from 'framer-motion';
 import { Quote, MapPin, ArrowRight, ArrowUpRight, CheckCircle2, AlertOctagon } from 'lucide-react';
 import Container from '../components/ui/Container.jsx';
 import PageHero from '../components/sections/PageHero.jsx';
-import SectionHeading from '../components/ui/SectionHeading.jsx';
+import SectionIntro from '../components/ui/SectionIntro.jsx';
 import DemoCtaCompact from '../components/sections/DemoCtaCompact.jsx';
 import Seo, { breadcrumbJsonLd } from '../components/common/Seo.jsx';
 import { ALL_CASES, MONGINIS_CASE } from '../data/caseStudy.js';
@@ -33,11 +33,6 @@ export default function CaseStudyPage() {
         ])}
       />
       <PageHero
-        breadcrumb={[
-          { label: 'Home', to: '/' },
-          { label: 'Clients', to: '/clients' },
-          { label: caseData.brand },
-        ]}
         eyebrow={`${caseData.category} · ${caseData.location}`}
         title={<span>{caseData.headline}</span>}
         description={caseData.challengeOneLine}
@@ -77,15 +72,22 @@ export default function CaseStudyPage() {
       </section>
 
       {/* The Challenge */}
-      <section className="relative overflow-hidden bg-white section-pad">
+      <section className="relative overflow-hidden bg-white py-10 sm:py-12 lg:py-14">
         <div className="absolute inset-0 grid-bg-light opacity-40" />
         <Container className="relative">
           <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr]">
             <div>
-              <SectionHeading
-                variant="light"
-                eyebrow="The Challenge"
-                title={`What ${caseData.brand} faced before UpWon.`}
+              <SectionIntro
+                align="left"
+                eyebrow="THE CHALLENGE"
+                title={
+                  <>
+                    What {caseData.brand}{' '}
+                    <span className="gradient-text-orange">
+                      Faced Before UpWon.
+                    </span>
+                  </>
+                }
                 description={caseData.hero.challenge}
               />
             </div>
@@ -114,15 +116,18 @@ export default function CaseStudyPage() {
       </section>
 
       {/* Why UpWon */}
-      <section className="relative overflow-hidden bg-cream-100 section-pad">
+      <section className="relative overflow-hidden bg-cream-100 py-10 sm:py-12 lg:py-14">
         <div className="absolute inset-0 grid-bg-light opacity-50" />
         <Container className="relative">
           <div className="mx-auto max-w-3xl text-center">
-            <SectionHeading
-              align="center"
-              variant="light"
-              eyebrow="Why UpWon"
-              title="How the decision was made."
+            <SectionIntro
+              eyebrow="WHY UPWON"
+              title={
+                <>
+                  How the Decision{' '}
+                  <span className="gradient-text-orange">Was Made.</span>
+                </>
+              }
             />
             <p className="mt-8 rounded-2xl border border-cream-300 bg-white p-7 text-left text-base leading-relaxed text-navy-900 shadow-sm md:p-10 md:text-lg">
               {caseData.whyUpwon}
@@ -132,15 +137,20 @@ export default function CaseStudyPage() {
       </section>
 
       {/* What we delivered */}
-      <section className="relative overflow-hidden bg-white section-pad">
+      <section className="relative overflow-hidden bg-white py-10 sm:py-12 lg:py-14">
         <Container className="relative">
-          <SectionHeading
-            align="center"
-            variant="light"
-            eyebrow="The Transformation"
-            title={`What we delivered for ${caseData.brand}.`}
+          <SectionIntro
+            eyebrow="THE TRANSFORMATION"
+            title={
+              <>
+                What We Delivered for{' '}
+                <span className="gradient-text-orange">
+                  {caseData.brand}.
+                </span>
+              </>
+            }
           />
-          <div className="mt-14">
+          <div className="mt-8 lg:mt-10">
             <div className="grid gap-px overflow-hidden rounded-2xl border border-cream-300 bg-cream-300 lg:grid-cols-5">
               {caseData.timeline.map((t, i) => (
                 <motion.div
@@ -209,7 +219,7 @@ export default function CaseStudyPage() {
       )}
 
       {/* Testimonial */}
-      <section className="relative overflow-hidden bg-cream-200 section-pad">
+      <section className="relative overflow-hidden bg-cream-200 py-10 sm:py-12 lg:py-14">
         <Container className="relative">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -238,16 +248,21 @@ export default function CaseStudyPage() {
       </section>
 
       {/* Closing CTA + other cases */}
-      <section className="relative overflow-hidden bg-white py-20">
+      <section className="relative overflow-hidden bg-white py-10 sm:py-12 lg:py-14">
         <Container className="relative">
-          <SectionHeading
-            align="center"
-            variant="light"
-            eyebrow="More UpWon stories"
-            title={`If ${caseData.brand} did this with UpWon — what could you do?`}
+          <SectionIntro
+            eyebrow="MORE UPWON STORIES"
+            title={
+              <>
+                If {caseData.brand} Did This With UpWon —{' '}
+                <span className="gradient-text-orange">
+                  What Could You Do?
+                </span>
+              </>
+            }
           />
 
-          <div className="mt-12 grid gap-5 md:grid-cols-2">
+          <div className="mt-8 grid gap-5 lg:mt-10 md:grid-cols-2">
             {others.map((c) => (
               <Link
                 key={c.slug}
