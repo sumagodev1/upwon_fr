@@ -1,9 +1,10 @@
-import { lazy, Suspense, memo, useEffect, useRef, useState } from 'react';
+import { Fragment, lazy, Suspense, memo, useEffect, useRef, useState } from 'react';
 import { m as motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight, ArrowRight, PlayCircle, Download, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import HeroRatingPills from '../../../../components/shared/HeroRatingPills/HeroRatingPills.jsx';
+import { fetchHeroSlides } from '../../../../lib/homePage.js';
 // import HeroProductShowcase from '../HeroProductShowcase/HeroProductShowcase.jsx';
 
 // BrochureModal pulls the full module catalogue (modules.js, ~150 KB) and only
@@ -27,49 +28,79 @@ function ScribbleAccent({ children }) {
   return <span className="gradient-text-orange">{children}</span>;
 }
 
-// 4 hero slides per brief §1.2 — one per primary ICP (Food Mfg / FMCG Dist /
-// Franchise) plus a Universal closer that names the full platform suite for
-// first-time visitors who don't yet self-identify into an ICP.
-const HERO_SLIDES = [
+/*
+ * Headlines are data, not JSX.
+ *
+ * The admin panel authors them as plain text with two markers — a newline for
+ * a line break, `**like this**` for the orange accent — and the API parses
+ * that server-side into `headingLines`: an array of lines, each an array of
+ * `{ text, accent }` parts. The static slides below are written in that same
+ * shape, so CMS-driven and built-in slides share one render path and this file
+ * never has to know the marker grammar.
+ */
+function Headline({ lines }) {
+  return lines.map((parts, lineIndex) => (
+    <Fragment key={lineIndex}>
+      {lineIndex > 0 && <br />}
+      {parts.map((part, partIndex) =>
+        part.accent ? (
+          <ScribbleAccent key={partIndex}>{part.text}</ScribbleAccent>
+        ) : (
+          <Fragment key={partIndex}>{part.text}</Fragment>
+        ),
+      )}
+    </Fragment>
+  ));
+}
+
+// The built-in slides — one per primary ICP (Food Mfg / FMCG Dist / Franchise)
+// per brief §1.2, plus a Universal closer and the AI slide.
+//
+// These are the fallback, not the source of truth: slides published through
+// the admin panel's Home Page → Hero Section tab replace them at runtime. They
+// still matter — they are what the SSG build bakes into the prerendered HTML
+// and what renders if the API is unreachable — so they should stay a coherent
+// carousel in their own right.
+const FALLBACK_SLIDES = [
   {
     eyebrow: 'Byte Elephant Presents',
-    image:
-      'https://images.unsplash.com/photo-1517433367423-c7e5b0f35086?auto=format&fit=crop&w=1280&q=45',
-    headline: (
-      <>
-        UPWON - The Business Growth Suite for <br />
-        Ambitious Food & FMCG Brands{' '}
-        <ScribbleAccent>Ready to Scale</ScribbleAccent>.
-      </>
-    ),
+    image: null,
+    headingLines: [
+      [{ text: 'UPWON - The Business Growth Suite for', accent: false }],
+      [
+        { text: 'Ambitious Food & FMCG Brands ', accent: false },
+        { text: 'Ready to Scale', accent: true },
+        { text: '.', accent: false },
+      ],
+    ],
     subhead:
       'Built for food manufacturers, FMCG distributors and franchise brands to run production, distribution, HR and finance in one integrated platform.',
   },
   {
     eyebrow: 'Built for Franchises',
-    image:
-      'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1280&q=45',
-    headline: (
-      <>
-        The 200th outlet should be as easy to  <br />
-        run as the first.Now{' '}
-        <ScribbleAccent>run the system</ScribbleAccent> that makes it so.
-      </>
-    ),
+    image: null,
+    headingLines: [
+      [{ text: 'The 200th outlet should be as easy to', accent: false }],
+      [
+        { text: 'run as the first.Now ', accent: false },
+        { text: 'run the system', accent: true },
+        { text: ' that makes it so.', accent: false },
+      ],
+    ],
     subhead:
       'Open new outlets without operational challenges. One platform handles ordering, kitchens, billing, royalty and Swiggy / Zomato — across every store.',
   },
   {
     eyebrow: 'Scale Without Chaos',
-    image:
-      'https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1280&q=45',
-    headline: (
-      <>
-        Your 200th outlet should feel like your first. <br />
-        Now run the{' '}
-        <ScribbleAccent>system that makes</ScribbleAccent> it so.
-      </>
-    ),
+    image: null,
+    headingLines: [
+      [{ text: 'Your 200th outlet should feel like your first.', accent: false }],
+      [
+        { text: 'Now run the ', accent: false },
+        { text: 'system that makes', accent: true },
+        { text: ' it so.', accent: false },
+      ],
+    ],
     subhead:
       'Open new outlets without opening new headaches. One platform handles ordering, kitchens, billing, royalty and Swiggy / Zomato — across every store.',
   },
@@ -78,30 +109,32 @@ const HERO_SLIDES = [
     // ICP lane. Names every platform so the deck-of-cards Module Showcase
     // below feels like a natural continuation.
     eyebrow: 'One Suite · Seven Platforms',
-    image:
-      'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1280&q=45',
-    headline: (
-      <>
-        One suite. Seven platforms. <br />
-        Your{' '}
-        <ScribbleAccent>entire business</ScribbleAccent> — covered.
-      </>
-    ),
+    image: null,
+    headingLines: [
+      [{ text: 'One suite. Seven platforms.', accent: false }],
+      [
+        { text: 'Your ', accent: false },
+        { text: 'entire business', accent: true },
+        { text: ' — covered.', accent: false },
+      ],
+    ],
     subhead:
       'ERP · SFA-DMS · FMS · POS · HRMS · WMS · Vendor Portal — choose one platform or deploy the full suite. Same data layer, zero reconciliation.',
   },
   {
     // AI slide — the headline carries the animated text shine (see `shine`).
     eyebrow: 'AI-Powered From Day One',
-    image:
-      'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1280&q=45',
+    image: null,
     shine: true,
-    headline: <>AI Built-In. Smarter From Day One.</>,
+    headingLines: [[{ text: 'AI Built-In. Smarter From Day One.', accent: false }]],
     subhead:
       'Every solution ships with AI at its core — automating workflows, surfacing insights and helping you make faster, smarter decisions from day one.',
   },
 ];
 const SLIDE_MS = 5000;
+
+// The house background, used for any slide that carries no image of its own.
+const DEFAULT_BACKGROUND = '/images/home_hero_bg.webp';
 
 // --- Static foreground blocks ---------------------------------------------
 // These don't depend on the rotating slide/shot indices, so they're each their
@@ -252,6 +285,35 @@ const HeroTrustMarquee = memo(function HeroTrustMarquee() {
 export default function HeroSection() {
   const [bgIdx, setBgIdx] = useState(0);
 
+  /*
+   * Slides start as the built-in set and are swapped for the published ones
+   * once the API answers.
+   *
+   * It has to be this way round rather than fetch-then-render: this headline is
+   * the LCP element and the page is prerendered, so the first paint must come
+   * from markup that already exists. A spinner or an empty hero here would
+   * push LCP out by a whole network round trip on every visit.
+   *
+   * fetchHeroSlides resolves to null for every failure — unconfigured, offline,
+   * CORS, nothing published — and null means "keep what you have", so the
+   * homepage cannot be blanked by the CMS being down.
+   */
+  const [slides, setSlides] = useState(FALLBACK_SLIDES);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchHeroSlides().then((published) => {
+      if (cancelled || !published) return;
+      setSlides(published);
+      // The new set may be shorter than the old one, and restarting the
+      // carousel is also the least jarring way to show the swap.
+      setBgIdx(0);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Only run the auto-advancing background slideshow while the hero is on screen
   // and the visitor hasn't asked for reduced motion. Off-screen / reduced-motion
   // visitors get a static hero — no wasted rAF/repaint work hurting TBT.
@@ -289,27 +351,81 @@ export default function HeroSection() {
   }, []);
 
   useEffect(() => {
-    if (!animate) return;
+    if (!animate || slides.length < 2) return;
     const id = setInterval(() => {
-      setBgIdx((i) => (i + 1) % HERO_SLIDES.length);
+      setBgIdx((i) => (i + 1) % slides.length);
     }, SLIDE_MS);
     return () => clearInterval(id);
-  }, [animate]);
+  }, [animate, slides.length]);
 
-  const slide = HERO_SLIDES[bgIdx];
+  // Guarded against a shrinking slide set: the swap above resets the index, but
+  // this keeps the render safe in the frame before that lands.
+  const slide = slides[bgIdx] ?? slides[0];
 
   return (
     <section
       ref={sectionRef}
       className="relative overflow-hidden bg-white pt-24 pb-8 md:pt-32 md:pb-10"
     >
-      {/* Static background image. */}
-      <img
-        src="/images/home_hero_bg.webp"
-        alt=""
-        aria-hidden
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-      />
+      {/*
+        Background — the slide's own image when it has one, otherwise the house
+        background. Crossfades with the slide rather than cutting, so a rotation
+        reads as one movement with the headline above it.
+
+        AnimatePresence runs in its default (sync) mode here, not `wait`: both
+        images have to be mounted at once for a crossfade, and they are stacked
+        by `absolute inset-0`. The text blocks below use `wait` because there
+        the outgoing copy must clear out before the incoming copy arrives.
+      */}
+      <AnimatePresence initial={false}>
+        <motion.div
+          key={slide.image ?? DEFAULT_BACKGROUND}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8, ease: 'easeInOut' }}
+          className="pointer-events-none absolute inset-0"
+        >
+          {/*
+            <picture> rather than a JS breakpoint: the browser picks the source
+            before any of our code runs, so a phone never downloads the wide
+            desktop file at all — and it works identically in the prerendered
+            HTML, where no JS has executed yet.
+
+            The desktop file is a heavily cropped sliver on a narrow screen
+            (object-cover fills from the centre), which is why authoring a
+            portrait crop is worth a separate field. Without one, the <source>
+            is simply omitted and the desktop image serves every viewport.
+          */}
+          <picture>
+            {slide.mobileImage && (
+              <source media="(max-width: 767px)" srcSet={slide.mobileImage} />
+            )}
+            <img
+              src={slide.image ?? DEFAULT_BACKGROUND}
+              alt=""
+              aria-hidden
+              // The background is the largest paint in the hero, so it is
+              // fetched eagerly and at high priority rather than lazily.
+              loading="eager"
+              fetchPriority="high"
+              className="h-full w-full object-cover"
+            />
+          </picture>
+        </motion.div>
+      </AnimatePresence>
+
+      {/*
+        Legibility scrim, only over an uploaded image.
+
+        The headline is dark navy, and the house background is a pale pattern it
+        reads cleanly against. An arbitrary uploaded photo is not, so a white
+        veil keeps the contrast usable whatever gets published. The house
+        background does not get one - it would only wash out the pattern.
+      */}
+      {slide.image && (
+        <div className="pointer-events-none absolute inset-0 bg-white/70" />
+      )}
 
       {/* Subtle grid overlay on top of the image */}
       <div className="pointer-events-none absolute inset-0 grid-bg-light opacity-50" />
@@ -350,7 +466,7 @@ export default function HeroSection() {
                   slide.shine ? 'text-shine' : 'text-navy-800'
                 }`}
               >
-                {slide.headline}
+                <Headline lines={slide.headingLines} />
               </motion.h1>
             </AnimatePresence>
           </div>
