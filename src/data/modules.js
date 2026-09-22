@@ -23,7 +23,7 @@ import {
   HrmsLifecycleArc,
   WmsPrecisionGrid,
   VmsPartnershipBridge,
-} from '../components/icons/PlatformIcons.jsx';
+} from '../components/shared/PlatformIcons/PlatformIcons.jsx';
 
 // Per-platform identity colours from the UpWon Platform Identity Brief (v1.0).
 // Each platform owns a distinct accent that always pairs with UpWon Navy #1E2461

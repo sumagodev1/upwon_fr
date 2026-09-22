@@ -23,7 +23,7 @@ import {
   HrmsLifecycleArc,
   WmsPrecisionGrid,
   VmsPartnershipBridge,
-} from '../components/icons/PlatformIcons.jsx';
+} from '../components/shared/PlatformIcons/PlatformIcons.jsx';
 
 export const PLATFORM_NAV = [
   {

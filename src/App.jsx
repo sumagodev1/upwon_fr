@@ -1,5 +1,5 @@
 // import { lazy } from 'react';
-// import RootLayout from './components/layout/RootLayout.jsx';
+// import RootLayout from './components/shared/RootLayout/RootLayout.jsx';
 
 // // Route table for vite-react-ssg (react-router-dom data routes). Exported as a
 // // plain RouteRecord[] — ViteReactSSG (src/main.jsx) builds the router from it,
@@ -13,21 +13,21 @@
 // // shared shell (Navbar/Footer/Outlet + the LazyMotion + ScrollToTop providers).
 
 // // Awareness
-// const HomePage = lazy(() => import('./pages/HomePage.jsx'));
-// const WhatIsUpwonPage = lazy(() => import('./pages/WhatIsUpwonPage.jsx'));
-// const ResourcesPage = lazy(() => import('./pages/ResourcesPage.jsx'));
-// const BlogPage = lazy(() => import('./pages/BlogPage.jsx'));
-// const BlogPostPage = lazy(() => import('./pages/BlogPostPage.jsx'));
-// const KnowledgebasePage = lazy(() => import('./pages/KnowledgebasePage.jsx'));
+// const HomePage = lazy(() => import('./pages/Home/HomePage.jsx'));
+// const WhatIsUpwonPage = lazy(() => import('./pages/WhatIsUpwon/WhatIsUpwonPage.jsx'));
+// const ResourcesPage = lazy(() => import('./pages/Resources/ResourcesPage.jsx'));
+// const BlogPage = lazy(() => import('./pages/Blog/BlogPage.jsx'));
+// const BlogPostPage = lazy(() => import('./pages/BlogPost/BlogPostPage.jsx'));
+// const KnowledgebasePage = lazy(() => import('./pages/Knowledgebase/KnowledgebasePage.jsx'));
 
 // // Knowledgebase category + article are `:slug` routes prerendered via
 // // getStaticPaths. Same react-router `lazy` (not `Component: lazy(...)`) pattern
 // // as the product/industry microsites — see the note above productPageLazy.
 // const kbCategoryLazy = async () => ({
-//   Component: (await import('./pages/KnowledgebaseCategoryPage.jsx')).default,
+//   Component: (await import('./pages/KnowledgebaseCategory/KnowledgebaseCategoryPage.jsx')).default,
 // });
 // const kbArticleLazy = async () => ({
-//   Component: (await import('./pages/KnowledgebaseArticlePage.jsx')).default,
+//   Component: (await import('./pages/KnowledgebaseArticle/KnowledgebaseArticlePage.jsx')).default,
 // });
 
 // // Consideration — Products & Industries microsites.
@@ -39,7 +39,7 @@
 // // function is always stringifiable, so multi-path prerender works — and it still
 // // code-splits one chunk per page exactly like the others.
 // const productPageLazy = async () => ({
-//   Component: (await import('./pages/ProductPage.jsx')).default,
+//   Component: (await import('./pages/Product/ProductPage.jsx')).default,
 // });
 // // Each platform has its own dedicated page file (not the shared dynamic
 // // ProductPage). They render on the same /products/<slug> URLs via more-specific
@@ -47,64 +47,64 @@
 // // custom; the other six wrap the shared engine with a fixed slug for now, and
 // // can diverge into custom sections later.
 // const erpPageLazy = async () => ({
-//   Component: (await import('./pages/ErpPage.jsx')).default,
+//   Component: (await import('./pages/Erp/ErpPage.jsx')).default,
 // });
 // const sfaDmsPageLazy = async () => ({
-//   Component: (await import('./pages/SfaDmsPage.jsx')).default,
+//   Component: (await import('./pages/SfaDms/SfaDmsPage.jsx')).default,
 // });
 // const fmsPageLazy = async () => ({
-//   Component: (await import('./pages/FmsPage.jsx')).default,
+//   Component: (await import('./pages/Fms/FmsPage.jsx')).default,
 // });
 // const posPageLazy = async () => ({
-//   Component: (await import('./pages/PosPage.jsx')).default,
+//   Component: (await import('./pages/Pos/PosPage.jsx')).default,
 // });
 // const hrmsPageLazy = async () => ({
-//   Component: (await import('./pages/HrmsPage.jsx')).default,
+//   Component: (await import('./pages/Hrms/HrmsPage.jsx')).default,
 // });
 // const wmsPageLazy = async () => ({
-//   Component: (await import('./pages/WmsPage.jsx')).default,
+//   Component: (await import('./pages/Wms/WmsPage.jsx')).default,
 // });
 // const vendorPortalPageLazy = async () => ({
-//   Component: (await import('./pages/VmsPage.jsx')).default,
+//   Component: (await import('./pages/Vms/VmsPage.jsx')).default,
 // });
 
 // // Platforms that have their own dedicated page/route. Excluded from the dynamic
 // // products/:slug fallback's prerender so paths don't clash.
 // const DEDICATED_PRODUCT_SLUGS = ['erp', 'sfa-dms', 'fms', 'pos', 'hrms', 'wms', 'vendor-portal'];
 // const industryPageLazy = async () => ({
-//   Component: (await import('./pages/IndustryPage.jsx')).default,
+//   Component: (await import('./pages/Industry/IndustryPage.jsx')).default,
 // });
-// const IndustriesHubPage = lazy(() => import('./pages/IndustriesPage.jsx'));
+// const IndustriesHubPage = lazy(() => import('./pages/Industries/IndustriesPage.jsx'));
 
 // // Evaluation
-// const ClientsHubPage = lazy(() => import('./pages/ClientsHubPage.jsx'));
-// const CaseStudyPage = lazy(() => import('./pages/CaseStudyPage.jsx'));
-// const RoiCalculatorPage = lazy(() => import('./pages/RoiCalculatorPage.jsx'));
-// const SelfEvaluationPage = lazy(() => import('./pages/SelfEvaluationPage.jsx'));
-// const VsSapPage = lazy(() => import('./pages/VsSapPage.jsx'));
-// const VsTallyPage = lazy(() => import('./pages/VsTallyPage.jsx'));
-// const VsOthersPage = lazy(() => import('./pages/VsOthersPage.jsx'));
-// const NewsletterPage = lazy(() => import('./pages/NewsletterPage.jsx'));
-// const NewsletterStoryPage = lazy(() => import('./pages/NewsletterStoryPage.jsx'));
-// const ImplementationPage = lazy(() => import('./pages/ImplementationPage.jsx'));
-// const WhyUpwonPage = lazy(() => import('./pages/WhyUpwonPage.jsx'));
+// const ClientsHubPage = lazy(() => import('./pages/ClientsHub/ClientsHubPage.jsx'));
+// const CaseStudyPage = lazy(() => import('./pages/CaseStudy/CaseStudyPage.jsx'));
+// const RoiCalculatorPage = lazy(() => import('./pages/RoiCalculator/RoiCalculatorPage.jsx'));
+// const SelfEvaluationPage = lazy(() => import('./pages/SelfEvaluation/SelfEvaluationPage.jsx'));
+// const VsSapPage = lazy(() => import('./pages/VsSap/VsSapPage.jsx'));
+// const VsTallyPage = lazy(() => import('./pages/VsTally/VsTallyPage.jsx'));
+// const VsOthersPage = lazy(() => import('./pages/VsOthers/VsOthersPage.jsx'));
+// const NewsletterPage = lazy(() => import('./pages/Newsletter/NewsletterPage.jsx'));
+// const NewsletterStoryPage = lazy(() => import('./pages/NewsletterStory/NewsletterStoryPage.jsx'));
+// const ImplementationPage = lazy(() => import('./pages/Implementation/ImplementationPage.jsx'));
+// const WhyUpwonPage = lazy(() => import('./components/_unused/WhyUpwonPage.jsx'));
 
 // // Decision
-// const DemoPage = lazy(() => import('./pages/DemoPage.jsx'));
-// const FreeAuditPage = lazy(() => import('./pages/FreeAuditPage.jsx'));
-// const PricingPage = lazy(() => import('./pages/PricingPage.jsx'));
-// const PartnersPage = lazy(() => import('./pages/PartnersPage.jsx'));
-// const ProposalPage = lazy(() => import('./pages/ProposalPage.jsx'));
+// const DemoPage = lazy(() => import('./pages/Demo/DemoPage.jsx'));
+// const FreeAuditPage = lazy(() => import('./pages/FreeAudit/FreeAuditPage.jsx'));
+// const PricingPage = lazy(() => import('./pages/Pricing/PricingPage.jsx'));
+// const PartnersPage = lazy(() => import('./pages/Partners/PartnersPage.jsx'));
+// const ProposalPage = lazy(() => import('./pages/Proposal/ProposalPage.jsx'));
 
 // // Platform legacy (keep for redirect target)
-// const PlatformPage = lazy(() => import('./pages/PlatformPage.jsx'));
+// const PlatformPage = lazy(() => import('./pages/Platform/PlatformPage.jsx'));
 
 // // Support
-// const AboutPage = lazy(() => import('./pages/AboutPage.jsx'));
-// const CareersPage = lazy(() => import('./pages/CareersPage.jsx'));
-// const ContactPage = lazy(() => import('./pages/ContactPage.jsx'));
-// const LegalPage = lazy(() => import('./pages/LegalPage.jsx'));
-// const NotFoundPage = lazy(() => import('./pages/NotFoundPage.jsx'));
+// const AboutPage = lazy(() => import('./pages/About/AboutPage.jsx'));
+// const CareersPage = lazy(() => import('./pages/Careers/CareersPage.jsx'));
+// const ContactPage = lazy(() => import('./pages/Contact/ContactPage.jsx'));
+// const LegalPage = lazy(() => import('./pages/Legal/LegalPage.jsx'));
+// const NotFoundPage = lazy(() => import('./pages/NotFound/NotFoundPage.jsx'));
 
 // export const routes = [
 //   {
@@ -112,21 +112,21 @@
 //     element: <RootLayout />,
 //     // `entry` lets vite-react-ssg attribute the layout's styles correctly during
 //     // prerender, avoiding any pre-hydration flash of unstyled content.
-//     entry: 'src/components/layout/RootLayout.jsx',
+//     entry: 'src/components/shared/RootLayout/RootLayout.jsx',
 //     children: [
 //       // Awareness
-//       { index: true, Component: HomePage, entry: 'src/pages/HomePage.jsx' },
+//       { index: true, Component: HomePage, entry: 'src/pages/Home/HomePage.jsx' },
 //       { path: 'what-is-upwon', Component: WhatIsUpwonPage },
 //       { path: 'resources', Component: ResourcesPage },
 //       { path: 'blog', Component: BlogPage },
 //       { path: 'blog/:slug', Component: BlogPostPage },
 
 //       // Knowledgebase — hub + category + article (all prerendered).
-//       { path: 'knowledgebase', Component: KnowledgebasePage, entry: 'src/pages/KnowledgebasePage.jsx' },
+//       { path: 'knowledgebase', Component: KnowledgebasePage, entry: 'src/pages/Knowledgebase/KnowledgebasePage.jsx' },
 //       {
 //         path: 'knowledgebase/:categorySlug',
 //         lazy: kbCategoryLazy,
-//         entry: 'src/pages/KnowledgebaseCategoryPage.jsx',
+//         entry: 'src/pages/KnowledgebaseCategory/KnowledgebaseCategoryPage.jsx',
 //         getStaticPaths: async () => {
 //           const { KB_CATEGORIES } = await import('./data/knowledgebase.js');
 //           return KB_CATEGORIES.map((c) => `/knowledgebase/${c.slug}`);
@@ -135,7 +135,7 @@
 //       {
 //         path: 'knowledgebase/:categorySlug/:articleSlug',
 //         lazy: kbArticleLazy,
-//         entry: 'src/pages/KnowledgebaseArticlePage.jsx',
+//         entry: 'src/pages/KnowledgebaseArticle/KnowledgebaseArticlePage.jsx',
 //         getStaticPaths: async () => {
 //           const { KB_ARTICLES } = await import('./data/knowledgebase.js');
 //           return KB_ARTICLES.map((a) => `/knowledgebase/${a.category}/${a.slug}`);
@@ -149,49 +149,49 @@
 //       {
 //         path: 'products/erp',
 //         lazy: erpPageLazy,
-//         entry: 'src/pages/ErpPage.jsx',
+//         entry: 'src/pages/Erp/ErpPage.jsx',
 //         getStaticPaths: async () => ['/products/erp'],
 //       },
 //       {
 //         path: 'products/sfa-dms',
 //         lazy: sfaDmsPageLazy,
-//         entry: 'src/pages/SfaDmsPage.jsx',
+//         entry: 'src/pages/SfaDms/SfaDmsPage.jsx',
 //         getStaticPaths: async () => ['/products/sfa-dms'],
 //       },
 //       {
 //         path: 'products/fms',
 //         lazy: fmsPageLazy,
-//         entry: 'src/pages/FmsPage.jsx',
+//         entry: 'src/pages/Fms/FmsPage.jsx',
 //         getStaticPaths: async () => ['/products/fms'],
 //       },
 //       {
 //         path: 'products/pos',
 //         lazy: posPageLazy,
-//         entry: 'src/pages/PosPage.jsx',
+//         entry: 'src/pages/Pos/PosPage.jsx',
 //         getStaticPaths: async () => ['/products/pos'],
 //       },
 //       {
 //         path: 'products/hrms',
 //         lazy: hrmsPageLazy,
-//         entry: 'src/pages/HrmsPage.jsx',
+//         entry: 'src/pages/Hrms/HrmsPage.jsx',
 //         getStaticPaths: async () => ['/products/hrms'],
 //       },
 //       {
 //         path: 'products/wms',
 //         lazy: wmsPageLazy,
-//         entry: 'src/pages/WmsPage.jsx',
+//         entry: 'src/pages/Wms/WmsPage.jsx',
 //         getStaticPaths: async () => ['/products/wms'],
 //       },
 //       {
 //         path: 'products/vendor-portal',
 //         lazy: vendorPortalPageLazy,
-//         entry: 'src/pages/VmsPage.jsx',
+//         entry: 'src/pages/Vms/VmsPage.jsx',
 //         getStaticPaths: async () => ['/products/vendor-portal'],
 //       },
 //       {
 //         path: 'products/:slug',
 //         lazy: productPageLazy,
-//         entry: 'src/pages/ProductPage.jsx',
+//         entry: 'src/pages/Product/ProductPage.jsx',
 //         // Dynamic fallback for any slug without its own dedicated page yet. The
 //         // seven dedicated platforms are excluded so their prerendered paths
 //         // don't clash. The data import is dynamic so modules.js stays OUT of the
@@ -209,7 +209,7 @@
 //       {
 //         path: 'industries/:slug',
 //         lazy: industryPageLazy,
-//         entry: 'src/pages/IndustryPage.jsx',
+//         entry: 'src/pages/Industry/IndustryPage.jsx',
 //         // Same prerender treatment as the product microsites (see above).
 //         getStaticPaths: async () => {
 //           const { INDUSTRIES } = await import('./data/industries.js');
@@ -259,7 +259,7 @@
 
 
 import { lazy } from 'react';
-import RootLayout from './components/layout/RootLayout.jsx';
+import RootLayout from './components/shared/RootLayout/RootLayout.jsx';
 
 // Route table for vite-react-ssg (react-router-dom data routes). Exported as a
 // plain RouteRecord[] — ViteReactSSG (src/main.jsx) builds the router from it,
@@ -272,23 +272,23 @@ import RootLayout from './components/layout/RootLayout.jsx';
 // Awareness
 // ============================================================
 
-const HomePage = lazy(() => import('./pages/HomePage.jsx'));
-const WhatIsUpwonPage = lazy(() => import('./pages/WhatIsUpwonPage.jsx'));
-const ResourcesPage = lazy(() => import('./pages/ResourcesPage.jsx'));
-const BlogPage = lazy(() => import('./pages/BlogPage.jsx'));
-const BlogPostPage = lazy(() => import('./pages/BlogPostPage.jsx'));
-const KnowledgebasePage = lazy(() => import('./pages/KnowledgebasePage.jsx'));
+const HomePage = lazy(() => import('./pages/Home/HomePage.jsx'));
+const WhatIsUpwonPage = lazy(() => import('./pages/WhatIsUpwon/WhatIsUpwonPage.jsx'));
+const ResourcesPage = lazy(() => import('./pages/Resources/ResourcesPage.jsx'));
+const BlogPage = lazy(() => import('./pages/Blog/BlogPage.jsx'));
+const BlogPostPage = lazy(() => import('./pages/BlogPost/BlogPostPage.jsx'));
+const KnowledgebasePage = lazy(() => import('./pages/Knowledgebase/KnowledgebasePage.jsx'));
 
 // ============================================================
 // Knowledgebase
 // ============================================================
 
 const kbCategoryLazy = async () => ({
-  Component: (await import('./pages/KnowledgebaseCategoryPage.jsx')).default,
+  Component: (await import('./pages/KnowledgebaseCategory/KnowledgebaseCategoryPage.jsx')).default,
 });
 
 const kbArticleLazy = async () => ({
-  Component: (await import('./pages/KnowledgebaseArticlePage.jsx')).default,
+  Component: (await import('./pages/KnowledgebaseArticle/KnowledgebaseArticlePage.jsx')).default,
 });
 
 // ============================================================
@@ -296,37 +296,37 @@ const kbArticleLazy = async () => ({
 // ============================================================
 
 const productPageLazy = async () => ({
-  Component: (await import('./pages/ProductPage.jsx')).default,
+  Component: (await import('./pages/Product/ProductPage.jsx')).default,
 });
 
 // Dedicated Product Pages
 
 const erpPageLazy = async () => ({
-  Component: (await import('./pages/ErpPage.jsx')).default,
+  Component: (await import('./pages/Erp/ErpPage.jsx')).default,
 });
 
 const sfaDmsPageLazy = async () => ({
-  Component: (await import('./pages/SfaDmsPage.jsx')).default,
+  Component: (await import('./pages/SfaDms/SfaDmsPage.jsx')).default,
 });
 
 const fmsPageLazy = async () => ({
-  Component: (await import('./pages/FmsPage.jsx')).default,
+  Component: (await import('./pages/Fms/FmsPage.jsx')).default,
 });
 
 const posPageLazy = async () => ({
-  Component: (await import('./pages/PosPage.jsx')).default,
+  Component: (await import('./pages/Pos/PosPage.jsx')).default,
 });
 
 const hrmsPageLazy = async () => ({
-  Component: (await import('./pages/HrmsPage.jsx')).default,
+  Component: (await import('./pages/Hrms/HrmsPage.jsx')).default,
 });
 
 const wmsPageLazy = async () => ({
-  Component: (await import('./pages/WmsPage.jsx')).default,
+  Component: (await import('./pages/Wms/WmsPage.jsx')).default,
 });
 
 const vendorPortalPageLazy = async () => ({
-  Component: (await import('./pages/VmsPage.jsx')).default,
+  Component: (await import('./pages/Vms/VmsPage.jsx')).default,
 });
 
 // Platforms that have their own dedicated page/route.
@@ -346,71 +346,71 @@ const DEDICATED_PRODUCT_SLUGS = [
 
 // Shared dynamic Industry page
 const industryPageLazy = async () => ({
-  Component: (await import('./pages/IndustryPage.jsx')).default,
+  Component: (await import('./pages/Industry/IndustryPage.jsx')).default,
 });
 
 // Industries Hub
-const IndustriesHubPage = lazy(() => import('./pages/IndustriesPage.jsx'));
+const IndustriesHubPage = lazy(() => import('./pages/Industries/IndustriesPage.jsx'));
 
 // Dedicated Industry Pages
 
 const bakeryConfectioneryPageLazy = async () => ({
   Component: (
-    await import('./pages/industry_pages/BakeryandConfectionery.jsx')
+    await import('./pages/BakeryandConfectionery/BakeryandConfectionery.jsx')
   ).default,
 });
 
 const fmcgDistributionPageLazy = async () => ({
   Component: (
-    await import('./pages/industry_pages/FmcgDistribution.jsx')
+    await import('./pages/FmcgDistribution/FmcgDistribution.jsx')
   ).default,
 });
 
 const sweetsNamkeenPageLazy = async () => ({
   Component: (
-    await import('./pages/industry_pages/SweetsAndNamkeen.jsx')
+    await import('./pages/SweetsAndNamkeen/SweetsAndNamkeen.jsx')
   ).default,
 });
 
 const foodProcessingPageLazy = async () => ({
   Component: (
-    await import('./pages/industry_pages/FoodProcessing.jsx')
+    await import('./pages/FoodProcessing/FoodProcessing.jsx')
   ).default,
 });
 
 const nonFoodFmcgPageLazy = async () => ({
   Component: (
-    await import('./pages/industry_pages/NonFoodFmcg.jsx')
+    await import('./pages/NonFoodFmcg/NonFoodFmcg.jsx')
   ).default,
 });
 
 const dairyIceCreamPageLazy = async () => ({
   Component: (
-    await import('./pages/industry_pages/DairyAndIceCream.jsx')
+    await import('./pages/DairyAndIceCream/DairyAndIceCream.jsx')
   ).default,
 });
 
 const qsrFranchisePageLazy = async () => ({
   Component: (
-    await import('./pages/industry_pages/QsrFranchise.jsx')
+    await import('./pages/QsrFranchise/QsrFranchise.jsx')
   ).default,
 });
 
 const spicesAgroPageLazy = async () => ({
   Component: (
-    await import('./pages/industry_pages/SpicesAgro.jsx')
+    await import('./pages/SpicesAgro/SpicesAgro.jsx')
   ).default,
 });
 
 const beveragesPageLazy = async () => ({
   Component: (
-    await import('./pages/industry_pages/Beverages.jsx')
+    await import('./pages/Beverages/Beverages.jsx')
   ).default,
 });
 
 const engineeringPageLazy = async () => ({
   Component: (
-    await import('./pages/industry_pages/EngineeringManufacturing.jsx')
+    await import('./pages/EngineeringManufacturing/EngineeringManufacturing.jsx')
   ).default,
 });
 
@@ -432,45 +432,45 @@ const DEDICATED_INDUSTRY_SLUGS = [
 // Evaluation
 // ============================================================
 
-const ClientsHubPage = lazy(() => import('./pages/ClientsHubPage.jsx'));
-const CaseStudyPage = lazy(() => import('./pages/CaseStudyPage.jsx'));
-const RoiCalculatorPage = lazy(() => import('./pages/RoiCalculatorPage.jsx'));
-const SelfEvaluationPage = lazy(() => import('./pages/SelfEvaluationPage.jsx'));
-const VsSapPage = lazy(() => import('./pages/VsSapPage.jsx'));
-const VsTallyPage = lazy(() => import('./pages/VsTallyPage.jsx'));
-const VsOthersPage = lazy(() => import('./pages/VsOthersPage.jsx'));
-const NewsletterPage = lazy(() => import('./pages/NewsletterPage.jsx'));
-const NewsletterStoryPage = lazy(() => import('./pages/NewsletterStoryPage.jsx'));
-const ImplementationPage = lazy(() => import('./pages/ImplementationPage.jsx'));
+const ClientsHubPage = lazy(() => import('./pages/ClientsHub/ClientsHubPage.jsx'));
+const CaseStudyPage = lazy(() => import('./pages/CaseStudy/CaseStudyPage.jsx'));
+const RoiCalculatorPage = lazy(() => import('./pages/RoiCalculator/RoiCalculatorPage.jsx'));
+const SelfEvaluationPage = lazy(() => import('./pages/SelfEvaluation/SelfEvaluationPage.jsx'));
+const VsSapPage = lazy(() => import('./pages/VsSap/VsSapPage.jsx'));
+const VsTallyPage = lazy(() => import('./pages/VsTally/VsTallyPage.jsx'));
+const VsOthersPage = lazy(() => import('./pages/VsOthers/VsOthersPage.jsx'));
+const NewsletterPage = lazy(() => import('./pages/Newsletter/NewsletterPage.jsx'));
+const NewsletterStoryPage = lazy(() => import('./pages/NewsletterStory/NewsletterStoryPage.jsx'));
+const ImplementationPage = lazy(() => import('./pages/Implementation/ImplementationPage.jsx'));
 // Rebuilt Why UpWon page. The previous version is still on disk at
 // ./pages/WhyUpwonPage.jsx if any of it needs to be brought back.
-const WhyUpwon = lazy(() => import('./pages/WhyUpwon.jsx'));
+const WhyUpwon = lazy(() => import('./pages/WhyUpwon/WhyUpwon.jsx'));
 
 // ============================================================
 // Decision
 // ============================================================
 
-const DemoPage = lazy(() => import('./pages/DemoPage.jsx'));
-const FreeAuditPage = lazy(() => import('./pages/FreeAuditPage.jsx'));
-const PricingPage = lazy(() => import('./pages/PricingPage.jsx'));
-const PartnersPage = lazy(() => import('./pages/PartnersPage.jsx'));
-const ProposalPage = lazy(() => import('./pages/ProposalPage.jsx'));
+const DemoPage = lazy(() => import('./pages/Demo/DemoPage.jsx'));
+const FreeAuditPage = lazy(() => import('./pages/FreeAudit/FreeAuditPage.jsx'));
+const PricingPage = lazy(() => import('./pages/Pricing/PricingPage.jsx'));
+const PartnersPage = lazy(() => import('./pages/Partners/PartnersPage.jsx'));
+const ProposalPage = lazy(() => import('./pages/Proposal/ProposalPage.jsx'));
 
 // ============================================================
 // Platform Legacy
 // ============================================================
 
-const PlatformPage = lazy(() => import('./pages/PlatformPage.jsx'));
+const PlatformPage = lazy(() => import('./pages/Platform/PlatformPage.jsx'));
 
 // ============================================================
 // Support
 // ============================================================
 
-const AboutPage = lazy(() => import('./pages/AboutPage.jsx'));
-const CareersPage = lazy(() => import('./pages/CareersPage.jsx'));
-const ContactPage = lazy(() => import('./pages/ContactPage.jsx'));
-const LegalPage = lazy(() => import('./pages/LegalPage.jsx'));
-const NotFoundPage = lazy(() => import('./pages/NotFoundPage.jsx'));
+const AboutPage = lazy(() => import('./pages/About/AboutPage.jsx'));
+const CareersPage = lazy(() => import('./pages/Careers/CareersPage.jsx'));
+const ContactPage = lazy(() => import('./pages/Contact/ContactPage.jsx'));
+const LegalPage = lazy(() => import('./pages/Legal/LegalPage.jsx'));
+const NotFoundPage = lazy(() => import('./pages/NotFound/NotFoundPage.jsx'));
 
 // ============================================================
 // Routes
@@ -482,7 +482,7 @@ export const routes = [
     element: <RootLayout />,
 
     // Entry lets vite-react-ssg attribute the layout's styles correctly.
-    entry: 'src/components/layout/RootLayout.jsx',
+    entry: 'src/components/shared/RootLayout/RootLayout.jsx',
 
     children: [
 
@@ -493,7 +493,7 @@ export const routes = [
       {
         index: true,
         Component: HomePage,
-        entry: 'src/pages/HomePage.jsx',
+        entry: 'src/pages/Home/HomePage.jsx',
       },
 
       {
@@ -523,13 +523,13 @@ export const routes = [
       {
         path: 'knowledgebase',
         Component: KnowledgebasePage,
-        entry: 'src/pages/KnowledgebasePage.jsx',
+        entry: 'src/pages/Knowledgebase/KnowledgebasePage.jsx',
       },
 
       {
         path: 'knowledgebase/:categorySlug',
         lazy: kbCategoryLazy,
-        entry: 'src/pages/KnowledgebaseCategoryPage.jsx',
+        entry: 'src/pages/KnowledgebaseCategory/KnowledgebaseCategoryPage.jsx',
 
         getStaticPaths: async () => {
           const { KB_CATEGORIES } = await import(
@@ -545,7 +545,7 @@ export const routes = [
       {
         path: 'knowledgebase/:categorySlug/:articleSlug',
         lazy: kbArticleLazy,
-        entry: 'src/pages/KnowledgebaseArticlePage.jsx',
+        entry: 'src/pages/KnowledgebaseArticle/KnowledgebaseArticlePage.jsx',
 
         getStaticPaths: async () => {
           const { KB_ARTICLES } = await import(
@@ -571,49 +571,49 @@ export const routes = [
       {
         path: 'products/erp',
         lazy: erpPageLazy,
-        entry: 'src/pages/ErpPage.jsx',
+        entry: 'src/pages/Erp/ErpPage.jsx',
         getStaticPaths: async () => ['/products/erp'],
       },
 
       {
         path: 'products/sfa-dms',
         lazy: sfaDmsPageLazy,
-        entry: 'src/pages/SfaDmsPage.jsx',
+        entry: 'src/pages/SfaDms/SfaDmsPage.jsx',
         getStaticPaths: async () => ['/products/sfa-dms'],
       },
 
       {
         path: 'products/fms',
         lazy: fmsPageLazy,
-        entry: 'src/pages/FmsPage.jsx',
+        entry: 'src/pages/Fms/FmsPage.jsx',
         getStaticPaths: async () => ['/products/fms'],
       },
 
       {
         path: 'products/pos',
         lazy: posPageLazy,
-        entry: 'src/pages/PosPage.jsx',
+        entry: 'src/pages/Pos/PosPage.jsx',
         getStaticPaths: async () => ['/products/pos'],
       },
 
       {
         path: 'products/hrms',
         lazy: hrmsPageLazy,
-        entry: 'src/pages/HrmsPage.jsx',
+        entry: 'src/pages/Hrms/HrmsPage.jsx',
         getStaticPaths: async () => ['/products/hrms'],
       },
 
       {
         path: 'products/wms',
         lazy: wmsPageLazy,
-        entry: 'src/pages/WmsPage.jsx',
+        entry: 'src/pages/Wms/WmsPage.jsx',
         getStaticPaths: async () => ['/products/wms'],
       },
 
       {
         path: 'products/vendor-portal',
         lazy: vendorPortalPageLazy,
-        entry: 'src/pages/VmsPage.jsx',
+        entry: 'src/pages/Vms/VmsPage.jsx',
         getStaticPaths: async () => ['/products/vendor-portal'],
       },
 
@@ -621,7 +621,7 @@ export const routes = [
       {
         path: 'products/:slug',
         lazy: productPageLazy,
-        entry: 'src/pages/ProductPage.jsx',
+        entry: 'src/pages/Product/ProductPage.jsx',
 
         getStaticPaths: async () => {
           const { PLATFORM_MODULES } = await import(
@@ -655,7 +655,7 @@ export const routes = [
       {
         path: 'industries/bakery-and-confectionery',
         lazy: bakeryConfectioneryPageLazy,
-        entry: 'src/pages/industry_pages/BakeryandConfectionery.jsx',
+        entry: 'src/pages/BakeryandConfectionery/BakeryandConfectionery.jsx',
         getStaticPaths: async () => [
           '/industries/bakery-and-confectionery',
         ],
@@ -664,7 +664,7 @@ export const routes = [
       {
         path: 'industries/fmcg-distribution',
         lazy: fmcgDistributionPageLazy,
-        entry: 'src/pages/industry_pages/FmcgDistribution.jsx',
+        entry: 'src/pages/FmcgDistribution/FmcgDistribution.jsx',
         getStaticPaths: async () => [
           '/industries/fmcg-distribution',
         ],
@@ -673,7 +673,7 @@ export const routes = [
       {
         path: 'industries/sweets-namkeen',
         lazy: sweetsNamkeenPageLazy,
-        entry: 'src/pages/industry_pages/SweetsAndNamkeen.jsx',
+        entry: 'src/pages/SweetsAndNamkeen/SweetsAndNamkeen.jsx',
         getStaticPaths: async () => [
           '/industries/sweets-namkeen',
         ],
@@ -682,7 +682,7 @@ export const routes = [
       {
         path: 'industries/food-processing',
         lazy: foodProcessingPageLazy,
-        entry: 'src/pages/industry_pages/FoodProcessing.jsx',
+        entry: 'src/pages/FoodProcessing/FoodProcessing.jsx',
         getStaticPaths: async () => [
           '/industries/food-processing',
         ],
@@ -691,7 +691,7 @@ export const routes = [
       {
         path: 'industries/non-food-fmcg',
         lazy: nonFoodFmcgPageLazy,
-        entry: 'src/pages/industry_pages/NonFoodFmcg.jsx',
+        entry: 'src/pages/NonFoodFmcg/NonFoodFmcg.jsx',
         getStaticPaths: async () => [
           '/industries/non-food-fmcg',
         ],
@@ -700,7 +700,7 @@ export const routes = [
       {
         path: 'industries/dairy',
         lazy: dairyIceCreamPageLazy,
-        entry: 'src/pages/industry_pages/DairyAndIceCream.jsx',
+        entry: 'src/pages/DairyAndIceCream/DairyAndIceCream.jsx',
         getStaticPaths: async () => [
           '/industries/dairy',
         ],
@@ -709,7 +709,7 @@ export const routes = [
       {
         path: 'industries/qsr-franchise',
         lazy: qsrFranchisePageLazy,
-        entry: 'src/pages/industry_pages/QsrFranchise.jsx',
+        entry: 'src/pages/QsrFranchise/QsrFranchise.jsx',
         getStaticPaths: async () => [
           '/industries/qsr-franchise',
         ],
@@ -718,7 +718,7 @@ export const routes = [
       {
         path: 'industries/spices-agro',
         lazy: spicesAgroPageLazy,
-        entry: 'src/pages/industry_pages/SpicesAgro.jsx',
+        entry: 'src/pages/SpicesAgro/SpicesAgro.jsx',
         getStaticPaths: async () => [
           '/industries/spices-agro',
         ],
@@ -727,7 +727,7 @@ export const routes = [
       {
         path: 'industries/beverage',
         lazy: beveragesPageLazy,
-        entry: 'src/pages/industry_pages/Beverages.jsx',
+        entry: 'src/pages/Beverages/Beverages.jsx',
         getStaticPaths: async () => [
           '/industries/beverage',
         ],
@@ -736,7 +736,7 @@ export const routes = [
       {
         path: 'industries/engineering-manufacturing',
         lazy: engineeringPageLazy,
-        entry: 'src/pages/industry_pages/EngineeringManufacturing.jsx',
+        entry: 'src/pages/EngineeringManufacturing/EngineeringManufacturing.jsx',
         getStaticPaths: async () => [
           '/industries/engineering-manufacturing',
         ],
@@ -751,7 +751,7 @@ export const routes = [
       {
         path: 'industries/:slug',
         lazy: industryPageLazy,
-        entry: 'src/pages/IndustryPage.jsx',
+        entry: 'src/pages/Industry/IndustryPage.jsx',
 
         getStaticPaths: async () => {
           const { INDUSTRIES } = await import(
