@@ -23,7 +23,7 @@ import HeroSection from './sections/HeroSection/HeroSection.jsx';
 // Old trust sections — replaced by the combined <TrustSection/> below.
 import HeroStatsBand from './sections/HeroStatsBand/HeroStatsBand.jsx';
 // import TrustStripText from './sections/TrustStripText/TrustStripText.jsx';
-import TrustSection from '../../components/shared/TrustSection/TrustSection.jsx';
+import HomeTrustSection from './sections/HomeTrustSection/HomeTrustSection.jsx';
 import WhatIsUpwonIntro from './sections/WhatIsUpwonIntro/WhatIsUpwonIntro.jsx';
 import IndustryFaq from '../../components/shared/IndustryFaq/IndustryFaq.jsx';
 import { FAQS } from './sections/FaqSection/FaqSection.jsx';
@@ -36,8 +36,8 @@ import Seo, { orgJsonLd, localBusinessJsonLd } from '../../components/shared/Seo
 const ConcentricRings = lazy(() => import('../Industries/sections/ConcentricRings/ConcentricRings.jsx'));
 const MarketFragmentationBars = lazy(() => import('../../components/_unused/MarketFragmentationBars.jsx'));
 const AiPlatformFinder = lazy(() => import('../../components/_unused/AiPlatformFinder.jsx'));
-const IndustriesVideoIntro = lazy(() => import('../../components/shared/IndustriesVideoIntro/IndustriesVideoIntro.jsx'));
-const ValuesWorkCulture = lazy(() => import('../../components/_unused/ValuesWorkCulture.jsx'));
+const HomeIndustriesSection = lazy(() => import('./sections/HomeIndustriesSection/HomeIndustriesSection.jsx'));
+const HomeValuesSection = lazy(() => import('./sections/HomeValuesSection/HomeValuesSection.jsx'));
 const HomeCtaSection = lazy(() => import('../../components/_unused/HomeCtaSection.jsx'));
 const WhoWeAreSection = lazy(() => import('../../components/_unused/WhoWeAreSection.jsx'));
 const IndustrySolutionsSection = lazy(() => import('../../components/_unused/IndustrySolutionsSection.jsx'));
@@ -64,7 +64,7 @@ export default function HomePage() {
       {/* ===== AWARENESS — name the pain, show you understand their world.
               Above the fold, eager (HeroSection is the LCP). ===== */}
       <HeroSection />              {/* Hero slider — 4 ICP slides */}
-      <TrustSection />            {/* Trust — rating + brand marquee + stats */}
+      <HomeTrustSection />        {/* Trust — CMS-driven rating + marquee + stats */}
       {/* <HeroStatsBand />           Scale stats — relocated out of the hero */}
       {/* <TrustStripText />          Customer brand strip — plain-text marquee */}
 
@@ -94,7 +94,7 @@ export default function HomePage() {
       {/* Industries video intro — heading + product video, above "Your System". */}
       <Deferred>
         <Suspense fallback={null}>
-          <IndustriesVideoIntro />
+          <HomeIndustriesSection />
         </Suspense>
       </Deferred>
 
@@ -124,7 +124,7 @@ export default function HomePage() {
       {/* Values & work culture — "Our customers appreciate us." */}
       <Deferred>
         <Suspense fallback={null}>
-          <ValuesWorkCulture />
+          <HomeValuesSection />
         </Suspense>
       </Deferred>
 

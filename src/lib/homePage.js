@@ -82,3 +82,167 @@ export async function fetchHeroSlides() {
     return null;
   }
 }
+
+// A trust section is only usable if it has the copy the card is built around.
+function isRenderableTrust(section) {
+  return (
+    section &&
+    typeof section.eyebrow === 'string' &&
+    section.eyebrow.trim() !== '' &&
+    Array.isArray(section.headingLines) &&
+    section.headingLines.length > 0 &&
+    typeof section.subtext === 'string' &&
+    section.subtext.trim() !== ''
+  );
+}
+
+/**
+ * The published trust section, or null to mean "keep whatever you have".
+ *
+ * The logo and stat lists come back as their own arrays and are deliberately
+ * left possibly-empty rather than being filtered out here: the caller decides
+ * per list whether to fall back, because a section with published copy but no
+ * logos yet should still use the new copy alongside the built-in marquee.
+ *
+ * @returns {Promise<{eyebrow: string, headingLines: Array, subtext: string,
+ *   logos: Array<{src: string, alt: string}>, stats: Array<{value: string,
+ *   label: string}>} | null>}
+ */
+export async function fetchTrustSection() {
+  // Same three rules as fetchHeroSlides: never during the SSG build, never
+  // throw, and unconfigured is a valid state.
+  if (typeof window === 'undefined') return null;
+  if (!BASE) return null;
+
+  try {
+    const res = await fetch(`${BASE}/public/home-page/trust-section`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) return null;
+
+    const body = await res.json();
+    // `data` is null when the section is switched off in the admin panel.
+    if (!body || body.success !== true || !isRenderableTrust(body.data)) return null;
+
+    const section = body.data;
+    return {
+      eyebrow: section.eyebrow,
+      headingLines: section.headingLines,
+      subtext: section.subtext,
+      // Renamed to `src`, which is what the marquee already expects.
+      logos: (section.logos ?? [])
+        .filter((logo) => logo && typeof logo.image === 'string')
+        .map((logo) => ({ src: logo.image, alt: logo.alt ?? '' })),
+      stats: (section.stats ?? []).filter(
+        (stat) => stat && stat.value && stat.label,
+      ),
+    };
+  } catch {
+    return null;
+  }
+}
+
+// The industries section needs all four of its fields to render as designed.
+function isRenderableIndustries(section) {
+  return (
+    section &&
+    typeof section.eyebrow === 'string' &&
+    section.eyebrow.trim() !== '' &&
+    Array.isArray(section.headingLines) &&
+    section.headingLines.length > 0 &&
+    typeof section.subtext === 'string' &&
+    section.subtext.trim() !== '' &&
+    typeof section.video === 'string' &&
+    section.video.trim() !== ''
+  );
+}
+
+/**
+ * The published industries video intro, or null to mean "keep what you have".
+ *
+ * The server returns the first active entry with a usable video, already folded
+ * into the shape this section renders — so there is no list to pick through
+ * here.
+ *
+ * @returns {Promise<{eyebrow: string, headingLines: Array, subtext: string,
+ *   video: string} | null>}
+ */
+export async function fetchIndustriesSection() {
+  // Same three rules as the other fetches: never during the SSG build, never
+  // throw, and unconfigured is a valid state.
+  if (typeof window === 'undefined') return null;
+  if (!BASE) return null;
+
+  try {
+    const res = await fetch(`${BASE}/public/home-page/industries-section`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) return null;
+
+    const body = await res.json();
+    // `data` is null when nothing is published or the active entry lost its video.
+    if (!body || body.success !== true || !isRenderableIndustries(body.data)) return null;
+
+    const { eyebrow, headingLines, subtext, video } = body.data;
+    return { eyebrow, headingLines, subtext, video };
+  } catch {
+    return null;
+  }
+}
+
+// A values section is only usable with its copy and at least one card.
+function isRenderableValues(section) {
+  return (
+    section &&
+    typeof section.eyebrow === 'string' &&
+    section.eyebrow.trim() !== '' &&
+    Array.isArray(section.headingLines) &&
+    section.headingLines.length > 0 &&
+    typeof section.subtext === 'string' &&
+    section.subtext.trim() !== '' &&
+    Array.isArray(section.cards) &&
+    section.cards.length > 0
+  );
+}
+
+/**
+ * The published values and work culture section, or null to mean "keep what
+ * you have".
+ *
+ * The server assembles the copy from the first active card and the grid from
+ * every active card that still has an image, so there is no list to fold
+ * together here.
+ *
+ * @returns {Promise<{eyebrow: string, headingLines: Array, subtext: string,
+ *   cards: Array<{photo: string, title: string, sub: string}>} | null>}
+ */
+export async function fetchValuesSection() {
+  // Same three rules as the other fetches: never during the SSG build, never
+  // throw, and unconfigured is a valid state.
+  if (typeof window === 'undefined') return null;
+  if (!BASE) return null;
+
+  try {
+    const res = await fetch(`${BASE}/public/home-page/values-section`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) return null;
+
+    const body = await res.json();
+    // `data` is null when nothing is published, or every active card lost its image.
+    if (!body || body.success !== true || !isRenderableValues(body.data)) return null;
+
+    const section = body.data;
+    return {
+      eyebrow: section.eyebrow,
+      headingLines: section.headingLines,
+      subtext: section.subtext,
+      // Renamed to the keys the card grid already uses.
+      cards: section.cards
+        .filter((card) => card && typeof card.image === 'string')
+        .map((card) => ({ photo: card.image, title: card.title, sub: card.body })),
+    };
+  } catch {
+    return null;
+  }
+}

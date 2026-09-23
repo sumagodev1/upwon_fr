@@ -1,6 +1,7 @@
 import { m as motion, useReducedMotion } from 'framer-motion';
 import Container from '../shared/Container/Container.jsx';
 import Eyebrow from '../shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../shared/HeadingLines/HeadingLines.jsx';
 
 /*
   "Values & Work Culture" — a centred heading over a plain three-up card grid,
@@ -47,7 +48,13 @@ const VALUES = [
   },
 ];
 
-export default function ValuesWorkCulture() {
+export default function ValuesWorkCulture({
+  eyebrow = 'Our Customers Appreciate Us',
+  // CMS-authored heading, already parsed server-side. Null keeps the JSX below.
+  headingLines = null,
+  subtext = 'These core values guide how we work, grow, and lead.',
+  values = VALUES,
+}) {
   const reduceMotion = useReducedMotion();
 
   const d = (value) => (reduceMotion ? 0 : value);
@@ -97,23 +104,27 @@ export default function ValuesWorkCulture() {
           className="mx-auto max-w-2xl text-center"
         >
           <motion.div variants={fadeIn}>
-            <Eyebrow className="justify-center">
-              Our Customers Appreciate Us
-            </Eyebrow>
+            <Eyebrow className="justify-center">{eyebrow}</Eyebrow>
           </motion.div>
 
           <motion.h2
             variants={fadeUp}
             className="mt-3 h-display text-[30px] leading-[1.1] tracking-tight text-navy-950 sm:text-[34px] lg:text-[36.8px]"
           >
-            Values &amp; <span className="gradient-text-orange">Work Culture</span>
+            {headingLines ? (
+              <HeadingLines lines={headingLines} />
+            ) : (
+              <>
+                Values &amp; <span className="gradient-text-orange">Work Culture</span>
+              </>
+            )}
           </motion.h2>
 
           <motion.p
             variants={fadeUp}
             className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
           >
-            These core values guide how we work, grow, and lead.
+            {subtext}
           </motion.p>
         </motion.div>
 
@@ -125,7 +136,7 @@ export default function ValuesWorkCulture() {
           viewport={VIEWPORT}
           className="mt-12 grid auto-rows-fr gap-6 sm:grid-cols-2 lg:grid-cols-3"
         >
-          {VALUES.map(({ title, sub, photo }) => (
+          {values.map(({ title, sub, photo }) => (
             <motion.article
               key={title}
               variants={cardVariants}

@@ -3,6 +3,7 @@ import { m as motion } from 'framer-motion';
 import { Play, Pause } from 'lucide-react';
 import Container from '../Container/Container.jsx';
 import Eyebrow from '../Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../HeadingLines/HeadingLines.jsx';
 
 /*
   Industries video intro — heading + subtext over a product video, showcased
@@ -22,6 +23,9 @@ export default function IndustriesVideoIntro({
       <span className="gradient-text-orange">Ready for everything that follows.</span>
     </>
   ),
+  // CMS-authored heading, already parsed server-side. Takes precedence over
+  // the heading prop when present; heading stays for callers that pass JSX.
+  headingLines = null,
   subtext = 'Every industry we serve, from food manufacturing to everyday FMCG — organised by depth.',
   video = VIDEO,
 }) {
@@ -78,7 +82,7 @@ export default function IndustriesVideoIntro({
         >
           <Eyebrow className="justify-center">{eyebrow}</Eyebrow>
  <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-            {heading}
+            {headingLines ? <HeadingLines lines={headingLines} /> : heading}
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
             {subtext}

@@ -1,6 +1,7 @@
 import { m as motion } from 'framer-motion';
 import { Star } from 'lucide-react';
 import Container from '../Container/Container.jsx';
+import HeadingLines from '../HeadingLines/HeadingLines.jsx';
 
 // Combined trust section (home-page design refresh) — one card that carries the
 // rating, the scrolling customer-brand LOGO marquee and the four scale stats.
@@ -53,6 +54,11 @@ export default function TrustSection({
       <span className="gradient-text-orange">run on UPWON.</span>
     </>
   ),
+  // CMS-authored heading, already parsed server-side. Takes precedence over
+  // the title prop when present; title stays for callers that pass JSX.
+  headingLines = null,
+  // The line under the star rating. Null keeps the copy this component ships.
+  subtext = null,
   stats = STATS,
   logos,
   // 'Small source note beneath the stats' — used instead of the star rating on
@@ -102,7 +108,7 @@ export default function TrustSection({
             {eyebrow}
           </p>
  <h2 className="mt-3 h-display text-[36.8px] text-balance leading-[1.1] tracking-tight text-navy-950">
-            {title}
+            {headingLines ? <HeadingLines lines={headingLines} /> : title}
           </h2>
         </motion.div>
 
@@ -126,7 +132,8 @@ export default function TrustSection({
                 <span className="text-sm font-semibold text-navy-800">4.8 / 5</span>
               </div>
               <p className="mx-auto mt-3 max-w-xl text-center text-sm text-navy-600 md:text-base">
-                50+ of India&apos;s food and FMCG businesses run their daily operations on UPWON.
+                {subtext ??
+                  "50+ of India's food and FMCG businesses run their daily operations on UPWON."}
               </p>
             </>
           )}
