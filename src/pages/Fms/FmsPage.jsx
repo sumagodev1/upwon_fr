@@ -18,9 +18,16 @@ import Seo, { productJsonLd, breadcrumbJsonLd } from '../../components/shared/Se
 import HeadingLines from '../../components/shared/HeadingLines/HeadingLines.jsx';
 import { getPlatformTheme, findProductBySlug } from '../../data/modules.js';
 import {
+  fetchFmsAlternativesSection,
   fetchFmsCtaSection,
   fetchFmsFaqSection,
+  fetchFmsFranchiseSection,
+  fetchFmsGrowthSection,
+  fetchFmsIntegrationsSection,
+  fetchFmsOutcomesSection,
   fetchFmsHeroSlides,
+  fetchFmsProofSection,
+  fetchFmsVideoSection,
 } from '../../lib/fmsPage.js';
 
 /*
@@ -63,13 +70,14 @@ const FMS_FAQS = [
 ];
 
 /**
- * The three CMS-backed sections are read here rather than inside their
+ * The four CMS-backed sections are read here rather than inside their
  * components: HeroSlider and IndustryFaq are shared with several other pages,
  * and FmsFinalCta only renders here - so keeping the fetch on the page is what
  * stops this page's content following the shared components elsewhere.
  *
  * Each section falls back on its own. An empty slide list keeps the built-in
- * slider; a null FAQ or band keeps the copy the page ships. The fetches are
+ * slider; a null proof strip, FAQ or band keeps the copy the page ships. The
+ * fetches are
  * guarded inside lib/fmsPage.js, so the SSG build never makes them and the
  * prerendered HTML stays the site's own content.
  */
@@ -78,6 +86,13 @@ export default function FmsPage() {
 
   const [cmsSlides, setCmsSlides] = useState(null);
   const [faq, setFaq] = useState(null);
+  const [proof, setProof] = useState(null);
+  const [franchise, setFranchise] = useState(null);
+  const [video, setVideo] = useState(null);
+  const [integrations, setIntegrations] = useState(null);
+  const [growth, setGrowth] = useState(null);
+  const [alternatives, setAlternatives] = useState(null);
+  const [outcomes, setOutcomes] = useState(null);
   const [cta, setCta] = useState(null);
 
   useEffect(() => {
@@ -88,6 +103,27 @@ export default function FmsPage() {
     });
     fetchFmsFaqSection().then((section) => {
       if (!cancelled && section) setFaq(section);
+    });
+    fetchFmsProofSection().then((section) => {
+      if (!cancelled && section) setProof(section);
+    });
+    fetchFmsFranchiseSection().then((section) => {
+      if (!cancelled && section) setFranchise(section);
+    });
+    fetchFmsVideoSection().then((section) => {
+      if (!cancelled && section) setVideo(section);
+    });
+    fetchFmsIntegrationsSection().then((section) => {
+      if (!cancelled && section) setIntegrations(section);
+    });
+    fetchFmsGrowthSection().then((section) => {
+      if (!cancelled && section) setGrowth(section);
+    });
+    fetchFmsAlternativesSection().then((section) => {
+      if (!cancelled && section) setAlternatives(section);
+    });
+    fetchFmsOutcomesSection().then((section) => {
+      if (!cancelled && section) setOutcomes(section);
     });
     fetchFmsCtaSection().then((section) => {
       if (!cancelled && section) setCta(section);
@@ -133,44 +169,63 @@ export default function FmsPage() {
       <HeroSlider slides={heroSlides} variant="dark" intervalMs={4000} topPad="pt-32 md:pt-40" />
 
       {/* ========== PROOF STRIP — brand wall + franchise stat cards ========== */}
-      <FmsProofStrip />
+      <FmsProofStrip section={proof} />
 
       {/* ========== RECOGNITION — franchise sub-category models ========== */}
-      <FranchiseCategories />
+      <FranchiseCategories section={franchise} />
 
       {/* ========== VIDEO PRESENTATION — the franchise operating system in action ========== */}
-      <IndustriesVideoIntro
-        eyebrow="See It in Action"
-        heading={
-          <>
-            It&apos;s Not Just Software —{' '}
-            <span className="gradient-text-orange">It&apos;s Your Franchise Operating System.</span>
-          </>
-        }
-        subtext="See how one system runs ordering, royalty, replenishment and brand standards across every outlet — with head office in full control."
-        video="/video/video_test.mp4"
-      />
+      {video ? (
+        <IndustriesVideoIntro
+          {...(video.eyebrow ? { eyebrow: video.eyebrow } : {})}
+          headingLines={video.headingLines}
+          subtext={video.subtext}
+          video={video.video}
+        />
+      ) : (
+        <IndustriesVideoIntro
+          eyebrow="See It in Action"
+          heading={
+            <>
+              It&apos;s Not Just Software —{' '}
+              <span className="gradient-text-orange">It&apos;s Your Franchise Operating System.</span>
+            </>
+          }
+          subtext="See how one system runs ordering, royalty, replenishment and brand standards across every outlet — with head office in full control."
+          video="/video/video_test.mp4"
+        />
+      )}
 
       {/* ========== UPWON'S APPROACH — models · stages · ecosystem · integrations ========== */}
       <UpwonApproach />
 
       {/* ========== PLATFORM INTEGRATIONS — pre-built integration sphere ========== */}
-      <PlatformIntegrationsHub
-        eyebrow="Platform Integrations"
-        title={
-          <>
-            One System —{' '}
-            <span className="gradient-text-orange">with Pre-Built Integrations.</span>
-          </>
-        }
-        description="UpWon FMS connects out of the box to the payments, delivery, accounting and enterprise systems your network already runs on — so franchise operations, royalty and reporting all draw from one connected source of truth."
-      />
+      {integrations ? (
+        <PlatformIntegrationsHub
+          {...(integrations.eyebrow ? { eyebrow: integrations.eyebrow } : {})}
+          title={<HeadingLines lines={integrations.headingLines} />}
+          description={integrations.subtext}
+          logos={integrations.logos}
+          {...(integrations.centreLogo ? { centreLogoSrc: integrations.centreLogo } : {})}
+        />
+      ) : (
+        <PlatformIntegrationsHub
+          eyebrow="Platform Integrations"
+          title={
+            <>
+              One System —{' '}
+              <span className="gradient-text-orange">with Pre-Built Integrations.</span>
+            </>
+          }
+          description="UpWon FMS connects out of the box to the payments, delivery, accounting and enterprise systems your network already runs on — so franchise operations, royalty and reporting all draw from one connected source of truth."
+        />
+      )}
 
       {/* ========== CONNECTED BY DESIGN — one sale through four stages ========== */}
       <FmsConnectedFlow />
 
       {/* ========== MODULE VERSIONS & GROWTH PATH — CORE / PRO / PLUS tiers ========== */}
-      <FmsGrowthPath />
+      <FmsGrowthPath section={growth} />
 
       {/* ========== IMPLEMENTATION & PARTNERSHIP — phased rollout stepper ========== */}
       <FmsImplementation />
@@ -179,10 +234,10 @@ export default function FmsPage() {
       <FmsSecurity />
 
       {/* ========== UPWON VS THE ALTERNATIVES — honest comparison ========== */}
-      <FmsVsAlternatives />
+      <FmsVsAlternatives section={alternatives} />
 
       {/* ========== CUSTOMER OUTCOMES — named case-study carousel ========== */}
-      <FmsCustomerOutcomes />
+      <FmsCustomerOutcomes section={outcomes} />
 
       {/* ========== FAQ — franchisor objections ========== */}
       {faq ? (

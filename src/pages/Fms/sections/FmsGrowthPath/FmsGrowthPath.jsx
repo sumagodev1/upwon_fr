@@ -3,27 +3,49 @@ import { m as motion } from 'framer-motion';
 import { Check, ArrowRight, Sparkles } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 /*
   FMS "Module Versions & Growth Path" — tiered packages shown as pricing-style
   plan cards. Start with outlet billing (CORE), grow into royalty/network (PRO),
   then governance at scale (PLUS) — no switching systems. "Talk to us", no
   prices; scope descriptors instead of seat counts.
+
+  CMS-driven when a `section` is passed, and falls back to the constants
+  otherwise — the same arrangement the page's other sections use, so the SSG
+  build and an unreachable API both render the row the site ships.
 */
 
 const EASE = [0.22, 1, 0.3, 1];
 const ORANGE = '#E85A2A';
 
+/*
+  The built-in content, written in the shape the API sends so that a CMS
+  section and the shipped one take one identical path through the render below.
+*/
+const EYEBROW = 'Module Versions & Growth Path';
+const HEADING_LINES = [
+  [
+    { text: 'Start With Your Counter. ', accent: false },
+    { text: 'Grow Into Full Franchise Control.', accent: true },
+  ],
+];
+const SUBTEXT =
+  'A three-tier structure built from our FMS & POS sub-systems — start with outlet billing and expand into royalty and compliance as the network grows.';
+const FOOTNOTE =
+  'No setup fees · Free data migration · Dedicated onboarding · Phased, outlet-by-outlet rollout';
+
 const TIERS = [
   {
-    key: 'core',
+    slug: 'core',
     name: 'CORE',
     lead: 'Talk to us',
     tagline: 'Run outlet operations digitally',
     scope: 'Outlet billing → operations',
-    cta: 'Get Started',
-    to: '/demo',
-    everythingIn: null,
+    inheritsLabel: null,
+    buttonLabel: 'Get Started',
+    buttonHref: '/demo',
+    isPopular: false,
     features: [
       'Franchisee Onboarding',
       'Outlet POS Billing',
@@ -34,15 +56,15 @@ const TIERS = [
     ],
   },
   {
-    key: 'pro',
+    slug: 'pro',
     name: 'PRO',
     lead: 'Talk to us',
     tagline: 'Automate royalty & see the network',
     scope: 'Royalty + network visibility',
-    cta: 'Book a Demo',
-    to: '/demo',
-    popular: true,
-    everythingIn: 'Everything in Core, plus:',
+    inheritsLabel: 'Everything in Core, plus:',
+    buttonLabel: 'Book a Demo',
+    buttonHref: '/demo',
+    isPopular: true,
     features: [
       'Royalty Management',
       'Brand-fee & billing automation',
@@ -53,14 +75,15 @@ const TIERS = [
     ],
   },
   {
-    key: 'plus',
+    slug: 'plus',
     name: 'PLUS',
     lead: 'Talk to us',
     tagline: 'Govern, comply & scale with confidence',
     scope: 'Governance + ERP connect',
-    cta: 'Contact Sales',
-    to: '/contact',
-    everythingIn: 'Everything in Pro, plus:',
+    inheritsLabel: 'Everything in Pro, plus:',
+    buttonLabel: 'Contact Sales',
+    buttonHref: '/contact',
+    isPopular: false,
     features: [
       'SOP Audit & Compliance Scoring',
       'Grievance Management',
@@ -86,7 +109,7 @@ function CheckItem({ children, bold }) {
 }
 
 function TierCard({ t, index }) {
-  const popular = t.popular;
+  const popular = t.isPopular;
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -122,7 +145,7 @@ function TierCard({ t, index }) {
       {/* Features + CTA */}
       <div className="flex flex-1 flex-col border-t border-cream-200 px-7 pb-7 pt-6">
         <ul className="space-y-3">
-          {t.everythingIn && <CheckItem bold>{t.everythingIn}</CheckItem>}
+          {t.inheritsLabel && <CheckItem bold>{t.inheritsLabel}</CheckItem>}
           {t.features.map((f) => (
             <CheckItem key={f}>{f}</CheckItem>
           ))}
@@ -130,7 +153,7 @@ function TierCard({ t, index }) {
 
         <div className="mt-auto pt-8">
           <Link
-            to={t.to}
+            to={t.buttonHref}
             className={`flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold transition-colors ${
               popular
                 ? 'text-white hover:opacity-95'
@@ -138,7 +161,7 @@ function TierCard({ t, index }) {
             }`}
             style={popular ? { background: ORANGE } : undefined}
           >
-            {t.cta}
+            {t.buttonLabel}
             <ArrowRight className="h-4 w-4" strokeWidth={2.4} />
           </Link>
         </div>
@@ -147,7 +170,19 @@ function TierCard({ t, index }) {
   );
 }
 
-export default function FmsGrowthPath() {
+export default function FmsGrowthPath({ section }) {
+  /*
+    A published section replaces the built-in one wholesale rather than filling
+    in around it: a half-CMS, half-shipped row would compare tiers nobody
+    authored against ones somebody did.
+  */
+  const tiers = section && section.tiers && section.tiers.length > 0 ? section.tiers : TIERS;
+  const eyebrow = section?.eyebrow ?? EYEBROW;
+  const headingLines = section?.headingLines ?? HEADING_LINES;
+  const subtext = section?.subtext || SUBTEXT;
+  // Undefined means "no CMS section"; null means one that turned the line off.
+  const footnote = section ? section.footnote : FOOTNOTE;
+
   return (
     <section className="relative overflow-hidden bg-[#f5f6fa] py-16 md:py-24">
       <Container>
@@ -159,35 +194,34 @@ export default function FmsGrowthPath() {
           transition={{ duration: 0.6, ease: EASE }}
           className="mx-auto max-w-3xl text-center"
         >
-          <Eyebrow className="justify-center">Module Versions &amp; Growth Path</Eyebrow>
+          <Eyebrow className="justify-center">{eyebrow}</Eyebrow>
  <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-            Start With Your Counter.{' '}
-            <span className="gradient-text-orange">Grow Into Full Franchise Control.</span>
+            <HeadingLines lines={headingLines} />
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
-            A three-tier structure built from our FMS &amp; POS sub-systems — start with outlet
-            billing and expand into royalty and compliance as the network grows.
+            {subtext}
           </p>
         </motion.div>
 
         {/* Plan cards */}
         <div className="mx-auto mt-12 grid max-w-5xl items-stretch gap-5 md:grid-cols-3">
-          {TIERS.map((t, i) => (
-            <TierCard key={t.key} t={t} index={i} />
+          {tiers.map((t, i) => (
+            <TierCard key={t.slug} t={t} index={i} />
           ))}
         </div>
 
         {/* Reassurance line */}
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-40px' }}
-          transition={{ duration: 0.5, delay: 0.1, ease: EASE }}
-          className="mx-auto mt-10 text-center text-[14px] font-semibold text-navy-600"
-        >
-          No setup fees · Free data migration · Dedicated onboarding · Phased, outlet-by-outlet
-          rollout
-        </motion.p>
+        {footnote && (
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-40px' }}
+            transition={{ duration: 0.5, delay: 0.1, ease: EASE }}
+            className="mx-auto mt-10 text-center text-[14px] font-semibold text-navy-600"
+          >
+            {footnote}
+          </motion.p>
+        )}
       </Container>
     </section>
   );
