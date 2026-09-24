@@ -46,6 +46,11 @@ export default function PlatformIntegrationsHub({
     </>
   ),
   description = 'UPWON seamlessly integrates with the systems you already use—ERP, POS, accounting, payments, CRM, analytics, and plant-floor devices—bringing everything together in one unified platform with a single source of truth.',
+  // The brand marks pinned to the sphere, and the mark at its core. Both
+  // default to what the section ships, so a caller that overrides only the
+  // copy — the FMS page does — keeps the built-in set.
+  logos = ALL_LOGOS,
+  centreLogoSrc = undefined,
 } = {}) {
   // One sphere for every device. Sized to the LESSER of the available width and
   // ~55% of the viewport height, so the whole section fits in a single view on
@@ -96,7 +101,12 @@ export default function PlatformIntegrationsHub({
 
           {/* Right — the responsive integration sphere. */}
           <div ref={wrapRef} className="w-full min-w-0">
-            <HexSphere size={sphereSize} nodeCount={nodeCount} logos={ALL_LOGOS} />
+            <HexSphere
+              size={sphereSize}
+              nodeCount={nodeCount}
+              logos={logos}
+              {...(centreLogoSrc ? { logoSrc: centreLogoSrc } : {})}
+            />
           </div>
         </div>
 

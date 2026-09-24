@@ -25,9 +25,8 @@ import HeroStatsBand from './sections/HeroStatsBand/HeroStatsBand.jsx';
 // import TrustStripText from './sections/TrustStripText/TrustStripText.jsx';
 import HomeTrustSection from './sections/HomeTrustSection/HomeTrustSection.jsx';
 import WhatIsUpwonIntro from './sections/WhatIsUpwonIntro/WhatIsUpwonIntro.jsx';
-import IndustryFaq from '../../components/shared/IndustryFaq/IndustryFaq.jsx';
-import { FAQS } from './sections/FaqSection/FaqSection.jsx';
-import PlatformIntegrationsHub from '../../components/shared/PlatformIntegrationsHub/PlatformIntegrationsHub.jsx';
+import HomeFaqSection from './sections/HomeFaqSection/HomeFaqSection.jsx';
+import HomeIntegrationsSection from './sections/HomeIntegrationsSection/HomeIntegrationsSection.jsx';
 import ComparisonSection from './sections/ComparisonSection/ComparisonSection.jsx';
 import Deferred from '../../components/shared/Deferred/Deferred.jsx';
 import Seo, { orgJsonLd, localBusinessJsonLd } from '../../components/shared/Seo/Seo.jsx';
@@ -48,8 +47,12 @@ const VideoShowcaseSection = lazy(() => import('../../components/_unused/VideoSh
 const MetricsSection = lazy(() => import('../../components/_unused/MetricsSection.jsx'));
 const CaseStudyHighlight = lazy(() => import('../../components/_unused/CaseStudyHighlight.jsx'));
 const InteractiveToolsSection = lazy(() => import('../../components/shared/InteractiveToolsSection/InteractiveToolsSection.jsx'));
-const VideoTestimonials = lazy(() => import('../../components/_unused/VideoTestimonials.jsx'));
-const HomeFinalCta = lazy(() => import('../../components/_unused/HomeFinalCta.jsx'));
+const HomeTestimonialsSection = lazy(() =>
+  import('./sections/HomeTestimonialsSection/HomeTestimonialsSection.jsx'),
+);
+const HomeFinalCtaSection = lazy(() =>
+  import('./sections/HomeFinalCtaSection/HomeFinalCtaSection.jsx'),
+);
 
 export default function HomePage() {
   return (
@@ -137,8 +140,10 @@ export default function HomePage() {
 
 
 
-      {/* Platform integrations hub — sits above the FAQ. */}
-      <PlatformIntegrationsHub />
+      {/* Platform integrations hub — sits above the FAQ. Eager rather than
+          deferred: it is in the prerendered HTML, and the CMS wrapper renders
+          the built-in sphere until the published section arrives. */}
+      <HomeIntegrationsSection />
 
       {/* Plain white gap before the dark case-studies section. */}
       <div className="h-14 bg-white md:h-24" />
@@ -155,26 +160,19 @@ export default function HomePage() {
       {/* Video testimonials — customer stories carousel, above the FAQ. */}
       <Deferred>
         <Suspense fallback={null}>
-          <VideoTestimonials />
+          <HomeTestimonialsSection />
         </Suspense>
       </Deferred>
 
-      {/* FAQ — buyer questions, directly above the stats band. */}
-      <IndustryFaq
-        faqs={FAQS}
-        eyebrow="UpWon · Questions Before You Commit"
-        title={
-          <>
-            The questions buyers ask us about this{' '}
-            <span className="gradient-text-orange">platform.</span>
-          </>
-        }
-      />
+      {/* FAQ — buyer questions, directly above the stats band. Eager rather
+          than deferred: it is in the prerendered HTML, and the CMS wrapper
+          renders the built-in list until the published section arrives. */}
+      <HomeFaqSection />
 
       {/* Report-download CTA — sits below the FAQ, above the footer. */}
       <Deferred>
         <Suspense fallback={null}>
-          <HomeFinalCta />
+          <HomeFinalCtaSection />
         </Suspense>
       </Deferred>
 

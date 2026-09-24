@@ -28,7 +28,8 @@ function renderHeadline(headline) {
 // NOT a carousel of random brand statements.
 //
 // Props
-//   slides[]         — { eyebrow?, headline, subhead, cta:{label,to}, secondaryCta?, bg, accent? }
+//   slides[]         — { eyebrow?, headline, subhead, cta:{label,to}, secondaryCta?, bg,
+//                        bgMobile?, accent? }
 //   intervalMs       — auto-advance interval (default 5000ms per brief)
 //   variant          — 'dark' (default — navy bg w/ photo overlay) | 'light'
 //   minHeight        — tailwind class for min height (default tall hero)
@@ -83,22 +84,52 @@ export default function HeroSlider({
       {/* Slide background image — crossfades. Slight blur keeps copy readable. */}
       <div className="pointer-events-none absolute inset-0">
         <AnimatePresence mode="sync">
-          {slide.bg && (
-            <motion.img
-              key={`bg-${idx}`}
-              src={slide.bg}
-              alt=""
-              aria-hidden
-              initial={{ opacity: 0, scale: 1.08 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{
-                opacity: { duration: 1.1, ease: 'easeInOut' },
-                scale: { duration: intervalMs / 1000 + 1.2, ease: 'linear' },
-              }}
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          )}
+          {slide.bg &&
+            /*
+             * Two shapes on purpose. A slide with a portrait crop needs a
+             * <picture> so the browser picks by viewport, and AnimatePresence
+             * needs its direct child to be the animated element - hence
+             * motion.picture rather than a wrapper around motion.img.
+             *
+             * Without a crop it stays the single <img> it has always been, so
+             * every page that passes no bgMobile renders exactly as before.
+             */
+            (slide.bgMobile ? (
+              <motion.picture
+                key={`bg-${idx}`}
+                initial={{ opacity: 0, scale: 1.08 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{
+                  opacity: { duration: 1.1, ease: 'easeInOut' },
+                  scale: { duration: intervalMs / 1000 + 1.2, ease: 'linear' },
+                }}
+                className="absolute inset-0 block h-full w-full"
+              >
+                <source media="(max-width: 767px)" srcSet={slide.bgMobile} />
+                <img
+                  src={slide.bg}
+                  alt=""
+                  aria-hidden
+                  className="h-full w-full object-cover"
+                />
+              </motion.picture>
+            ) : (
+              <motion.img
+                key={`bg-${idx}`}
+                src={slide.bg}
+                alt=""
+                aria-hidden
+                initial={{ opacity: 0, scale: 1.08 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{
+                  opacity: { duration: 1.1, ease: 'easeInOut' },
+                  scale: { duration: intervalMs / 1000 + 1.2, ease: 'linear' },
+                }}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ))}
         </AnimatePresence>
       </div>
 

@@ -1,6 +1,10 @@
 import { Navigate } from 'react-router-dom';
-import HeroSlider from '../../components/shared/HeroSlider/HeroSlider.jsx';
-import TrustSection from '../../components/shared/TrustSection/TrustSection.jsx';
+import {
+  ErpCtaSection,
+  ErpFaqSection,
+  ErpHeroSection,
+  ErpTrustSection,
+} from './sections/ErpCmsSections/ErpCmsSections.jsx';
 import SpecializedErpSection from './sections/SpecializedErpSection/SpecializedErpSection.jsx';
 import EverythingInOnePlace from './sections/EverythingInOnePlace/EverythingInOnePlace.jsx';
 import ErpBenefitsJourney from './sections/ErpBenefitsJourney/ErpBenefitsJourney.jsx';
@@ -8,8 +12,6 @@ import ErpImplementationTimeline from './sections/ErpImplementationTimeline/ErpI
 import AlternativesComparison from './sections/AlternativesComparison/AlternativesComparison.jsx';
 import CustomerOutcomes from './sections/CustomerOutcomes/CustomerOutcomes.jsx';
 import TrustEstablishers from './sections/TrustEstablishers/TrustEstablishers.jsx';
-import IndustryFaq from '../../components/shared/IndustryFaq/IndustryFaq.jsx';
-import ErpFinalCta from './sections/ErpFinalCta/ErpFinalCta.jsx';
 import Seo, { productJsonLd, breadcrumbJsonLd, faqJsonLd } from '../../components/shared/Seo/Seo.jsx';
 import { getPlatformTheme, findProductBySlug } from '../../data/modules.js';
 
@@ -65,17 +67,17 @@ export default function ErpPage() {
       />
 
       {/* ========== HERO — auto-scroll slider ========== */}
-      <HeroSlider
-        slides={heroSlides}
+      <ErpHeroSection
+        fallbackSlides={heroSlides}
         variant="dark"
         intervalMs={5000}
         topPad="pt-32 md:pt-40"
       />
 
       {/* ========== PROOF STRIP — scale stats + rating + brand marquee ========== */}
-      <TrustSection
-        eyebrow="Numbers from businesses running UPWON today"
-        title={
+      <ErpTrustSection
+        fallbackEyebrow="Numbers from businesses running UPWON today"
+        fallbackTitle={
           <>
             Numbers From Businesses{' '}
             <span className="gradient-text-orange">Running UPWON Today.</span>
@@ -105,20 +107,20 @@ export default function ErpPage() {
       <TrustEstablishers />
 
       {/* ========== FAQ — due-diligence questions before the CTA ========== */}
-      <IndustryFaq
-        faqs={ERP_COMMIT_FAQS}
-        eyebrow="FAQ"
-        title={
+      <ErpFaqSection
+        fallbackFaqs={ERP_COMMIT_FAQS}
+        fallbackEyebrow="FAQ"
+        fallbackTitle={
           <>
             Questions Buyers Ask{' '}
             <span className="gradient-text-orange">Before They Commit.</span>
           </>
         }
-        description="Straight answers to the cost, migration, compliance, customisation and support questions — before you commit."
+        fallbackDescription="Straight answers to the cost, migration, compliance, customisation and support questions — before you commit."
       />
 
       {/* ========== FINAL CTA — low-pressure invitation over erp_cta background ========== */}
-      <ErpFinalCta />
+      <ErpCtaSection />
     </>
   );
 }

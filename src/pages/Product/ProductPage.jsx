@@ -32,6 +32,7 @@ import SfaFinalCta from '../../components/shared/SfaFinalCta/SfaFinalCta.jsx';
 import InteractiveToolsSection from '../../components/shared/InteractiveToolsSection/InteractiveToolsSection.jsx';
 import TopSectorsForProduct from '../../components/shared/TopSectorsForProduct/TopSectorsForProduct.jsx';
 import IndustryFaq from '../../components/shared/IndustryFaq/IndustryFaq.jsx';
+import HeadingLines from '../../components/shared/HeadingLines/HeadingLines.jsx';
 import Seo, { productJsonLd, breadcrumbJsonLd, faqJsonLd } from '../../components/shared/Seo/Seo.jsx';
 import { PLATFORM_MODULES, getPlatformTheme, HONEST_COMPARISON, PRODUCT_FAQS, findProductBySlug } from '../../data/modules.js';
 import { INTEGRATIONS } from '../../data/metrics.js';
@@ -75,7 +76,40 @@ function IntegrationLogo({ item }) {
   );
 }
 
-export default function ProductPage({ slug: slugProp, hideBreadcrumb = false }) {
+/**
+ * @param heroSlidesOverride  CMS slides, when the page has them. Empty or
+ *                            absent keeps the built-in set.
+ * @param faqOverride         CMS FAQ copy + questions, or null.
+ * @param proofOverride       CMS proof band - the card, its logos and the
+ *                            figures beside them - or null.
+ * @param videoOverride       CMS video showcase - the copy and the one live
+ *                            clip - or null.
+ * @param packagesOverride    CMS adoption path - the copy and the package
+ *                            cards with their ticks - or null.
+ * @param establishersOverride CMS trust establishers - the copy, both panel
+ *                            headers, the badges and the sphere - or null.
+ * @param alternativesOverride CMS comparison grid - the copy, the columns, the
+ *                            capability rows and the closing summary - or null.
+ * @param outcomesOverride    CMS customer stories - the copy, the two buttons
+ *                            and the cards - or null.
+ * @param ctaOverride         CMS closing band, or null.
+ *
+ * All nine are optional so the six products without a CMS page behind them
+ * render from data/modules.js exactly as they always have.
+ */
+export default function ProductPage({
+  slug: slugProp,
+  hideBreadcrumb = false,
+  heroSlidesOverride = null,
+  faqOverride = null,
+  proofOverride = null,
+  videoOverride = null,
+  packagesOverride = null,
+  establishersOverride = null,
+  alternativesOverride = null,
+  outcomesOverride = null,
+  ctaOverride = null,
+}) {
   // Each platform now has its own dedicated page file that renders this shared
   // engine with a fixed slug (e.g. SfaDmsPage → <ProductPage slug="sfa-dms" />).
   // Fall back to the route param so the dynamic /products/:slug route still
@@ -111,7 +145,9 @@ export default function ProductPage({ slug: slugProp, hideBreadcrumb = false }) 
             bg: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=2000&q=70',
           },
         ];
-  const heroSlides = baseSlides.map((s) => ({ accent: theme.accent, ...s }));
+  const heroSlides = (
+    heroSlidesOverride && heroSlidesOverride.length ? heroSlidesOverride : baseSlides
+  ).map((s) => ({ accent: theme.accent, ...s }));
 
   // Per-product SEO — brief rule 8 (dedicated keyword cluster per page).
   // Pulls title / desc straight from the platform record so SEO copy stays
@@ -184,57 +220,73 @@ export default function ProductPage({ slug: slugProp, hideBreadcrumb = false }) 
       )}
 
       {/* ========== ENTERPRISE TRUST — security + recognition cards ========== */}
-      {product.enterpriseTrust && <EnterpriseTrust />}
+      {product.enterpriseTrust && <EnterpriseTrust section={proofOverride} />}
 
       {/* ========== VIDEO INTRO — product video with Odoo-style playback bar ========== */}
-      {product.videoIntro && (
-        <IndustriesVideoIntro
-          eyebrow={product.videoIntro.eyebrow}
-          heading={
-            <>
-              {product.videoIntro.lead}{' '}
-              <span className="gradient-text-orange">{product.videoIntro.accent}</span>
-            </>
-          }
-          subtext={product.videoIntro.subtext}
-        />
-      )}
+      {product.videoIntro &&
+        (videoOverride ? (
+          <IndustriesVideoIntro
+            {...(videoOverride.eyebrow ? { eyebrow: videoOverride.eyebrow } : {})}
+            headingLines={videoOverride.headingLines}
+            subtext={videoOverride.subtext}
+            video={videoOverride.video}
+          />
+        ) : (
+          <IndustriesVideoIntro
+            eyebrow={product.videoIntro.eyebrow}
+            heading={
+              <>
+                {product.videoIntro.lead}{' '}
+                <span className="gradient-text-orange">{product.videoIntro.accent}</span>
+              </>
+            }
+            subtext={product.videoIntro.subtext}
+          />
+        ))}
 
       {/* ========== STRUCTURAL GAP — disconnected → connected transformation ========== */}
       {product.structuralGap && <StructuralGapSection />}
 
       {/* ========== GROWS WITH YOU — phased SFA → DMS → Suite adoption stepper ========== */}
-      {product.growsWithYou && <GrowsWithYou />}
+      {product.growsWithYou && <GrowsWithYou section={packagesOverride} />}
 
       {/* ========== IMPLEMENTATION & PARTNERSHIP — phased go-live timeline ========== */}
       {product.implPartnership && <ImplementationPartnership />}
 
       {/* ========== TRUST ESTABLISHERS — compliance + connected ecosystem ========== */}
-      {product.complianceEcosystem && <ComplianceEcosystem />}
+      {product.complianceEcosystem && <ComplianceEcosystem section={establishersOverride} />}
 
       {/* ========== UPWON VS THE ALTERNATIVES — honest plain-language distinction ========== */}
-      {product.upwonVsAlternatives && <UpwonVsAlternatives />}
+      {product.upwonVsAlternatives && <UpwonVsAlternatives section={alternativesOverride} />}
 
       {/* ========== CUSTOMER OUTCOMES — named case-study carousel ========== */}
-      {product.outcomeStory && <CustomerOutcomesStory />}
+      {product.outcomeStory && <CustomerOutcomesStory section={outcomesOverride} />}
 
       {/* ========== FAQ — SFA-DMS due-diligence questions ========== */}
       {product.sfaFaqs && (
         <IndustryFaq
-          faqs={SFA_DMS_FAQS}
-          eyebrow="FAQ"
+          faqs={faqOverride ? faqOverride.faqs : SFA_DMS_FAQS}
+          eyebrow={faqOverride ? (faqOverride.eyebrow ?? undefined) : "FAQ"}
           title={
-            <>
-              Questions Distribution Heads Ask{' '}
-              <span className="gradient-text-orange">Before They Commit.</span>
-            </>
+            faqOverride ? (
+              <HeadingLines lines={faqOverride.headingLines} />
+            ) : (
+              <>
+                Questions Distribution Heads Ask{' '}
+                <span className="gradient-text-orange">Before They Commit.</span>
+              </>
+            )
           }
-          description="Kept to how a Sales or Distribution Head actually asks it — not how a sales deck phrases it."
+          description={
+            faqOverride
+              ? faqOverride.subtext
+              : "Kept to how a Sales or Distribution Head actually asks it — not how a sales deck phrases it."
+          }
         />
       )}
 
       {/* ========== FINAL CTA — low-pressure invitation over navy band ========== */}
-      {product.sfaFinalCta && <SfaFinalCta />}
+      {product.sfaFinalCta && <SfaFinalCta section={ctaOverride} />}
 
       {/* ===== Sections below temporarily disabled (commented out via `false &&`).
               Flip to `true` (or remove the wrapper) to re-enable them. ===== */}

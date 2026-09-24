@@ -1,48 +1,65 @@
 import { useEffect, useRef, useState } from 'react';
 import { m as motion } from 'framer-motion';
-import { ShieldCheck, FileCheck, BadgeCheck, Award } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 import HexSphere from '../../../../components/shared/HexSphere/HexSphere.jsx';
+import { erpIcon } from '../../../../lib/erpIcons.js';
+import { fetchErpEstablishersSection } from '../../../../lib/erpPage.js';
+import {
+  FALLBACK_BADGES,
+  FALLBACK_COPY,
+  FALLBACK_LOGOS,
+} from './trustEstablishersContent.js';
 
 /*
   "Trust Establishers" — clears the final practical objections (security,
   compliance, fit with existing tools) before the page asks for a conversation.
   Kept deliberately simple — a credibility strip, not a hero moment.
+
+  The content is the CMS's. This file renders it and nothing else: the copy, the
+  badges and the sphere's logos all arrive as data, and the built-in set in
+  trustEstablishersContent.js is only what the page shows before the fetch lands
+  and whenever the API cannot be reached.
+
+  The sphere's logos are the home page globe's, read from the same record - so a
+  partner added in the admin panel shows up on both pages from one edit.
 */
 
 const EASE = [0.22, 1, 0.3, 1];
 
-const BADGES = [
-  { icon: ShieldCheck, title: 'FSSAI-native', sub: 'Dossier auto-generated per batch' },
-  { icon: FileCheck, title: 'GST & e-invoice ready', sub: 'Native, not a plugin' },
-  { icon: BadgeCheck, title: 'ISO-aligned', sub: 'Working toward ISO 27001' },
-  { icon: Award, title: 'CMM Level 3', sub: 'Documented process rigour' },
-];
-
-// Integration logos for the sphere — same assets as the home page globe.
-const LOGO_BASE = '/images/platform_integration_client/';
-const SPHERE_LOGOS = [
-  { src: `${LOGO_BASE}PhonePe.webp`, alt: 'PhonePe' },
-  { src: `${LOGO_BASE}Tally.webp`, alt: 'Tally' },
-  { src: `${LOGO_BASE}SAP.webp`, alt: 'SAP' },
-  { src: `${LOGO_BASE}Oracle.webp`, alt: 'Oracle' },
-  { src: `${LOGO_BASE}Dynamics.webp`, alt: 'Microsoft Dynamics 365' },
-  { src: `${LOGO_BASE}Tcsion.webp`, alt: 'TCS iON' },
-  { src: `${LOGO_BASE}EPSON.webp`, alt: 'EPSON' },
-  { src: `${LOGO_BASE}zomato.webp`, alt: 'Zomato' },
-  { src: `${LOGO_BASE}swiggy.webp`, alt: 'Swiggy' },
-  { src: `${LOGO_BASE}ondc.webp`, alt: 'ONDC' },
-  { src: `${LOGO_BASE}unzo.webp`, alt: 'Dunzo' },
-  { src: `${LOGO_BASE}paytm.webp`, alt: 'Paytm' },
-  { src: `${LOGO_BASE}upi.webp`, alt: 'UPI' },
-  { src: `${LOGO_BASE}Gpay.webp`, alt: 'Google Pay' },
-  { src: `${LOGO_BASE}BharatPe.webp`, alt: 'BharatPe' },
-];
-
 export default function TrustEstablishers() {
+  const [copy, setCopy] = useState(FALLBACK_COPY);
+  const [badges, setBadges] = useState(FALLBACK_BADGES);
+  const [logos, setLogos] = useState(FALLBACK_LOGOS);
+  const [centreLogo, setCentreLogo] = useState(null);
+
   const wrapRef = useRef(null);
   const [sphereSize, setSphereSize] = useState(360);
+
+  /*
+   * One read on mount, guarded inside the fetcher so the SSG build never makes
+   * it. Each part falls back on its own: a section whose badges have been
+   * edited but whose logo list is empty should show the new badges beside the
+   * built-in sphere rather than an empty circle.
+   */
+  useEffect(() => {
+    let cancelled = false;
+    fetchErpEstablishersSection().then((section) => {
+      if (cancelled || !section) return;
+      setCopy({
+        eyebrow: section.eyebrow,
+        headingLines: section.headingLines,
+        subtext: section.subtext,
+      });
+      if (section.badges.length > 0) setBadges(section.badges);
+      if (section.logos.length > 0) setLogos(section.logos);
+      if (section.centreLogo) setCentreLogo(section.centreLogo);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -72,15 +89,12 @@ export default function TrustEstablishers() {
           transition={{ duration: 0.6, ease: EASE }}
           className="mx-auto max-w-3xl text-center"
         >
-          <Eyebrow className="justify-center">Trust Establishers</Eyebrow>
+          {copy.eyebrow && <Eyebrow className="justify-center">{copy.eyebrow}</Eyebrow>}
           <h2 className="mt-3 h-display text-balance text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-            Compliant by Design.{' '}
-            <span className="gradient-text-orange">Connected to What You Already Use.</span>
+            <HeadingLines lines={copy.headingLines} />
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
-            FSSAI and GST/e-invoice compliance are built into the system, not bolted on — and UPWON
-            already connects to the tools your business runs on today, so switching never means
-            starting from zero.
+            {copy.subtext}
           </p>
         </motion.div>
 
@@ -98,20 +112,25 @@ export default function TrustEstablishers() {
               Compliant by design
             </p>
             <div className="mt-5 grid flex-1 grid-cols-1 place-content-center gap-3 sm:grid-cols-2">
-              {BADGES.map(({ icon: Icon, title, sub }) => (
-                <div
-                  key={title}
-                  className="flex items-start gap-3 rounded-xl border border-cream-300 bg-white p-3.5"
-                >
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-orange-500/10 text-orange-600">
-                    <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[14px] font-bold text-navy-950">{title}</p>
-                    <p className="mt-0.5 text-[14px] leading-snug text-navy-600">{sub}</p>
+              {badges.map((badge) => {
+                const Icon = erpIcon(badge.icon);
+                return (
+                  <div
+                    key={badge.title}
+                    className="flex items-start gap-3 rounded-xl border border-cream-300 bg-white p-3.5"
+                  >
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-orange-500/10 text-orange-600">
+                      <Icon className="h-[18px] w-[18px]" strokeWidth={1.9} />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-[14px] font-bold text-navy-950">{badge.title}</p>
+                      <p className="mt-0.5 text-[14px] leading-snug text-navy-600">
+                        {badge.subtext}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </motion.div>
 
@@ -126,7 +145,14 @@ export default function TrustEstablishers() {
               Connected to what you already use
             </p>
             <div ref={wrapRef} className="mt-3 flex justify-center">
-              <HexSphere size={sphereSize} nodeCount={nodeCount} logos={SPHERE_LOGOS} />
+              <HexSphere
+                size={sphereSize}
+                nodeCount={nodeCount}
+                logos={logos}
+                // Left undefined when unset, so the sphere keeps its own default
+                // rather than being handed an explicit null to work around.
+                {...(centreLogo ? { logoSrc: centreLogo } : {})}
+              />
             </div>
           </motion.div>
         </div>

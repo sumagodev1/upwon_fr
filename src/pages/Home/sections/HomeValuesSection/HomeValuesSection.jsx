@@ -32,7 +32,7 @@ export default function HomeValuesSection() {
 
   return (
     <ValuesWorkCulture
-      eyebrow={section.eyebrow}
+      {...(section.eyebrow ? { eyebrow: section.eyebrow } : {})}
       headingLines={section.headingLines}
       subtext={section.subtext}
       values={section.cards}

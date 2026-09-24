@@ -125,8 +125,21 @@ function TestimonialCard({ t, wide, onPlay }) {
   );
 }
 
-export default function VideoTestimonials() {
+export default function VideoTestimonials({
+  eyebrow = 'Client Testimonials',
+  title = (
+    <>
+      Discover how food brands{' '}
+      <span className="gradient-text-orange">drive impact.</span>
+    </>
+  ),
+  description = 'Food and FMCG businesses across India run on UPWON — cutting wastage, closing books faster, and scaling without the chaos. Hear it in their own words.',
+  // The cards themselves. Defaults to the set the section ships, so a caller
+  // that overrides only the copy keeps the built-in marquee.
+  testimonials = TESTIMONIALS,
+} = {}) {
   const [modal, setModal] = useState(null); // testimonial object or null
+  const items = testimonials.length > 0 ? testimonials : TESTIMONIALS;
 
   return (
     <section className="relative bg-white py-6 md:py-10">
@@ -140,14 +153,12 @@ export default function VideoTestimonials() {
             transition={{ duration: 0.6, ease: EASE }}
             className="w-full shrink-0 px-6 sm:px-10 lg:w-[36%] lg:pl-10 xl:pl-16 2xl:pl-24"
           >
-            <Eyebrow>Client Testimonials</Eyebrow>
+            <Eyebrow>{eyebrow}</Eyebrow>
  <h2 className="mt-3 h-display text-[36.8px] leading-[1.08] tracking-tight text-navy-950">
-              Discover how food brands{' '}
-              <span className="gradient-text-orange">drive impact.</span>
+              {title}
             </h2>
             <p className="mt-5 max-w-md text-base leading-relaxed text-navy-600">
-              Food and FMCG businesses across India run on UPWON — cutting wastage, closing books
-              faster, and scaling without the chaos. Hear it in their own words.
+              {description}
             </p>
             <Link
               to="/clients"
@@ -161,14 +172,22 @@ export default function VideoTestimonials() {
           {/* RIGHT — 2-row marquee, auto-scrolls left, bleeds off the panel edge */}
           <div className="min-w-0 flex-1 overflow-hidden pl-6 sm:pl-10 lg:pl-0">
             <div className="grid w-max grid-flow-col-dense grid-rows-2 gap-4 auto-cols-[280px] animate-ticker [animation-duration:70s] hover:[animation-play-state:paused]">
-              {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
-                <TestimonialCard
-                  key={`${t.brand}-${i}`}
-                  t={t}
-                  wide={WIDE_PATTERN[i % TESTIMONIALS.length]}
-                  onPlay={() => setModal(t)}
-                />
-              ))}
+              {[...items, ...items].map((t, i) => {
+                // Folded to the card's position in the original list first, so
+                // the duplicated half lines up however many cards there are —
+                // indexing the pattern by the raw loop index would put
+                // different widths either side of the seam for any count that
+                // is not a multiple of the pattern's length.
+                const position = i % items.length;
+                return (
+                  <TestimonialCard
+                    key={`${t.brand}-${i}`}
+                    t={t}
+                    wide={WIDE_PATTERN[position % WIDE_PATTERN.length]}
+                    onPlay={() => setModal(t)}
+                  />
+                );
+              })}
             </div>
           </div>
         </div>

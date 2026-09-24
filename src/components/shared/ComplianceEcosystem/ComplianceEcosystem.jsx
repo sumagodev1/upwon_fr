@@ -1,25 +1,56 @@
 import { useEffect, useRef, useState } from 'react';
 import { m as motion } from 'framer-motion';
-import { ShieldCheck, FileText, Award, UserRound, Link2 } from 'lucide-react';
 import Container from '../Container/Container.jsx';
 import Eyebrow from '../Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../HeadingLines/HeadingLines.jsx';
 import HexSphere from '../HexSphere/HexSphere.jsx';
+import { sfaIcon } from '../../../lib/sfaIcons.jsx';
 
 /*
   "Trust Establishers" — clears compliance + integration objections. Two cards:
   built-in compliance (over the built-card artwork) and the connected ecosystem —
   the home page integration globe. Matches the reference layout.
+
+  CMS-driven when a `section` is passed, and falls back to the constants
+  otherwise — the same arrangement the page's other sections use, so the SSG
+  build and an unreachable API both render the copy the site ships.
 */
 
 const EASE = [0.22, 1, 0.3, 1];
+
+/*
+  The built-in copy, written in the shape the API sends so that a CMS section
+  and the shipped one take one identical path through the render below - icons
+  included, which are names here as they are in the payload and resolved
+  through sfaIcon() at render time.
+*/
+const EYEBROW = 'Trust Establishers';
+const HEADING_LINES = [
+  [{ text: 'Compliant by Design.', accent: false }],
+  [
+    { text: 'Connected', accent: true },
+    { text: ' to What You ', accent: false },
+    { text: 'Already Use.', accent: true },
+  ],
+];
+const SUBTEXT =
+  'FSSAI and GST e-invoice compliance are built into the system, not bolted on — and UPWON already connects to the tools your business runs on today, so switching never means starting from zero.';
+
 const COL1_BG = '/images/built%20card%20image.webp';
 const BLUE = '#1D6FE0';
 
+const COMPLIANCE = {
+  label: 'Built-in Compliance',
+  icon: 'ShieldCheck',
+  backgroundImage: COL1_BG,
+};
+const ECOSYSTEM = { label: 'Connected Ecosystem', icon: 'Link2', color: BLUE };
+
 const BADGES = [
-  { icon: ShieldCheck, title: 'FSSAI-native', sub: 'End-to-end compliance you trust' },
-  { icon: FileText, title: 'GST & e-invoice ready', sub: 'Native, not a plug-in' },
-  { icon: Award, title: 'ISO-aligned', sub: 'Working toward ISO 27001' },
-  { icon: UserRound, title: 'CMMI Level 3', sub: 'Structured for process rigour' },
+  { icon: 'ShieldCheck', title: 'FSSAI-native', subtext: 'End-to-end compliance you trust' },
+  { icon: 'FileText', title: 'GST & e-invoice ready', subtext: 'Native, not a plug-in' },
+  { icon: 'Award', title: 'ISO-aligned', subtext: 'Working toward ISO 27001' },
+  { icon: 'UserRound', title: 'CMMI Level 3', subtext: 'Structured for process rigour' },
 ];
 
 // Integration logos for the sphere — same assets as the home page globe.
@@ -42,7 +73,7 @@ const SPHERE_LOGOS = [
   { src: `${LOGO_BASE}BharatPe.webp`, alt: 'BharatPe' },
 ];
 
-export default function ComplianceEcosystem() {
+export default function ComplianceEcosystem({ section = null }) {
   const wrapRef = useRef(null);
   const [sphereSize, setSphereSize] = useState(360);
 
@@ -61,6 +92,19 @@ export default function ComplianceEcosystem() {
 
   const nodeCount = sphereSize >= 380 ? 160 : 120;
 
+  const eyebrow = section ? section.eyebrow : EYEBROW;
+  const headingLines = section ? section.headingLines : HEADING_LINES;
+  const subtext = section ? section.subtext : SUBTEXT;
+  const badges = section ? section.badges : BADGES;
+  const logos = section && section.logos.length > 0 ? section.logos : SPHERE_LOGOS;
+  const centreLogo = section ? section.centreLogo : null;
+
+  const compliance = section ? section.compliance : COMPLIANCE;
+  const ecosystem = section ? section.ecosystem : ECOSYSTEM;
+
+  const ComplianceIcon = sfaIcon(compliance.icon);
+  const EcosystemIcon = sfaIcon(ecosystem.icon);
+
   return (
     <section className="relative overflow-hidden bg-[#eef1f7] py-14 md:py-20">
       <div className="pointer-events-none absolute inset-0 grid-bg-light opacity-30" />
@@ -74,17 +118,12 @@ export default function ComplianceEcosystem() {
           transition={{ duration: 0.6, ease: EASE }}
           className="mx-auto max-w-3xl text-center"
         >
-          <Eyebrow className="justify-center">Trust Establishers</Eyebrow>
+          {eyebrow && <Eyebrow className="justify-center">{eyebrow}</Eyebrow>}
  <h2 className="mt-4 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-            Compliant by Design.
-            <br />
-            <span className="gradient-text-orange">Connected</span> to What You{' '}
-            <span className="gradient-text-orange">Already Use.</span>
+            <HeadingLines lines={headingLines} />
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
-            FSSAI and GST e-invoice compliance are built into the system, not bolted on — and UPWON
-            already connects to the tools your business runs on today, so switching never means
-            starting from zero.
+            {subtext}
           </p>
         </motion.div>
 
@@ -97,33 +136,44 @@ export default function ComplianceEcosystem() {
             viewport={{ once: true, margin: '-50px' }}
             transition={{ duration: 0.55, ease: EASE }}
             className="flex flex-col overflow-hidden rounded-3xl border border-cream-300 bg-[#fdf4ee] bg-cover bg-right p-6 shadow-sm md:p-8"
-            style={{ backgroundImage: `url(${COL1_BG})` }}
+            // Without artwork the panel keeps its cream ground, which is a
+            // design rather than a hole.
+            style={
+              compliance.backgroundImage
+                ? { backgroundImage: `url(${compliance.backgroundImage})` }
+                : undefined
+            }
           >
             <div className="flex items-center gap-3">
               <span className="grid h-9 w-9 place-items-center rounded-full bg-orange-500/12 text-orange-600">
-                <ShieldCheck className="h-[18px] w-[18px]" strokeWidth={2} />
+                <ComplianceIcon className="h-[18px] w-[18px]" strokeWidth={2} />
               </span>
               <p className="text-[13px] font-bold uppercase tracking-[0.18em] text-navy-900">
-                Built-in Compliance
+                {compliance.label}
               </p>
             </div>
             <div className="mt-2 h-0.5 w-14 rounded bg-orange-500" />
 
             <div className="mt-6 flex flex-1 flex-col justify-between gap-3 lg:max-w-[63%]">
-              {BADGES.map(({ icon: Icon, title, sub }) => (
-                <div
-                  key={title}
-                  className="flex items-center gap-4 rounded-2xl border border-cream-300 bg-white/90 px-4 py-5 shadow-sm backdrop-blur-sm"
-                >
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-orange-500/10 text-orange-600">
-                    <Icon className="h-5 w-5" strokeWidth={1.9} />
-                  </span>
-                  <div className="min-w-0 border-l border-cream-300 pl-4">
-                    <p className="text-[15px] font-bold text-navy-950">{title}</p>
-                    <p className="mt-0.5 text-[14px] leading-snug text-navy-600">{sub}</p>
+              {badges.map((badge) => {
+                const Icon = sfaIcon(badge.icon);
+                return (
+                  <div
+                    key={badge.title}
+                    className="flex items-center gap-4 rounded-2xl border border-cream-300 bg-white/90 px-4 py-5 shadow-sm backdrop-blur-sm"
+                  >
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-orange-500/10 text-orange-600">
+                      <Icon className="h-5 w-5" strokeWidth={1.9} />
+                    </span>
+                    <div className="min-w-0 border-l border-cream-300 pl-4">
+                      <p className="text-[15px] font-bold text-navy-950">{badge.title}</p>
+                      <p className="mt-0.5 text-[14px] leading-snug text-navy-600">
+                        {badge.subtext}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </motion.div>
 
@@ -138,18 +188,28 @@ export default function ComplianceEcosystem() {
             <div className="flex items-center gap-3">
               <span
                 className="grid h-9 w-9 place-items-center rounded-full"
-                style={{ background: `${BLUE}1A`, color: BLUE }}
+                // The accent at ten percent, as an eight-digit hex rather than
+                // an rgba() conversion - one fewer step between the stored
+                // value and the rendered one.
+                style={{ background: `${ecosystem.color}1A`, color: ecosystem.color }}
               >
-                <Link2 className="h-[18px] w-[18px]" strokeWidth={2} />
+                <EcosystemIcon className="h-[18px] w-[18px]" strokeWidth={2} />
               </span>
               <p className="text-[13px] font-bold uppercase tracking-[0.18em] text-navy-900">
-                Connected Ecosystem
+                {ecosystem.label}
               </p>
             </div>
-            <div className="mt-2 h-0.5 w-14 rounded" style={{ background: BLUE }} />
+            <div className="mt-2 h-0.5 w-14 rounded" style={{ background: ecosystem.color }} />
 
             <div ref={wrapRef} className="grid flex-1 place-items-center py-4">
-              <HexSphere size={sphereSize} nodeCount={nodeCount} logos={SPHERE_LOGOS} />
+              <HexSphere
+                size={sphereSize}
+                nodeCount={nodeCount}
+                logos={logos}
+                // Left undefined when unset, so the sphere keeps its own default
+                // rather than being handed an explicit null to work around.
+                {...(centreLogo ? { logoSrc: centreLogo } : {})}
+              />
             </div>
           </motion.div>
         </div>

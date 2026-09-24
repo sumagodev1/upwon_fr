@@ -5,180 +5,31 @@ import {
   useScroll,
   useTransform,
 } from 'framer-motion';
-import {
-  Cake,
-  IceCream,
-  CupSoda,
-  Popcorn,
-  Soup,
-  Pill,
-  Truck,
-  CalendarClock,
-  Timer,
-  Settings,
-  Store,
-  FlaskConical,
-  ShieldCheck,
-  Snowflake,
-  Boxes,
-  Factory,
-  Droplets,
-  Package,
-  Route,
-  Users,
-  ClipboardCheck,
-  Target,
-  TrendingUp,
-  Rocket,
-  ArrowRight,
-} from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { erpIcon } from '../../../../lib/erpIcons.js';
+import { fetchErpRecognitionSection } from '../../../../lib/erpPage.js';
+import {
+  FALLBACK_BENEFITS,
+  FALLBACK_COPY,
+  FALLBACK_INDUSTRIES,
+} from './specializedErpContent.js';
 
 // "Why use generic ERPs when a specialized system is available?" — a two-pane
 // industry switcher. Left: pick an industry. Right: that industry's ERP detail
-// over its own background photo, with a shared dashboard mockup as the showcase.
+// over its own background photo, with a dashboard mockup as the showcase.
+//
+// The content is the CMS's. This file renders it and nothing else: the copy,
+// the industries, their features and the benefits strip all arrive as data, and
+// the built-in set in specializedErpContent.js is only what the page shows
+// before the fetch lands and whenever the API cannot be reached.
 
 const EASE = [0.16, 1, 0.3, 1];
 
-const INDUSTRIES = [
-  {
-    id: 'bakery',
-    name: 'Bakery & Confectionery',
-    tag: 'Shelf-life planning, recipe management & production costing.',
-    icon: Cake,
-    bg: '/images/bakery.webp',
-    erpTitle: 'Bakery & Confectionery ERP',
-    erpDesc: 'End-to-end control across recipes, batches, shelf-life and outlet billing.',
-    cta: 'Explore Bakery ERP',
-    features: [
-      { icon: FlaskConical, title: 'Recipe & BOM Costing', desc: 'Ingredient-level recipe, batch and yield costing with real-time margins on every product.' },
-      { icon: Timer, title: 'Shelf-life & Freshness', desc: 'Expiry dates, FEFO rotation and freshness control across every counter and outlet.' },
-      { icon: Settings, title: 'Production Planning', desc: 'Demand-driven batch production planning with wastage, rework and yield tracking.' },
-      { icon: Store, title: 'Counter POS', desc: 'Outlet billing, offers, loyalty and daily sales on one fast, offline-ready counter POS.' },
-      { icon: Truck, title: 'Multi-Outlet Distribution', desc: 'Central bakery to outlet dispatch, indenting and live stock visibility, every day.' },
-      { icon: TrendingUp, title: 'Costing & Reports', desc: 'Product costing, GST billing and daily MIS reports for every branch on one dashboard.' },
-    ],
-  },
-  {
-    id: 'dairy',
-    name: 'Dairy & Ice Cream',
-    tag: 'FEFO management, expiry tracking & milk procurement.',
-    icon: IceCream,
-    bg: '/images/dairy.webp',
-    erpTitle: 'Dairy & Ice Cream ERP',
-    erpDesc: 'End-to-end visibility across procurement, production, quality, inventory and distribution.',
-    cta: 'Explore Dairy ERP',
-    features: [
-      { icon: CalendarClock, title: 'FEFO & Expiry Management', desc: 'Automated FEFO, shelf-life tracking and expiry alerts.' },
-      { icon: Truck, title: 'Milk Procurement', desc: 'Milk collection, testing, fat/SNF management & supplier tracking.' },
-      { icon: Settings, title: 'Production Management', desc: 'Batch-wise production, formula management & yield tracking.' },
-      { icon: ShieldCheck, title: 'Quality Control', desc: 'QC checks, lab integration and compliance management.' },
-      { icon: Snowflake, title: 'Cold Chain & Distribution', desc: 'Temperature tracking, cold storage & route optimization.' },
-      { icon: TrendingUp, title: 'Reports & Analytics', desc: 'Procurement, yield and sales dashboards.' },
-    ],
-  },
-  {
-    id: 'beverages',
-    name: 'Beverages',
-    tag: 'Batch production, formula management & dispatch tracking.',
-    icon: CupSoda,
-    bg: '/images/beverage.webp',
-    erpTitle: 'Beverages ERP',
-    erpDesc: 'Formula-driven batch production with full dispatch and distribution visibility.',
-    cta: 'Explore Beverages ERP',
-    features: [
-      { icon: FlaskConical, title: 'Formula Management', desc: 'Version-controlled formulas and batch recipes with precise ingredient ratios.' },
-      { icon: Factory, title: 'Batch Production', desc: 'Line-wise production, filling and yield tracking across every shift and SKU.' },
-      { icon: ShieldCheck, title: 'Quality Control', desc: 'In-line QC checks, lab integration and full FSSAI compliance management.' },
-      { icon: Package, title: 'Dispatch Tracking', desc: 'Warehouse-to-route dispatch visibility with real-time delivery status.' },
-      { icon: Boxes, title: 'Inventory & Expiry', desc: 'Batch-wise stock with shelf-life control and automated expiry alerts.' },
-      { icon: TrendingUp, title: 'Costing & Margins', desc: 'SKU-level costing and margin analytics across every pack size and channel.' },
-    ],
-  },
-  {
-    id: 'namkeen',
-    name: 'Snacks & Namkeen',
-    tag: 'Recipe control, oil management & wastage tracking.',
-    icon: Popcorn,
-    bg: '/images/namkeens.webp',
-    erpTitle: 'Snacks & Namkeen ERP',
-    erpDesc: 'Recipe-accurate production with tight oil, yield and wastage control.',
-    cta: 'Explore Namkeen ERP',
-    features: [
-      { icon: FlaskConical, title: 'Recipe Control', desc: 'Standardised recipes and batch consistency across every kitchen and shift.' },
-      { icon: Droplets, title: 'Oil & Consumption', desc: 'Frying oil usage, top-up and consumption norms tracked against every batch.' },
-      { icon: Timer, title: 'Wastage Tracking', desc: 'Real-time wastage and yield variance alerts to protect your margins.' },
-      { icon: Package, title: 'Packing & Dispatch', desc: 'Pack-size costing, weighment and dispatch control for every SKU.' },
-      { icon: ShieldCheck, title: 'Quality & Compliance', desc: 'FSSAI compliance, batch QC checks and full lot traceability.' },
-      { icon: TrendingUp, title: 'Costing & Reports', desc: 'SKU-level costing and daily MIS reports across every plant and channel.' },
-    ],
-  },
-  {
-    id: 'spices',
-    name: 'Spices & Condiments',
-    tag: 'Lot traceability, quality compliance & lab testing.',
-    icon: Soup,
-    bg: '/images/spices.webp',
-    erpTitle: 'Spices & Condiments ERP',
-    erpDesc: 'Farm-to-pack lot traceability with lab-grade quality compliance.',
-    cta: 'Explore Spices ERP',
-    features: [
-      { icon: ClipboardCheck, title: 'Lot Traceability', desc: 'Full forward and backward lot tracing from raw material to finished pack.' },
-      { icon: FlaskConical, title: 'Lab Testing', desc: 'Moisture, purity and contaminant testing with lab-grade QC records.' },
-      { icon: ShieldCheck, title: 'Quality Compliance', desc: 'FSSAI, spice-board and export compliance managed end to end.' },
-      { icon: Factory, title: 'Grinding & Blending', desc: 'Blend recipes and batch grinding control with precise ratio management.' },
-      { icon: Package, title: 'Packing & Dispatch', desc: 'Pack-size costing, weighment and dispatch control for every SKU.' },
-      { icon: TrendingUp, title: 'Costing & Reports', desc: 'Blend costing, quality reports and MIS dashboards on one platform.' },
-    ],
-  },
-  {
-    id: 'nutra',
-    name: 'Nutraceuticals',
-    tag: 'Regulatory compliance, batch validation & formula tracking.',
-    icon: Pill,
-    bg: '/images/Nutraceutical.webp',
-    erpTitle: 'Nutraceuticals ERP',
-    erpDesc: 'Validated, compliant manufacturing with full formula and batch genealogy.',
-    cta: 'Explore Nutra ERP',
-    features: [
-      { icon: ShieldCheck, title: 'Regulatory Compliance', desc: 'GMP, FSSAI and audit-ready documentation maintained automatically.' },
-      { icon: ClipboardCheck, title: 'Batch Validation', desc: 'Batch records, genealogy and release control for every production lot.' },
-      { icon: FlaskConical, title: 'Formula Tracking', desc: 'Actives, potency and formulation versioning with full change history.' },
-      { icon: Boxes, title: 'Inventory & Expiry', desc: 'Lot-wise stock with strict expiry enforcement and near-expiry alerts.' },
-      { icon: Factory, title: 'Production Control', desc: 'Line-wise manufacturing, in-process checks and yield tracking.' },
-      { icon: TrendingUp, title: 'Reports & Analytics', desc: 'Batch, QC and inventory dashboards for complete plant visibility.' },
-    ],
-  },
-  {
-    id: 'fmcg',
-    name: 'FMCG Distribution',
-    tag: 'Secondary sales, distributor management & order automation.',
-    icon: Truck,
-    bg: '/images/fmcg_ind.webp',
-    erpTitle: 'FMCG Distribution ERP',
-    erpDesc: 'Primary-to-secondary visibility with automated ordering and claims.',
-    cta: 'Explore FMCG ERP',
-    features: [
-      { icon: TrendingUp, title: 'Secondary Sales', desc: 'Outlet-level secondary sales visibility across every beat and territory.' },
-      { icon: Users, title: 'Distributor Management', desc: 'Distributor stock, claims and settlement tracked in real time.' },
-      { icon: Route, title: 'Order Automation', desc: 'Beat-wise ordering and auto-replenishment straight from the field.' },
-      { icon: Package, title: 'Stock & Dispatch', desc: 'Multi-warehouse stock, picking and dispatch control on one system.' },
-      { icon: Target, title: 'Schemes & Claims', desc: 'Scheme automation and fast, accurate claim settlement for every partner.' },
-      { icon: TrendingUp, title: 'Reports & Analytics', desc: 'Sales, stock and distributor dashboards with same-day visibility.' },
-    ],
-  },
-];
-
-const BENEFITS = [
-  { icon: Target, title: 'Industry Best Practices Built-in' },
-  { icon: TrendingUp, title: 'Higher Efficiency & Lower Waste' },
-  { icon: ShieldCheck, title: 'Compliance Assured' },
-  { icon: Rocket, title: 'Scalable as You Grow' },
-];
-
 function IndustryButton({ industry, active, onClick }) {
-  const Icon = industry.icon;
+  const Icon = erpIcon(industry.icon);
   return (
     <button
       type="button"
@@ -198,7 +49,7 @@ function IndustryButton({ industry, active, onClick }) {
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-[14px] font-bold leading-tight text-navy-950">{industry.name}</p>
-        <p className="mt-0.5 truncate text-[14px] text-navy-600">{industry.tag}</p>
+        <p className="mt-0.5 truncate text-[14px] text-navy-600">{industry.shortDescription}</p>
       </div>
       <ArrowRight
         className={`h-4 w-4 shrink-0 transition-transform ${
@@ -209,8 +60,8 @@ function IndustryButton({ industry, active, onClick }) {
   );
 }
 
-function DetailPane({ industry }) {
-  const Icon = industry.icon;
+function DetailPane({ industry, benefits }) {
+  const Icon = erpIcon(industry.icon);
 
   // Scroll-linked reveal — the dashboard sits in a short fixed window and its
   // background pans from top to bottom as the user scrolls the page, so it
@@ -232,7 +83,7 @@ function DetailPane({ industry }) {
           industries framed consistently. White fades blend the left/bottom. */}
       <div className="pointer-events-none absolute right-0 top-0 hidden w-[56%] md:block">
         <img
-          src={industry.bg}
+          src={industry.image}
           alt=""
           aria-hidden
           loading="lazy"
@@ -245,8 +96,8 @@ function DetailPane({ industry }) {
 
       {/* Mobile — full image banner on top. */}
       <img
-        src={industry.bg}
-        alt={industry.name}
+        src={industry.image}
+        alt={industry.imageAlt}
         loading="lazy"
         decoding="async"
         className="block w-full md:hidden"
@@ -264,7 +115,7 @@ function DetailPane({ industry }) {
               {industry.erpTitle}
             </h3>
             <p className="mt-1 text-[14px] leading-relaxed text-navy-600">
-              {industry.erpDesc}
+              {industry.erpDescription}
             </p>
           </div>
         </div>
@@ -276,7 +127,7 @@ function DetailPane({ industry }) {
             <div className="h-px w-16 bg-orange-400" />
             <div className="mt-4 space-y-2.5">
               {industry.features.map((f) => {
-                const FIcon = f.icon;
+                const FIcon = erpIcon(f.icon);
                 return (
                   <div key={f.title} className="flex items-start gap-2.5">
                     <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-cream-300 bg-white text-orange-500 shadow-sm">
@@ -284,7 +135,7 @@ function DetailPane({ industry }) {
                     </span>
                     <div className="min-w-0">
                       <p className="text-[14px] font-bold text-navy-950">{f.title}</p>
-                      <p className="mt-0.5 text-[14px] leading-snug text-navy-600">{f.desc}</p>
+                      <p className="mt-0.5 text-[14px] leading-snug text-navy-600">{f.description}</p>
                     </div>
                   </div>
                 );
@@ -294,26 +145,28 @@ function DetailPane({ industry }) {
 
           {/* Dashboard — sits in a fixed window; its background pans top → bottom
               as the user scrolls, so it reads as the dashboard scrolling. */}
-          <div className="md:mt-16 lg:mt-24">
-            <motion.div
-              role="img"
-              aria-label="UPWON ERP dashboard"
-              style={{
-                backgroundImage: "url('/images/dashboard.webp')",
-                backgroundSize: '112% auto',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: dashPos,
-              }}
-              className="h-[150px] overflow-hidden rounded-2xl border border-cream-300 bg-white shadow-xl md:h-[170px] lg:h-[200px]"
-            />
-          </div>
+          {industry.dashboard && (
+            <div className="md:mt-16 lg:mt-24">
+              <motion.div
+                role="img"
+                aria-label={industry.dashboardAlt}
+                style={{
+                  backgroundImage: `url('${industry.dashboard}')`,
+                  backgroundSize: '112% auto',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: dashPos,
+                }}
+                className="h-[150px] overflow-hidden rounded-2xl border border-cream-300 bg-white shadow-xl md:h-[170px] lg:h-[200px]"
+              />
+            </div>
+          )}
         </div>
 
         {/* Benefits strip — pinned to the bottom of the card so it fills the
             full height alongside the taller selector column. */}
         <div className="mt-auto grid grid-cols-2 gap-3 border-t border-cream-300 pt-5 lg:grid-cols-4">
-          {BENEFITS.map((b) => {
-            const BIcon = b.icon;
+          {benefits.map((b) => {
+            const BIcon = erpIcon(b.icon);
             return (
               <div key={b.title} className="flex min-w-0 items-center gap-2.5">
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-orange-200 bg-white text-orange-500 shadow-sm">
@@ -330,8 +183,39 @@ function DetailPane({ industry }) {
 }
 
 export default function SpecializedErpSection() {
-  const [active, setActive] = useState(0); // Bakery & Confectionery shown by default
+  const [copy, setCopy] = useState(FALLBACK_COPY);
+  const [industries, setIndustries] = useState(FALLBACK_INDUSTRIES);
+  const [benefits, setBenefits] = useState(FALLBACK_BENEFITS);
+  const [active, setActive] = useState(0); // the first industry, shown by default
   const hovering = useRef(false); // pause the auto-cycle while the pointer is over the list
+
+  /*
+   * One read on mount, guarded inside the fetcher so the SSG build never makes
+   * it. Copy and lists are swapped in separately: a section whose heading has
+   * been edited but whose industries have not should show the new heading over
+   * the built-in set rather than an empty card.
+   */
+  useEffect(() => {
+    let cancelled = false;
+    fetchErpRecognitionSection().then((section) => {
+      if (cancelled || !section) return;
+      setCopy({
+        eyebrow: section.eyebrow,
+        headingLines: section.headingLines,
+        subtext: section.subtext,
+      });
+      if (section.industries.length > 0) {
+        setIndustries(section.industries);
+        // The published list may be shorter than the one on screen, so the
+        // selection goes back to the top rather than past the end.
+        setActive(0);
+      }
+      if (section.benefits.length > 0) setBenefits(section.benefits);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Auto-advance one by one; pauses on hover, resumes when the pointer leaves.
   useEffect(() => {
@@ -342,12 +226,18 @@ export default function SpecializedErpSection() {
       return;
     }
     const id = setInterval(() => {
-      if (!hovering.current) setActive((a) => (a + 1) % INDUSTRIES.length);
+      if (!hovering.current) setActive((a) => (a + 1) % industries.length);
     }, 3500);
     return () => clearInterval(id);
-  }, []);
+  }, [industries.length]);
 
   const select = (i) => setActive(i);
+
+  // Nothing published and nothing built in - render nothing rather than an
+  // empty card.
+  if (industries.length === 0) return null;
+
+  const current = industries[Math.min(active, industries.length - 1)];
 
   return (
     <section className="relative overflow-hidden bg-white py-8 md:py-10 lg:py-8">
@@ -363,13 +253,12 @@ export default function SpecializedErpSection() {
               viewport={{ once: true, margin: '-60px' }}
               transition={{ duration: 0.6, ease: EASE }}
             >
-              <Eyebrow>Industry Recognition</Eyebrow>
+              {copy.eyebrow && <Eyebrow>{copy.eyebrow}</Eyebrow>}
  <h2 className="mt-2 h-display text-[36.8px] leading-[1.12] tracking-tight text-navy-950 sm:leading-[1.1]">
-                Why Use Generic ERPs when{' '}
-                <span className="gradient-text-orange">Specialized System</span> is Available?
+                <HeadingLines lines={copy.headingLines} />
               </h2>
               <p className="mt-3 max-w-md text-[14px] leading-relaxed text-navy-600 md:text-sm lg:text-base">
-                Explore the domain-specialized ERP versions — not retrofitted for them.
+                {copy.subtext}
               </p>
             </motion.div>
 
@@ -382,9 +271,9 @@ export default function SpecializedErpSection() {
                 hovering.current = false;
               }}
             >
-              {INDUSTRIES.map((ind, i) => (
+              {industries.map((ind, i) => (
                 <IndustryButton
-                  key={ind.id}
+                  key={ind.slug}
                   industry={ind}
                   active={i === active}
                   onClick={() => select(i)}
@@ -397,14 +286,14 @@ export default function SpecializedErpSection() {
           <div className="min-w-0">
             <AnimatePresence mode="wait">
               <motion.div
-                key={INDUSTRIES[active].id}
+                key={current.slug}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.4, ease: EASE }}
                 className="h-full"
               >
-                <DetailPane industry={INDUSTRIES[active]} />
+                <DetailPane industry={current} benefits={benefits} />
               </motion.div>
             </AnimatePresence>
           </div>

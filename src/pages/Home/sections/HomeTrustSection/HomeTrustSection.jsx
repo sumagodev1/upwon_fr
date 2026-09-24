@@ -32,7 +32,7 @@ export default function HomeTrustSection() {
 
   return (
     <TrustSection
-      eyebrow={section.eyebrow}
+      {...(section.eyebrow ? { eyebrow: section.eyebrow } : {})}
       headingLines={section.headingLines}
       subtext={section.subtext}
       logos={section.logos.length > 0 ? section.logos : undefined}

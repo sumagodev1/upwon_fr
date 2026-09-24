@@ -2,12 +2,18 @@ import { m as motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Check, UserRound, MapPin, Warehouse, Share2 } from 'lucide-react';
 import Container from '../Container/Container.jsx';
+import HeadingLines from '../HeadingLines/HeadingLines.jsx';
+import { sfaIcon, accentTint } from '../../../lib/sfaIcons.jsx';
 
 /*
   "Grows With You" — the phased SFA → DMS → Suite adoption path shown as three
   packages (pricing-table style, but no prices). Each package builds on the one
   before it, so a buyer can start with the field team and add distributor
   control when ready — no big-bang rollout. No package is highlighted.
+
+  CMS-driven when a `section` is passed, and falls back to the constants
+  otherwise — the same arrangement the page's other sections use, so the SSG
+  build and an unreachable API both render the copy the site ships.
 */
 
 const EASE = [0.22, 1, 0.3, 1];
@@ -22,15 +28,32 @@ function FieldRepIcon({ className }) {
   );
 }
 
+/*
+  The built-in copy, written in the shape the API sends so that a CMS section
+  and the shipped one take one identical path through the render below. The
+  only difference is the icon: these hold the component, while a CMS card holds
+  its name and is resolved through sfaIcon().
+*/
+const EYEBROW = 'Grows With You';
+const HEADING_LINES = [
+  [
+    { text: 'Start With Your Field Team. ', accent: false },
+    { text: "Add Distributor Control When You're Ready.", accent: true },
+  ],
+];
+const SUBTEXT =
+  'SFA and DMS can be adopted in sequence, region by region or beat by beat — not a forced simultaneous rollout across every distributor on day one.';
+
+const BUTTON = { label: 'Talk to a specialist', href: '/demo' };
+
 const PACKAGES = [
   {
     key: 'sfa',
-    stage: 'Stage 1',
+    stageLabel: 'Stage 1',
     title: 'SFA',
     subtitle: 'For Your Field Team',
-    desc: 'Empower your field team to sell smarter and cover more.',
-    color: '#22A45D',
-    tint: 'rgba(34,164,93,0.1)',
+    description: 'Empower your field team to sell smarter and cover more.',
+    accentColor: '#22A45D',
     icon: FieldRepIcon,
     featuresLabel: 'Key features',
     features: [
@@ -46,12 +69,11 @@ const PACKAGES = [
   },
   {
     key: 'dms',
-    stage: 'Stage 2',
+    stageLabel: 'Stage 2',
     title: 'DMS',
     subtitle: 'For Distributor Control',
-    desc: 'Bring distributor operations into view and manage with confidence.',
-    color: '#0F9E96',
-    tint: 'rgba(15,158,150,0.1)',
+    description: 'Bring distributor operations into view and manage with confidence.',
+    accentColor: '#0F9E96',
     icon: Warehouse,
     featuresLabel: 'Everything in SFA, plus',
     features: [
@@ -66,12 +88,11 @@ const PACKAGES = [
   },
   {
     key: 'suite',
-    stage: 'Complete',
+    stageLabel: 'Complete',
     title: 'SFA + DMS Suite',
     subtitle: 'The Complete Connected Solution',
-    desc: 'One connected system from field to distributor — and into your ERP.',
-    color: '#7C5CFC',
-    tint: 'rgba(124,92,252,0.1)',
+    description: 'One connected system from field to distributor — and into your ERP.',
+    accentColor: '#7C5CFC',
     icon: Share2,
     featuresLabel: 'Everything in DMS, plus',
     features: [
@@ -85,7 +106,27 @@ const PACKAGES = [
   },
 ];
 
-export default function GrowsWithYou() {
+export default function GrowsWithYou({ section = null }) {
+  const eyebrow = section ? section.eyebrow : EYEBROW;
+  const headingLines = section ? section.headingLines : HEADING_LINES;
+  const subtext = section ? section.subtext : SUBTEXT;
+  /*
+    A CMS card names its icon and carries its own button; a built-in one holds
+    the component and shares the single button above. Normalised here so the
+    card markup below has one shape to render.
+  */
+  const packages = section
+    ? section.cards.map((card, index) => ({
+        ...card,
+        key: `${card.title}-${index}`,
+        icon: sfaIcon(card.icon),
+      }))
+    : PACKAGES.map((p) => ({
+        ...p,
+        buttonLabel: BUTTON.label,
+        buttonHref: BUTTON.href,
+      }));
+
   return (
     <section className="relative overflow-hidden bg-cream-100 py-14 md:py-20">
       <div className="pointer-events-none absolute inset-0 grid-bg-light opacity-40" />
@@ -99,26 +140,26 @@ export default function GrowsWithYou() {
           transition={{ duration: 0.6, ease: EASE }}
           className="mx-auto max-w-3xl text-center"
         >
-          <div className="flex items-center justify-center gap-3">
-            <span className="h-px w-6 bg-orange-500/60" />
-            <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-orange-600">
-              Grows With You
-            </p>
-            <span className="h-px w-6 bg-orange-500/60" />
-          </div>
+          {eyebrow && (
+            <div className="flex items-center justify-center gap-3">
+              <span className="h-px w-6 bg-orange-500/60" />
+              <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-orange-600">
+                {eyebrow}
+              </p>
+              <span className="h-px w-6 bg-orange-500/60" />
+            </div>
+          )}
  <h2 className="mt-4 h-display text-[36.8px] leading-[1.08] tracking-tight text-navy-950">
-            Start With Your Field Team.{' '}
-            <span className="gradient-text-orange">Add Distributor Control When You&apos;re Ready.</span>
+            <HeadingLines lines={headingLines} />
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
-            SFA and DMS can be adopted in sequence, region by region or beat by beat — not a forced
-            simultaneous rollout across every distributor on day one.
+            {subtext}
           </p>
         </motion.div>
 
         {/* Packages */}
         <div className="mt-12 grid items-stretch gap-5 md:grid-cols-3">
-          {PACKAGES.map((p, i) => {
+          {packages.map((p, i) => {
             const Icon = p.icon;
             return (
               <motion.div
@@ -132,50 +173,52 @@ export default function GrowsWithYou() {
                 <div className="flex items-center justify-between">
                   <span
                     className="grid h-12 w-12 place-items-center rounded-2xl"
-                    style={{ background: p.tint, color: p.color }}
+                    style={{ background: accentTint(p.accentColor, 0.1), color: p.accentColor }}
                   >
                     <Icon className="h-6 w-6" strokeWidth={1.8} />
                   </span>
                   <span
                     className="rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em]"
-                    style={{ color: p.color, borderColor: `${p.color}33` }}
+                    style={{ color: p.accentColor, borderColor: `${p.accentColor}33` }}
                   >
-                    {p.stage}
+                    {p.stageLabel}
                   </span>
                 </div>
 
                 <h3 className="mt-4 h-display text-2xl tracking-tight text-navy-950">{p.title}</h3>
-                <p className="mt-1 text-sm font-bold" style={{ color: p.color }}>
+                <p className="mt-1 text-sm font-bold" style={{ color: p.accentColor }}>
                   {p.subtitle}
                 </p>
                 <p className="mt-3 min-h-[44px] text-[14px] leading-relaxed text-navy-600">
-                  {p.desc}
+                  {p.description}
                 </p>
 
                 <Link
-                  to="/demo"
+                  to={p.buttonHref}
                   className="mt-6 inline-flex items-center justify-center rounded-full bg-navy-900 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-navy-950"
                 >
-                  Talk to a specialist
+                  {p.buttonLabel}
                 </Link>
 
-                <div className="mt-6 border-t border-cream-300 pt-5">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-navy-500">
-                    {p.featuresLabel}
-                  </p>
-                  <ul className="mt-4 space-y-2.5">
-                    {p.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2.5 text-[14px] text-navy-800">
-                        <Check
-                          className="mt-0.5 h-4 w-4 shrink-0"
-                          style={{ color: p.color }}
-                          strokeWidth={2.6}
-                        />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {p.features.length > 0 && (
+                  <div className="mt-6 border-t border-cream-300 pt-5">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-navy-500">
+                      {p.featuresLabel}
+                    </p>
+                    <ul className="mt-4 space-y-2.5">
+                      {p.features.map((f) => (
+                        <li key={f} className="flex items-start gap-2.5 text-[14px] text-navy-800">
+                          <Check
+                            className="mt-0.5 h-4 w-4 shrink-0"
+                            style={{ color: p.accentColor }}
+                            strokeWidth={2.6}
+                          />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </motion.div>
             );
           })}

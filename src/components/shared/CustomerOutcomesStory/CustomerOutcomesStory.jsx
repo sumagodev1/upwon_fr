@@ -4,22 +4,48 @@ import { m as motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 import Container from '../Container/Container.jsx';
 import Eyebrow from '../Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../HeadingLines/HeadingLines.jsx';
 
 /*
   "Customer Outcomes" — a "designed for all teams"-style card carousel: heading +
-  CTAs up top, then a peeking row of outcome cards (an initials/portrait tile, a
-  punchy title, the story, attribution, and a circular arrow to the full case
-  study). Anchored on a single strong, NAMED case study with a reserved slot for
-  a second.
+  CTAs up top, then a peeking row of outcome cards (a portrait tile, a punchy
+  title, the story, attribution, and a circular arrow to the full case study).
+
+  CMS-driven when a `section` is passed, and falls back to the constants
+  otherwise — the same arrangement the page's other sections use, so the SSG
+  build and an unreachable API both render the carousel the site ships.
 
   PUBLICATION FLAG: the KBJ Foods story below is PARAPHRASED FROM RESEARCH, not a
-  sign-off-ready quote. Confirm exact wording + publication consent with Pravesh
-  Kumar before this goes live with his name attached. The remaining cards are
-  DUMMY PLACEHOLDER content for layout only — replace with real, named,
-  sign-off-ready outcomes before launch.
+  sign-off-ready quote, and the remaining cards are DUMMY PLACEHOLDER content for
+  layout only. That is what the fallback holds; the published set is the CMS's,
+  so confirming wording and consent is now an edit rather than a deploy.
 */
 
 const EASE = [0.22, 1, 0.3, 1];
+
+/*
+  Every card is tinted with the section's orange. It is the site's brand colour
+  rather than something authored per story, so it stays here rather than being
+  a field an editor could set to something off-palette.
+*/
+const ACCENT = '#E85A2A';
+
+/*
+  The built-in copy, written in the shape the API sends so that a CMS section
+  and the shipped one take one identical path through the render below.
+*/
+const EYEBROW = 'Customer Outcomes';
+const HEADING_LINES = [
+  [
+    { text: 'Real Outcomes for Every ', accent: false },
+    { text: 'Distribution Team.', accent: true },
+  ],
+];
+
+const BUTTONS = {
+  primary: { label: 'Get started', href: '/demo' },
+  secondary: { label: 'View all stories', href: '/clients' },
+};
 
 const STORIES = [
   {
@@ -29,9 +55,7 @@ const STORIES = [
     role: 'Sales & Distribution Head',
     company: 'KBJ Foods',
     photo: '/images/parvesh_kumar.webp',
-    accent: '#E85A2A',
     href: '/clients',
-    reserved: false,
   },
   {
     title: 'Route coverage went up — without adding a single feet-on-street.',
@@ -40,9 +64,7 @@ const STORIES = [
     role: 'National Sales Manager',
     company: 'Sunrise Beverages',
     photo: '/images/anita_sharma.webp',
-    accent: '#E85A2A',
     href: '/clients',
-    reserved: false,
   },
   {
     title: 'Secondary sales visibility, finally in real time.',
@@ -51,9 +73,7 @@ const STORIES = [
     role: 'Distribution Lead',
     company: 'Metro Foods',
     photo: '/images/rahul_mehata.webp',
-    accent: '#E85A2A',
     href: '/clients',
-    reserved: false,
   },
   {
     title: 'Scheme claims settled in days, not weeks.',
@@ -62,18 +82,23 @@ const STORIES = [
     role: 'Channel Head',
     company: 'GreenLeaf FMCG',
     photo: '/images/vikram_rao.webp',
-    accent: '#E85A2A',
     href: '/clients',
-    reserved: false,
   },
 ];
 
-const N = STORIES.length;
-
-export default function CustomerOutcomesStory() {
+export default function CustomerOutcomesStory({ section = null }) {
   const viewportRef = useRef(null);
   const [width, setWidth] = useState(0);
   const [index, setIndex] = useState(0);
+
+  const eyebrow = section ? section.eyebrow : EYEBROW;
+  const headingLines = section ? section.headingLines : HEADING_LINES;
+  // An authored section may leave the buttons unset; the page keeps its own
+  // pair then, because a heading with cards under it is still the section.
+  const buttons = (section && section.buttons) || BUTTONS;
+  const stories = section ? section.cards : STORIES;
+
+  const count = stories.length;
 
   useEffect(() => {
     const el = viewportRef.current;
@@ -85,12 +110,20 @@ export default function CustomerOutcomesStory() {
     return () => ro.disconnect();
   }, []);
 
+  /*
+    A shorter published list can strand the carousel past its own end - the
+    admin panel can deactivate the card the visitor is looking at.
+  */
+  useEffect(() => {
+    setIndex((current) => Math.min(current, Math.max(0, count - 1)));
+  }, [count]);
+
   const GAP = 24;
   // Wide card, leaving the next one peeking on the right.
   const cardW = width ? Math.min(880, Math.max(280, width - 90)) : 840;
   const step = cardW + GAP;
-  const maxIndex = N - 1;
-  const trackX = -Math.min(index, maxIndex) * step;
+  const maxIndex = count - 1;
+  const trackX = -Math.min(index, Math.max(0, maxIndex)) * step;
 
   return (
     <section className="px-4 py-8 md:px-6 md:py-10 lg:px-8">
@@ -110,10 +143,9 @@ export default function CustomerOutcomesStory() {
             viewport={{ once: true, margin: '-60px' }}
             transition={{ duration: 0.6, ease: EASE }}
           >
-            <Eyebrow>Customer Outcomes</Eyebrow>
+            {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
  <h2 className="mt-3 h-display text-[36.8px] leading-[1.05] tracking-tight text-navy-950">
-              Real Outcomes for Every{' '}
-              <span className="gradient-text-orange">Distribution Team.</span>
+              <HeadingLines lines={headingLines} />
             </h2>
           </motion.div>
 
@@ -125,16 +157,16 @@ export default function CustomerOutcomesStory() {
             className="flex flex-wrap items-center gap-3"
           >
             <Link
-              to="/demo"
+              to={buttons.primary.href}
               className="inline-flex items-center justify-center rounded-full bg-navy-950 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-navy-900"
             >
-              Get started
+              {buttons.primary.label}
             </Link>
             <Link
-              to="/clients"
+              to={buttons.secondary.href}
               className="inline-flex items-center justify-center rounded-full border border-navy-300 bg-white px-6 py-3 text-sm font-bold text-navy-900 transition-colors hover:bg-cream-100"
             >
-              View all stories
+              {buttons.secondary.label}
             </Link>
           </motion.div>
         </div>
@@ -147,38 +179,29 @@ export default function CustomerOutcomesStory() {
             animate={{ x: trackX }}
             transition={{ duration: 0.7, ease: EASE }}
           >
-            {STORIES.map((s, i) => {
+            {stories.map((s, i) => {
               const isActive = i === index;
               return (
                 <motion.div
-                  key={s.name}
+                  key={`${s.company}-${s.name}`}
                   className="relative shrink-0 rounded-[28px] bg-white p-5 shadow-sm md:p-6"
                   style={{ width: cardW }}
                   animate={{ opacity: isActive ? 1 : 0.55 }}
                   transition={{ duration: 0.7, ease: EASE }}
                 >
                   <div className="flex flex-col gap-6 sm:flex-row sm:items-stretch">
-                    {/* Portrait tile (photo, initials fallback) */}
+                    {/* Portrait tile */}
                     <div
                       className="grid aspect-square w-full shrink-0 place-items-center overflow-hidden rounded-2xl sm:w-56 md:w-64"
-                      style={{ background: `${s.accent}1A` }}
+                      style={{ background: `${ACCENT}1A` }}
                     >
-                      {s.photo ? (
-                        <img
-                          src={s.photo}
-                          alt={s.name}
-                          loading="lazy"
-                          decoding="async"
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <span
-                          className="num-display text-6xl md:text-7xl"
-                          style={{ color: s.accent }}
-                        >
-                          {s.initials}
-                        </span>
-                      )}
+                      <img
+                        src={s.photo}
+                        alt={s.name}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-cover"
+                      />
                     </div>
 
                     {/* Content */}
@@ -191,7 +214,7 @@ export default function CustomerOutcomesStory() {
                       </p>
                       <div className="mt-6">
                         <p className="text-[15px] font-bold text-navy-950">{s.name}</p>
-                        <p className="text-sm font-semibold" style={{ color: s.accent }}>
+                        <p className="text-sm font-semibold" style={{ color: ACCENT }}>
                           {s.role}
                         </p>
                         <p className="text-sm text-navy-500">{s.company}</p>
@@ -200,7 +223,7 @@ export default function CustomerOutcomesStory() {
                   </div>
 
                   {/* Circular arrow → case study */}
-                  {!s.reserved && s.href && (
+                  {s.href && (
                     <Link
                       to={s.href}
                       aria-label={`Read the ${s.company} case study`}
@@ -217,9 +240,9 @@ export default function CustomerOutcomesStory() {
 
         {/* Dot pagination */}
         <div className="mt-8 flex items-center justify-center gap-2.5">
-          {STORIES.map((s, i) => (
+          {stories.map((s, i) => (
             <button
-              key={s.name}
+              key={`${s.company}-${s.name}-dot`}
               type="button"
               onClick={() => setIndex(i)}
               aria-label={`Go to story ${i + 1}`}

@@ -246,3 +246,247 @@ export async function fetchValuesSection() {
     return null;
   }
 }
+
+// An integrations section is only usable with its copy and at least one logo.
+function isRenderableIntegrations(section) {
+  return (
+    section &&
+    typeof section.eyebrow === 'string' &&
+    section.eyebrow.trim() !== '' &&
+    Array.isArray(section.headingLines) &&
+    section.headingLines.length > 0 &&
+    typeof section.subtext === 'string' &&
+    section.subtext.trim() !== '' &&
+    Array.isArray(section.logos) &&
+    section.logos.length > 0
+  );
+}
+
+/**
+ * The published platform integrations section, or null to mean "keep what you
+ * have".
+ *
+ * The server assembles the copy and the centre logo from the first active
+ * entry and the sphere from every active entry whose logo still resolves, so
+ * there is no list to fold together here.
+ *
+ * `centreLogo` is the one field allowed to come back null on an otherwise
+ * usable section: the sphere renders perfectly well around the mark the site
+ * ships, so a missing one is not a reason to drop the whole CMS copy.
+ *
+ * @returns {Promise<{eyebrow: string, headingLines: Array, subtext: string,
+ *   centreLogo: string | null, logos: Array<{src: string, alt: string}>} | null>}
+ */
+export async function fetchIntegrationsSection() {
+  // Same three rules as the other fetches: never during the SSG build, never
+  // throw, and unconfigured is a valid state.
+  if (typeof window === 'undefined') return null;
+  if (!BASE) return null;
+
+  try {
+    const res = await fetch(`${BASE}/public/home-page/integrations-section`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) return null;
+
+    const body = await res.json();
+    // `data` is null when nothing is published, or every active logo was lost.
+    if (!body || body.success !== true || !isRenderableIntegrations(body.data)) return null;
+
+    const section = body.data;
+    return {
+      eyebrow: section.eyebrow,
+      headingLines: section.headingLines,
+      subtext: section.subtext,
+      centreLogo: typeof section.centreLogo === 'string' ? section.centreLogo : null,
+      // Renamed to the keys HexSphere already takes.
+      logos: section.logos
+        .filter((logo) => logo && typeof logo.image === 'string')
+        .map((logo) => ({ src: logo.image, alt: logo.alt })),
+    };
+  } catch {
+    return null;
+  }
+}
+
+// A testimonials section is only usable with its copy and at least one card.
+function isRenderableTestimonials(section) {
+  return (
+    section &&
+    typeof section.eyebrow === 'string' &&
+    section.eyebrow.trim() !== '' &&
+    Array.isArray(section.headingLines) &&
+    section.headingLines.length > 0 &&
+    typeof section.subtext === 'string' &&
+    section.subtext.trim() !== '' &&
+    Array.isArray(section.cards) &&
+    section.cards.length > 0
+  );
+}
+
+/**
+ * The published client testimonials section, or null to mean "keep what you
+ * have".
+ *
+ * The server assembles the copy from the first active card and the marquee
+ * from every active card whose poster still resolves, so there is no list to
+ * fold together here.
+ *
+ * A card's `video` is the one field allowed through as null: the component
+ * already drops the play button and offers the customer story instead, which
+ * is the right state for a testimonial still being filmed.
+ *
+ * @returns {Promise<{eyebrow: string, headingLines: Array, subtext: string,
+ *   cards: Array<{brand: string, role: string, quote: string, poster: string,
+ *   video: string | null}>} | null>}
+ */
+export async function fetchTestimonialsSection() {
+  // Same three rules as the other fetches: never during the SSG build, never
+  // throw, and unconfigured is a valid state.
+  if (typeof window === 'undefined') return null;
+  if (!BASE) return null;
+
+  try {
+    const res = await fetch(`${BASE}/public/home-page/testimonials-section`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) return null;
+
+    const body = await res.json();
+    // `data` is null when nothing is published, or every active card lost its poster.
+    if (!body || body.success !== true || !isRenderableTestimonials(body.data)) return null;
+
+    const section = body.data;
+    return {
+      eyebrow: section.eyebrow,
+      headingLines: section.headingLines,
+      subtext: section.subtext,
+      // Renamed to the keys the card component already uses.
+      cards: section.cards
+        .filter((card) => card && typeof card.poster === 'string')
+        .map((card) => ({
+          brand: card.clientName,
+          role: card.clientPosition,
+          quote: card.quote,
+          poster: card.poster,
+          video: typeof card.video === 'string' ? card.video : null,
+        })),
+    };
+  } catch {
+    return null;
+  }
+}
+
+// An FAQ section is only usable with its copy and at least one question.
+function isRenderableFaq(section) {
+  return (
+    section &&
+    typeof section.eyebrow === 'string' &&
+    section.eyebrow.trim() !== '' &&
+    Array.isArray(section.headingLines) &&
+    section.headingLines.length > 0 &&
+    typeof section.subtext === 'string' &&
+    section.subtext.trim() !== '' &&
+    Array.isArray(section.faqs) &&
+    section.faqs.length > 0
+  );
+}
+
+/**
+ * The published FAQ section, or null to mean "keep what you have".
+ *
+ * The server assembles the copy from the first active question and the
+ * accordion from every active question, so there is no list to fold together
+ * here. The `q`/`a` keys already match what the accordion component takes.
+ *
+ * @returns {Promise<{eyebrow: string, headingLines: Array, subtext: string,
+ *   faqs: Array<{q: string, a: string}>} | null>}
+ */
+export async function fetchFaqSection() {
+  // Same three rules as the other fetches: never during the SSG build, never
+  // throw, and unconfigured is a valid state.
+  if (typeof window === 'undefined') return null;
+  if (!BASE) return null;
+
+  try {
+    const res = await fetch(`${BASE}/public/home-page/faq-section`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) return null;
+
+    const body = await res.json();
+    // `data` is null when nothing is published.
+    if (!body || body.success !== true || !isRenderableFaq(body.data)) return null;
+
+    const section = body.data;
+    return {
+      eyebrow: section.eyebrow,
+      headingLines: section.headingLines,
+      subtext: section.subtext,
+      faqs: section.faqs.filter(
+        (faq) => faq && typeof faq.q === 'string' && typeof faq.a === 'string',
+      ),
+    };
+  } catch {
+    return null;
+  }
+}
+
+// A CTA band is only usable with its copy and a button label; the artwork and
+// the report are optional, because the component ships both of those itself.
+function isRenderableCta(section) {
+  return (
+    section &&
+    typeof section.eyebrow === 'string' &&
+    section.eyebrow.trim() !== '' &&
+    Array.isArray(section.headingLines) &&
+    section.headingLines.length > 0 &&
+    typeof section.subtext === 'string' &&
+    section.subtext.trim() !== '' &&
+    typeof section.buttonLabel === 'string' &&
+    section.buttonLabel.trim() !== ''
+  );
+}
+
+/**
+ * The published report-download band, or null to mean "keep what you have".
+ *
+ * `reportUrl` already carries ?download, so the button saves the PDF rather
+ * than opening it in a viewer. That has to come from the server: this site and
+ * the API are different origins, and a cross-origin <a download> is ignored.
+ *
+ * @returns {Promise<{eyebrow: string, headingLines: Array, subtext: string,
+ *   desktopImage: string | null, mobileImage: string | null,
+ *   buttonLabel: string, reportUrl: string | null} | null>}
+ */
+export async function fetchCtaSection() {
+  // Same three rules as the other fetches: never during the SSG build, never
+  // throw, and unconfigured is a valid state.
+  if (typeof window === 'undefined') return null;
+  if (!BASE) return null;
+
+  try {
+    const res = await fetch(`${BASE}/public/home-page/cta-section`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) return null;
+
+    const body = await res.json();
+    // `data` is null when the copy or the band has not been authored yet.
+    if (!body || body.success !== true || !isRenderableCta(body.data)) return null;
+
+    const section = body.data;
+    return {
+      eyebrow: section.eyebrow,
+      headingLines: section.headingLines,
+      subtext: section.subtext,
+      desktopImage:
+        typeof section.desktopImage === 'string' ? section.desktopImage : null,
+      mobileImage: typeof section.mobileImage === 'string' ? section.mobileImage : null,
+      buttonLabel: section.buttonLabel,
+      reportUrl: typeof section.reportUrl === 'string' ? section.reportUrl : null,
+    };
+  } catch {
+    return null;
+  }
+}

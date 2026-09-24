@@ -11,17 +11,33 @@ import Container from '../../../../components/shared/Container/Container.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
 
-export default function ErpFinalCta() {
+// Shared so the in-app link and the off-site link cannot drift apart.
+const BUTTON_CLASS = 'btn-primary-glow !px-7 !py-3.5 text-[15px]';
+
+export default function ErpFinalCta({
+  title = (
+    <>
+      See UPWON on Your Business{' '}
+      <span className="gradient-text-orange">Live, in 30 Minutes.</span>
+    </>
+  ),
+  description = 'This isn’t a pitch. It’s a 30-minute conversation about your operations — with someone who knows your industry, mapped to what you actually run.',
+  // The band is laid out twice. Both default to the artwork this section ships.
+  desktopImage = '/images/erp_cta.webp',
+  mobileImage = '/images/erp_cta_mobile.webp',
+  buttonLabel = 'Talk to an Industry Specialist',
+  buttonHref = '/demo',
+} = {}) {
   return (
     <section className="relative overflow-hidden bg-white">
       {/* Background — mobile portrait vs wide desktop banner */}
       <div
         className="absolute inset-0 bg-cover bg-center md:hidden"
-        style={{ backgroundImage: "url('/images/erp_cta_mobile.webp')" }}
+        style={{ backgroundImage: `url(${mobileImage})` }}
       />
       <div
         className="absolute inset-0 hidden bg-cover bg-center md:block"
-        style={{ backgroundImage: "url('/images/erp_cta.webp')" }}
+        style={{ backgroundImage: `url(${desktopImage})` }}
       />
       {/* Soft glow behind the centred text only — keeps the image clearly
           visible at the edges while text stays readable in the middle. */}
@@ -42,20 +58,30 @@ export default function ErpFinalCta() {
           className="mx-auto max-w-3xl py-16 text-center md:py-24"
         >
  <h2 className="h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-            See UPWON on Your Business —{' '}
-            <span className="gradient-text-orange">Live, in 30 Minutes.</span>
+            {title}
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-[14.5px] leading-relaxed text-navy-700 md:text-base">
-            This isn’t a pitch. It’s a 30-minute conversation about your operations — with someone
-            who knows your industry, mapped to what you actually run.
+            {description}
           </p>
 
           {/* Primary CTA */}
           <div className="mt-8 flex justify-center">
-            <Link to="/demo" className="btn-primary-glow !px-7 !py-3.5 text-[15px]">
-              Talk to an Industry Specialist
-              <ArrowUpRight className="h-4 w-4" strokeWidth={2} />
-            </Link>
+            {/*
+              An <a> when the button points off-site, a <Link> when it stays in
+              the app: react-router must not try to handle an absolute URL as an
+              in-app route.
+            */}
+            {buttonHref.startsWith('/') ? (
+              <Link to={buttonHref} className={BUTTON_CLASS}>
+                {buttonLabel}
+                <ArrowUpRight className="h-4 w-4" strokeWidth={2} />
+              </Link>
+            ) : (
+              <a href={buttonHref} className={BUTTON_CLASS}>
+                {buttonLabel}
+                <ArrowUpRight className="h-4 w-4" strokeWidth={2} />
+              </a>
+            )}
           </div>
         </motion.div>
       </Container>

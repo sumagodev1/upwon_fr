@@ -32,7 +32,7 @@ export default function HomeIndustriesSection() {
 
   return (
     <IndustriesVideoIntro
-      eyebrow={section.eyebrow}
+      {...(section.eyebrow ? { eyebrow: section.eyebrow } : {})}
       headingLines={section.headingLines}
       subtext={section.subtext}
       video={section.video}

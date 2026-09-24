@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import HeroSlider from '../../components/shared/HeroSlider/HeroSlider.jsx';
 import FmsProofStrip from './sections/FmsProofStrip/FmsProofStrip.jsx';
@@ -14,7 +15,13 @@ import FmsCustomerOutcomes from './sections/FmsCustomerOutcomes/FmsCustomerOutco
 import IndustryFaq from '../../components/shared/IndustryFaq/IndustryFaq.jsx';
 import FmsFinalCta from './sections/FmsFinalCta/FmsFinalCta.jsx';
 import Seo, { productJsonLd, breadcrumbJsonLd } from '../../components/shared/Seo/Seo.jsx';
+import HeadingLines from '../../components/shared/HeadingLines/HeadingLines.jsx';
 import { getPlatformTheme, findProductBySlug } from '../../data/modules.js';
+import {
+  fetchFmsCtaSection,
+  fetchFmsFaqSection,
+  fetchFmsHeroSlides,
+} from '../../lib/fmsPage.js';
 
 /*
   Dedicated UPWON FMS landing page — its own page (like ErpPage / SfaDmsPage) so
@@ -24,6 +31,10 @@ import { getPlatformTheme, findProductBySlug } from '../../data/modules.js';
 
 // Objections pulled from franchisor ICP research — price-as-add-on framing,
 // rollout-disruption fear, franchisee tech-resistance, data security, phasing.
+//
+// The fallback now: the published list is the CMS's, and this is what the page
+// shows while the fetch is in flight, during the SSG build, and whenever the
+// API is unreachable.
 const FMS_FAQS = [
   {
     q: 'We already pay for a POS — why do we need this too?',
@@ -51,12 +62,51 @@ const FMS_FAQS = [
   },
 ];
 
+/**
+ * The three CMS-backed sections are read here rather than inside their
+ * components: HeroSlider and IndustryFaq are shared with several other pages,
+ * and FmsFinalCta only renders here - so keeping the fetch on the page is what
+ * stops this page's content following the shared components elsewhere.
+ *
+ * Each section falls back on its own. An empty slide list keeps the built-in
+ * slider; a null FAQ or band keeps the copy the page ships. The fetches are
+ * guarded inside lib/fmsPage.js, so the SSG build never makes them and the
+ * prerendered HTML stays the site's own content.
+ */
 export default function FmsPage() {
   const product = findProductBySlug('fms');
+
+  const [cmsSlides, setCmsSlides] = useState(null);
+  const [faq, setFaq] = useState(null);
+  const [cta, setCta] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchFmsHeroSlides().then((slides) => {
+      if (!cancelled && slides.length > 0) setCmsSlides(slides);
+    });
+    fetchFmsFaqSection().then((section) => {
+      if (!cancelled && section) setFaq(section);
+    });
+    fetchFmsCtaSection().then((section) => {
+      if (!cancelled && section) setCta(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   if (!product) return <Navigate to="/platform" replace />;
 
   const theme = getPlatformTheme('fms');
-  const heroSlides = (product.heroSlides || []).map((s) => ({ accent: theme.accent, ...s }));
+  // The accent is the platform's, not the slide's, so it is applied to whichever
+  // list is in play.
+  const heroSlides = (cmsSlides ?? product.heroSlides ?? []).map((s) => ({
+    accent: theme.accent,
+    ...s,
+  }));
 
   const seoTitle = product.seoTitle || `${product.code} — ${product.hero}`;
   const seoDesc = product.metaDescription || product.description;
@@ -135,20 +185,29 @@ export default function FmsPage() {
       <FmsCustomerOutcomes />
 
       {/* ========== FAQ — franchisor objections ========== */}
-      <IndustryFaq
-        faqs={FMS_FAQS}
-        eyebrow="FAQ"
-        title={
-          <>
-            Questions Franchisors{' '}
-            <span className="gradient-text-orange">Ask Before They Commit.</span>
-          </>
-        }
-        description="Pulled straight from the objections franchisors raise — price-as-add-on, rollout disruption, franchisee resistance — not generic FAQ boilerplate."
-      />
+      {faq ? (
+        <IndustryFaq
+          faqs={faq.faqs}
+          {...(faq.eyebrow ? { eyebrow: faq.eyebrow } : {})}
+          title={<HeadingLines lines={faq.headingLines} />}
+          description={faq.subtext}
+        />
+      ) : (
+        <IndustryFaq
+          faqs={FMS_FAQS}
+          eyebrow="FAQ"
+          title={
+            <>
+              Questions Franchisors{' '}
+              <span className="gradient-text-orange">Ask Before They Commit.</span>
+            </>
+          }
+          description="Pulled straight from the objections franchisors raise — price-as-add-on, rollout disruption, franchisee resistance — not generic FAQ boilerplate."
+        />
+      )}
 
       {/* ========== FINAL CTA — 30-minute conversation ========== */}
-      <FmsFinalCta />
+      <FmsFinalCta section={cta} />
     </div>
   );
 }

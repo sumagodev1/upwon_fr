@@ -1,70 +1,30 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { m as motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, ArrowLeft, ArrowRight, Quote } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { fetchErpOutcomesSection } from '../../../../lib/erpPage.js';
+import { FALLBACK_CARDS, FALLBACK_COPY } from './customerOutcomesContent.js';
 
 /*
   "Customer Outcomes" — specific, operational social proof before the final CTA,
   presented as a horizontal carousel of image cards (heading + CTA on top,
   prev/next arrows below).
 
-  ⚠️ PUBLICATION FLAG — the quotes and stats below are PARAPHRASED placeholders
-  drawn from research, NOT verbatim customer statements cleared for publication.
-  Before this goes live with a customer's name attached, get direct written
-  sign-off (or a short recorded quote) on the exact wording from each named
-  customer. Do not publish paraphrased research quotes as direct testimonials.
+  The content is the CMS's. This file renders it and nothing else: the copy and
+  every card arrive as data, and the built-in set in customerOutcomesContent.js
+  is only what the page shows before the fetch lands and whenever the API cannot
+  be reached.
+
+  ⚠️ PUBLICATION FLAG — see customerOutcomesContent.js. The shipped quotes are
+  paraphrased research placeholders, not cleared customer statements, and the
+  same caution applies to anything written in their place through the admin
+  panel.
 */
 
 const EASE = [0.22, 1, 0.3, 1];
-
-const CARDS = [
-  {
-    industry: 'FMCG Distribution',
-    stat: '3 routes',
-    statLabel: 'under-performing territories identified and cut',
-    quote: 'For the first time we could see profitability by territory — and actually act on it.',
-    role: 'National Sales Head',
-    company: 'Regional FMCG brand',
-    image:
-      'https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=900&q=70',
-    dark: true,
-  },
-  {
-    industry: 'Bakery & Confectionery',
-    stat: 'Same-day',
-    statLabel: 'credit notes — down from 5–6 days and 3 staff',
-    quote: 'Credit notes that used to take days and three people now close the same day.',
-    role: 'Finance Director',
-    company: 'Monginis',
-    image:
-      'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=900&q=70',
-    dark: false,
-  },
-  {
-    industry: 'Sweets & Namkeen',
-    stat: '6 tools → 1',
-    statLabel: 'disconnected systems consolidated onto one platform',
-    quote: 'We replaced a stack of disconnected tools with one system the whole plant trusts.',
-    role: 'Plant Operations Head',
-    company: 'Kaka Foods',
-    image:
-      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=900&q=70',
-    dark: true,
-  },
-  {
-    industry: 'Food Manufacturing',
-    stat: '18%',
-    statLabel: 'wastage reduction within the first year',
-    quote: 'Batch-level costing showed us exactly where the loss was — and how to stop it.',
-    role: 'Operations Director',
-    company: 'Mid-cap food manufacturer',
-    image:
-      'https://images.unsplash.com/photo-1470324161839-ce2bb6fa6bc3?auto=format&fit=crop&w=900&q=70',
-    dark: false,
-  },
-];
 
 function OutcomeCard({ card }) {
   const dark = false; // all cards use the same light tinted background
@@ -107,10 +67,10 @@ function OutcomeCard({ card }) {
 
         <div className={`border-t pt-3 ${dark ? 'border-white/10' : 'border-orange-200/70'}`}>
           <p className={`text-[14px] font-bold ${dark ? 'text-white' : 'text-navy-950'}`}>
-            {card.role}
+            {card.authorRole}
           </p>
           <p className={`text-[14px] ${dark ? 'text-cream-100/60' : 'text-navy-600'}`}>
-            {card.company}
+            {card.authorCompany}
           </p>
         </div>
       </div>
@@ -119,7 +79,7 @@ function OutcomeCard({ card }) {
       <div className="relative order-first h-40 overflow-hidden sm:order-none sm:h-full">
         <img
           src={card.image}
-          alt={card.company}
+          alt={card.imageAlt}
           loading="lazy"
           decoding="async"
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -130,7 +90,27 @@ function OutcomeCard({ card }) {
 }
 
 export default function CustomerOutcomes() {
+  const [copy, setCopy] = useState(FALLBACK_COPY);
+  const [cards, setCards] = useState(FALLBACK_CARDS);
   const trackRef = useRef(null);
+
+  /*
+   * One read on mount, guarded inside the fetcher so the SSG build never makes
+   * it. Copy and cards are swapped in separately: a section whose heading has
+   * been edited but whose cards have not should show the new heading over the
+   * built-in carousel rather than an empty track.
+   */
+  useEffect(() => {
+    let cancelled = false;
+    fetchErpOutcomesSection().then((section) => {
+      if (cancelled || !section) return;
+      setCopy({ eyebrow: section.eyebrow, headingLines: section.headingLines });
+      if (section.cards.length > 0) setCards(section.cards);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const scroll = (dir) => {
     const el = trackRef.current;
@@ -139,6 +119,10 @@ export default function CustomerOutcomes() {
     const amount = card ? card.getBoundingClientRect().width + 20 : el.clientWidth * 0.8;
     el.scrollBy({ left: dir * amount, behavior: 'smooth' });
   };
+
+  // Nothing published and nothing built in - render nothing rather than an
+  // empty track with arrows that do nothing.
+  if (cards.length === 0) return null;
 
   return (
     <section className="relative overflow-hidden bg-white py-14 md:py-20">
@@ -154,10 +138,9 @@ export default function CustomerOutcomes() {
           className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"
         >
           <div className="max-w-2xl">
-            <Eyebrow>Customer Outcomes</Eyebrow>
+            {copy.eyebrow && <Eyebrow>{copy.eyebrow}</Eyebrow>}
  <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-              What Changed After UPWON —{' '}
-              <span className="gradient-text-orange">In Their Own Words.</span>
+              <HeadingLines lines={copy.headingLines} />
             </h2>
           </div>
           <Link
@@ -175,8 +158,8 @@ export default function CustomerOutcomes() {
             ref={trackRef}
             className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            {CARDS.map((card) => (
-              <OutcomeCard key={card.role + card.company} card={card} />
+            {cards.map((card) => (
+              <OutcomeCard key={card.authorRole + card.authorCompany} card={card} />
             ))}
           </div>
 
