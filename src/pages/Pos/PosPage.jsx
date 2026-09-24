@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import HeroSlider from '../../components/shared/HeroSlider/HeroSlider.jsx';
 import PosProofStrip from './sections/PosProofStrip/PosProofStrip.jsx';
@@ -14,7 +15,13 @@ import PosCustomerOutcomes from './sections/PosCustomerOutcomes/PosCustomerOutco
 import IndustryFaq from '../../components/shared/IndustryFaq/IndustryFaq.jsx';
 import PosFinalCta from './sections/PosFinalCta/PosFinalCta.jsx';
 import Seo, { productJsonLd, breadcrumbJsonLd } from '../../components/shared/Seo/Seo.jsx';
+import HeadingLines from '../../components/shared/HeadingLines/HeadingLines.jsx';
 import { getPlatformTheme, findProductBySlug } from '../../data/modules.js';
+import {
+  fetchPosCtaSection,
+  fetchPosFaqSection,
+  fetchPosHeroSlides,
+} from '../../lib/posPage.js';
 
 /*
   Dedicated UPWON POS landing page — its own page (like ErpPage / FmsPage) so the
@@ -24,6 +31,10 @@ import { getPlatformTheme, findProductBySlug } from '../../data/modules.js';
 
 // Concrete, counter-level questions a retail / F&B owner actually asks — not
 // enterprise-style due diligence.
+//
+// The fallback now: the published list is the CMS's, and this is what the page
+// shows while the fetch is in flight, during the SSG build, and whenever the
+// API is unreachable.
 const POS_FAQS = [
   {
     q: 'What hardware do I need?',
@@ -53,10 +64,44 @@ const POS_FAQS = [
 
 export default function PosPage() {
   const product = findProductBySlug('pos');
+
+  const [cmsSlides, setCmsSlides] = useState(null);
+  const [faq, setFaq] = useState(null);
+  const [cta, setCta] = useState(null);
+
+  /*
+    The fetches live on the page rather than inside the three components:
+    HeroSlider and IndustryFaq are shared with several other pages, and
+    PosFinalCta only renders here - so keeping the fetch here is what stops one
+    page's content following a shared component onto another.
+  */
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchPosHeroSlides().then((slides) => {
+      if (!cancelled && slides.length > 0) setCmsSlides(slides);
+    });
+    fetchPosFaqSection().then((section) => {
+      if (!cancelled && section) setFaq(section);
+    });
+    fetchPosCtaSection().then((section) => {
+      if (!cancelled && section) setCta(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   if (!product) return <Navigate to="/platform" replace />;
 
   const theme = getPlatformTheme('pos');
-  const heroSlides = (product.heroSlides || []).map((s) => ({ accent: theme.accent, ...s }));
+  // The accent is the platform’s, not the slide’s, so it is applied to whichever
+  // list is in play.
+  const heroSlides = (cmsSlides ?? product.heroSlides ?? []).map((s) => ({
+    accent: theme.accent,
+    ...s,
+  }));
 
   const seoTitle = product.seoTitle || `${product.code} — ${product.hero}`;
   const seoDesc = product.metaDescription || product.description;
@@ -126,20 +171,29 @@ export default function PosPage() {
       <PosCustomerOutcomes />
 
       {/* ========== FAQ — practical counter-level objections ========== */}
-      <IndustryFaq
-        faqs={POS_FAQS}
-        eyebrow="FAQ"
-        title={
-          <>
-            Questions Retail &amp; F&amp;B Owners{' '}
-            <span className="gradient-text-orange">Ask Before They Commit.</span>
-          </>
-        }
-        description="Concrete, operational answers — hardware, offline billing, aggregator orders, GST and go-live time — not enterprise-style due diligence."
-      />
+      {faq ? (
+        <IndustryFaq
+          faqs={faq.faqs}
+          {...(faq.eyebrow ? { eyebrow: faq.eyebrow } : {})}
+          title={<HeadingLines lines={faq.headingLines} />}
+          description={faq.subtext}
+        />
+      ) : (
+        <IndustryFaq
+          faqs={POS_FAQS}
+          eyebrow="FAQ"
+          title={
+            <>
+              Questions Retail &amp; F&amp;B Owners{' '}
+              <span className="gradient-text-orange">Ask Before They Commit.</span>
+            </>
+          }
+          description="Concrete, operational answers — hardware, offline billing, aggregator orders, GST and go-live time — not enterprise-style due diligence."
+        />
+      )}
 
       {/* ========== FINAL CTA — 30-minute counter conversation ========== */}
-      <PosFinalCta />
+      <PosFinalCta section={cta} />
     </>
   );
 }
