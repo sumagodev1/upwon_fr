@@ -28,7 +28,24 @@ function renderHeadline(headline) {
 // NOT a carousel of random brand statements.
 //
 // Props
-//   slides[]         — { eyebrow?, headline, subhead, cta:{label,to}, secondaryCta?, bg, accent? }
+//   slides[]         — { eyebrow?, headline, subhead, cta:{label,to}, secondaryCta?, bg, mobileBg?, accent? }
+//                      mobileBg is an optional phone crop of `bg` (see the
+//                      background block below); slides without one render
+//                      exactly as they always have.
+//
+//                      THE COPY BLOCKS ARE KEYED BY SLIDE INDEX, and a CMS-driven
+//                      hero must not change that. A `copyKey` prop letting a slide
+//                      name its own copy — so a hero with one set of copy over a
+//                      rotating backdrop list kept one text block mounted — was
+//                      tried and removed: such a hero swaps its built-in slides
+//                      for published ones once the API answers, which changes the
+//                      copy blocks' keys mid-life. Each of those blocks is the
+//                      lone child of an AnimatePresence mode="wait", and that swap
+//                      does not complete here — the old text stays mounted at
+//                      opacity 1 and the new child is never mounted, so published
+//                      copy never reached the screen. Keyed by index the swap is
+//                      an in-place update at an unchanged key, and the new copy
+//                      renders. See pages/About/sections/AboutHeroSection.
 //   intervalMs       — auto-advance interval (default 5000ms per brief)
 //   variant          — 'dark' (default — navy bg w/ photo overlay) | 'light'
 //   minHeight        — tailwind class for min height (default tall hero)
@@ -66,8 +83,23 @@ export default function HeroSlider({
   }, [slides.length, intervalMs]);
 
   if (!slides.length) return null;
-  const slide = slides[idx];
+  // Guarded against a slide set that shrinks after mount (a CMS-driven hero
+  // swapping in its published slides): keeps the render safe in the frame
+  // before the index wraps.
+  const slide = slides[idx] ?? slides[0];
   const accent = slide.accent || '#E85A2A';
+
+  // Shared by both background renderings below, so a slide with a phone crop
+  // crossfades and zooms exactly like one without.
+  const bgMotion = {
+    initial: { opacity: 0, scale: 1.08 },
+    animate: { opacity: 1, scale: 1 },
+    exit: { opacity: 0 },
+    transition: {
+      opacity: { duration: 1.1, ease: 'easeInOut' },
+      scale: { duration: intervalMs / 1000 + 1.2, ease: 'linear' },
+    },
+  };
 
   const isDark = variant === 'dark';
   const textColor = isDark ? 'text-white' : 'text-navy-950';
@@ -83,22 +115,36 @@ export default function HeroSlider({
       {/* Slide background image — crossfades. Slight blur keeps copy readable. */}
       <div className="pointer-events-none absolute inset-0">
         <AnimatePresence mode="sync">
-          {slide.bg && (
-            <motion.img
-              key={`bg-${idx}`}
-              src={slide.bg}
-              alt=""
-              aria-hidden
-              initial={{ opacity: 0, scale: 1.08 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{
-                opacity: { duration: 1.1, ease: 'easeInOut' },
-                scale: { duration: intervalMs / 1000 + 1.2, ease: 'linear' },
-              }}
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          )}
+          {slide.bg &&
+            (slide.mobileBg ? (
+              /*
+                Opt-in phone crop. <picture> rather than a JS breakpoint, as in
+                the home hero: the browser picks the source before any of our
+                code runs, so a phone never downloads the wide desktop file, and
+                it works the same in prerendered HTML. The motion wrapper takes
+                the animation because <picture> itself is inline.
+              */
+              <motion.div
+                key={`bg-${idx}`}
+                aria-hidden
+                {...bgMotion}
+                className="absolute inset-0"
+              >
+                <picture className="block h-full w-full">
+                  <source media="(max-width: 767px)" srcSet={slide.mobileBg} />
+                  <img src={slide.bg} alt="" className="h-full w-full object-cover" />
+                </picture>
+              </motion.div>
+            ) : (
+              <motion.img
+                key={`bg-${idx}`}
+                src={slide.bg}
+                alt=""
+                aria-hidden
+                {...bgMotion}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ))}
         </AnimatePresence>
       </div>
 

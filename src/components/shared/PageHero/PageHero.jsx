@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { m as motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
@@ -7,6 +7,46 @@ import HeroRatingPills from '../HeroRatingPills/HeroRatingPills.jsx';
 import { srcSet } from '../../../lib/img.js';
 
 const SLIDE_MS = 5000;
+
+/*
+ * Up to what width the phone crop is served — NOT the `md` breakpoint (767px) the
+ * home hero and HeroSlider use for theirs.
+ *
+ * Those two bands carry a min-height, so they stay portrait right across that
+ * range. This one has no min-height at all: its height is whatever the copy makes
+ * it, so its SHAPE changes as the copy reflows. Measured on /partners: 375px →
+ * 375x525 (0.71, portrait), 480 → 1.07, 540 → 1.20, 767 → 1.98 — by 767 the band
+ * matches the wide crop's own 2:1 target almost exactly, and handing it a 3:4
+ * portrait file there would show roughly a third of that file's height while the
+ * correctly-shaped wide file was never downloaded (the browser resolves <source>
+ * before any of our code runs, so no JS can undo it). The crossover between the
+ * two crops is the geometric mean of their ratios — sqrt(0.75 * 2.0) = 1.22 —
+ * which this band reaches at about 540px, so the crop stops just below that and
+ * the wide file takes over. That still covers every phone held upright.
+ *
+ * Paired with the numbers in the server's partner-image-spec.ts and the admin
+ * panel's lib/partnerImageSpec.ts; changing this means changing both.
+ */
+const MOBILE_SOURCE_MEDIA = '(max-width: 539px)';
+
+/*
+ * One entry of `bgImages`, in either form it may be written.
+ *
+ * A plain string is the form every caller on the site used before phone crops
+ * existed and the form most of them still use: one file for every viewport.
+ * An object — `{ src, mobileSrc }` — is a backdrop that also has a portrait crop
+ * authored for narrow screens; `mobileSrc` is optional inside it, so a CMS-driven
+ * caller can hand over whatever was published without branching on it first.
+ *
+ * Anything with no usable `src` is dropped rather than rendered as an <img> with
+ * no source, which is how a hero whose backdrop was never uploaded (or was
+ * deleted out from under the row) keeps its flat ambient background.
+ */
+function toSlide(entry) {
+  if (typeof entry === 'string') return entry ? { src: entry, mobileSrc: null } : null;
+  if (!entry || typeof entry !== 'object' || !entry.src) return null;
+  return { src: entry.src, mobileSrc: entry.mobileSrc || null };
+}
 
 export default function PageHero({
   eyebrow,
@@ -23,9 +63,18 @@ export default function PageHero({
   // homepage hero). Pass an array of image URLs to turn the flat ambient
   // backdrop into a rotating photo backdrop under a warm cream overlay that
   // keeps the navy heading text readable. Omit it for the default ambient look.
+  //
+  // An entry may also be an object — `{ src, mobileSrc }` — when a portrait crop
+  // has been authored for phones; that entry then renders as a <picture> whose
+  // narrow-viewport <source> is the crop. `mobileSrc` is optional, and an entry
+  // without one behaves exactly as a plain string always has. See `toSlide`.
   bgImages = [],
 }) {
-  const hasSlideshow = bgImages.length > 0;
+  // Normalised once per render so the rest of the component only ever sees
+  // `{ src, mobileSrc }`, and so a caller passing plain strings (which is most of
+  // them) keeps rendering the very same single <img> it always did.
+  const slides = useMemo(() => bgImages.map(toSlide).filter(Boolean), [bgImages]);
+  const hasSlideshow = slides.length > 0;
 
   // Auto-advance the slideshow only while on screen + when the visitor hasn't
   // asked for reduced motion — same gating the homepage hero uses so we don't
@@ -56,10 +105,27 @@ export default function PageHero({
   useEffect(() => {
     if (!animate || !hasSlideshow) return undefined;
     const id = setInterval(() => {
-      setBgIdx((i) => (i + 1) % bgImages.length);
+      setBgIdx((i) => (i + 1) % slides.length);
     }, SLIDE_MS);
     return () => clearInterval(id);
-  }, [animate, hasSlideshow, bgImages.length]);
+  }, [animate, hasSlideshow, slides.length]);
+
+  // Guarded against a slide set that shrinks after mount — a CMS-driven hero
+  // swapping in its published backdrop — so the render stays safe in the frame
+  // before the interval above wraps the index.
+  const slide = hasSlideshow ? slides[bgIdx] ?? slides[0] : null;
+
+  // Shared by both renderings below, so a backdrop with a phone crop crossfades
+  // and zooms exactly like one without.
+  const bgMotion = {
+    initial: { opacity: 0, scale: 1.06 },
+    animate: { opacity: 1, scale: 1 },
+    exit: { opacity: 0 },
+    transition: {
+      opacity: { duration: 1.2, ease: 'easeInOut' },
+      scale: { duration: SLIDE_MS / 1000 + 1.2, ease: 'linear' },
+    },
+  };
 
   return (
     <section
@@ -71,22 +137,51 @@ export default function PageHero({
       {hasSlideshow && (
         <div aria-hidden className="pointer-events-none absolute inset-0">
           <AnimatePresence mode="sync">
-            <motion.img
-              key={bgIdx}
-              src={bgImages[bgIdx]}
-              srcSet={srcSet(bgImages[bgIdx])}
-              sizes="100vw"
-              alt=""
-              decoding="async"
-              initial={{ opacity: 0, scale: 1.06 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{
-                opacity: { duration: 1.2, ease: 'easeInOut' },
-                scale: { duration: SLIDE_MS / 1000 + 1.2, ease: 'linear' },
-              }}
-              className="absolute inset-0 h-full w-full object-cover"
-            />
+            {slide.mobileSrc ? (
+              /*
+                Opt-in phone crop. <picture> rather than a JS breakpoint, as in
+                the home hero and HeroSlider: the browser picks the source before
+                any of our code runs, so a phone never downloads the wide desktop
+                file, and it works the same in the prerendered HTML. The motion
+                wrapper takes the animation because <picture> itself is inline.
+
+                The wide file is a narrow centre sliver of itself on a phone
+                (object-cover fills from the centre), which is why authoring a
+                portrait crop is worth its own field — and why the crop is served
+                only where this band is actually portrait. See
+                MOBILE_SOURCE_MEDIA.
+              */
+              <motion.div key={bgIdx} {...bgMotion} className="absolute inset-0">
+                <picture className="block h-full w-full">
+                  {/* `srcSet()` only answers for Unsplash URLs; an uploaded crop
+                      falls back to its single file, which is the whole source. */}
+                  <source
+                    media={MOBILE_SOURCE_MEDIA}
+                    srcSet={srcSet(slide.mobileSrc) ?? slide.mobileSrc}
+                    sizes="100vw"
+                  />
+                  <img
+                    src={slide.src}
+                    srcSet={srcSet(slide.src)}
+                    sizes="100vw"
+                    alt=""
+                    decoding="async"
+                    className="h-full w-full object-cover"
+                  />
+                </picture>
+              </motion.div>
+            ) : (
+              <motion.img
+                key={bgIdx}
+                src={slide.src}
+                srcSet={srcSet(slide.src)}
+                sizes="100vw"
+                alt=""
+                decoding="async"
+                {...bgMotion}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            )}
           </AnimatePresence>
         </div>
       )}

@@ -8,6 +8,7 @@ import AboutCtaSection from './sections/AboutCtaSection/AboutCtaSection.jsx';
 import SectionIntro from '../../components/shared/SectionIntro/SectionIntro.jsx';
 import Eyebrow from '../../components/shared/Eyebrow/Eyebrow.jsx';
 import { COMPANY, GLOBAL_MARKETS, GLOBAL_READINESS } from '../../data/company.js';
+import { fetchAboutFounderNote } from '../../lib/aboutPage.js';
 import Seo from '../../components/shared/Seo/Seo.jsx';
 // Brief §19 sections — restored in canonical order so the About page
 // reads exactly as the brief specifies.
@@ -161,6 +162,159 @@ function HorizontalTimeline({ items }) {
   );
 }
 
+/*
+  Brief §19.2 — the founder's note: the founder card on the left, the note on the
+  right.
+
+  Authored in the admin panel's About Us → Founder Note Section tab: the name, the
+  role, the company line, the pull-quote, the paragraph under it and an optional
+  photograph. The FOUNDER'S NOTE eyebrow and the two buttons are not authored —
+  they are the section's furniture rather than its content — and neither is the
+  monogram, which is derived below.
+
+  This section has no headline and therefore no `**accent**` markup: the
+  pull-quote is one step below the h2 ramp on purpose, so there is nothing here
+  for headingLines to parse.
+*/
+const FALLBACK_FOUNDER = {
+  founderName: COMPANY.founder.name,
+  founderRole: COMPANY.founder.role,
+  companyLine: 'Founder of Byte Elephants Technologies',
+  quote: COMPANY.founder.quote,
+  body:
+    'Nine years on factory floors, delivery trucks, franchise counters and 14-hour finance reconciliations went into every line of UpWon — written from the inside, not from a spec.',
+  // No photograph is seeded, so the monogram below stands until somebody
+  // uploads one.
+  photo: null,
+  photoAlt: null,
+};
+
+/*
+  The monogram on the founder card, when there is no photograph.
+
+  First and last initial — 'Neil SR Mashalkar' → 'NM', which is exactly the
+  literal this card printed before the name became editable. The API deliberately
+  returns no `initials` field, because the two monograms on this page are drawn by
+  different rules: the team grid takes the first two words ('NS' for the same
+  name), which is what its cards have always shown, and folding them into one
+  server-side rule would silently change one of them.
+*/
+function monogram(name) {
+  const words = String(name).trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return '';
+  const last = words.length > 1 ? words[words.length - 1][0] : '';
+  return `${words[0][0]}${last}`.toUpperCase();
+}
+
+function FounderNoteSection() {
+  /*
+    The note starts as the built-in one and is swapped for the published one once
+    the API answers — the same order as every other authored section on the site.
+    fetchAboutFounderNote resolves to null for every failure (unconfigured,
+    offline, CORS, nothing authored), and null means "keep what you have", so
+    data/company.js stays the source until something is published.
+  */
+  const [founder, setFounder] = useState(FALLBACK_FOUNDER);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchAboutFounderNote().then((published) => {
+      if (!cancelled && published) setFounder(published);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <section className="relative overflow-hidden bg-cream-100 py-10 sm:py-12 lg:py-14">
+      <div className="absolute inset-0 grid-bg-light opacity-50" />
+      <Container className="relative">
+        <div className="grid items-center gap-10 lg:grid-cols-[1fr_1.2fr]">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="relative"
+          >
+            <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-2xl border border-cream-300 bg-gradient-to-br from-navy-950 to-navy-700 shadow-enterprise-lg">
+              <div className="absolute inset-0 grid-bg opacity-50" />
+              <div className="absolute inset-0 flex items-end justify-center pb-12">
+                <div className="text-center">
+                  {/* A published photograph takes the monogram's place in the
+                      same circle, at the same size. It is a portrait of a named
+                      person rather than decoration, so it is the one image in
+                      this section that is not aria-hidden and it carries the alt
+                      text the API derives from the name and role. The admin panel
+                      holds it to a square crop (400x400 minimum), which is what
+                      object-cover in a circle needs. */}
+                  {founder.photo ? (
+                    <img
+                      src={founder.photo}
+                      alt={founder.photoAlt ?? `${founder.founderName}, ${founder.founderRole}`}
+                      width={400}
+                      height={400}
+                      loading="lazy"
+                      decoding="async"
+                      className="mx-auto h-24 w-24 rounded-full object-cover ring-2 ring-orange-400/50"
+                    />
+                  ) : (
+                    <div className="mx-auto grid h-24 w-24 place-items-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-3xl font-bold text-white">
+                      {monogram(founder.founderName)}
+                    </div>
+                  )}
+                  <p className="mt-5 h-display text-2xl text-white">{founder.founderName}</p>
+                  <p className="mt-1 text-sm text-cream-100/70">{founder.founderRole}</p>
+                  <p className="mt-3 text-[11px] uppercase tracking-[0.18em] text-orange-300">
+                    {founder.companyLine}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          <div>
+            {/* Eyebrow component rather than a hand-rolled copy of its
+                markup, so the founder's note leads the same way every
+                other section does. */}
+            <Eyebrow>FOUNDER&rsquo;S NOTE</Eyebrow>
+
+            <Quote className="mt-6 h-10 w-10 text-orange-500/40" />
+
+            {/* A pull-quote, not a section headline — kept one step below
+                the h2 ramp so it does not compete with the section
+                headings above and below it. */}
+            <p className="mt-3 h-display text-[22px] leading-[1.25] tracking-tight text-navy-950 sm:text-[26px] lg:text-[28px]">
+              &ldquo;{founder.quote}&rdquo;
+            </p>
+            {/* Content update (About Page SEO doc) — original founder paragraph:
+            <p className="mt-6 text-sm text-charcoal">
+              Over the last 9 years, we have walked food factory floors, ridden delivery trucks,
+              stood behind franchise counters during peak rush, and sat through 14-hour
+              reconciliation marathons with finance teams. Every line of UpWon was written with
+              that lived experience. Not from a brief. Not from a feature spec. From the inside.
+            </p>
+            */}
+            <p className="mt-6 text-sm text-charcoal">{founder.body}</p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link to="/demo" className="btn-primary">
+                Talk to our team
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+              <Link to="/careers" className="btn-secondary">
+                Join us
+              </Link>
+            </div>
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+
 export default function AboutPage() {
   return (
     <>
@@ -182,75 +336,9 @@ export default function AboutPage() {
           being buried in body copy. */}
       <AboutHeroSection />
 
-      {/* Founder section */}
-      <section className="relative overflow-hidden bg-cream-100 py-10 sm:py-12 lg:py-14">
-        <div className="absolute inset-0 grid-bg-light opacity-50" />
-        <Container className="relative">
-          <div className="grid items-center gap-10 lg:grid-cols-[1fr_1.2fr]">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
-              className="relative"
-            >
-              <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-2xl border border-cream-300 bg-gradient-to-br from-navy-950 to-navy-700 shadow-enterprise-lg">
-                <div className="absolute inset-0 grid-bg opacity-50" />
-                <div className="absolute inset-0 flex items-end justify-center pb-12">
-                  <div className="text-center">
-                    <div className="mx-auto grid h-24 w-24 place-items-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-3xl font-bold text-white">
-                      NM
-                    </div>
-                    <p className="mt-5 h-display text-2xl text-white">{COMPANY.founder.name}</p>
-                    <p className="mt-1 text-sm text-cream-100/70">{COMPANY.founder.role}</p>
-                    <p className="mt-3 text-[11px] uppercase tracking-[0.18em] text-orange-300">
-                      Founder of Byte Elephants Technologies
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            <div>
-              {/* Eyebrow component rather than a hand-rolled copy of its
-                  markup, so the founder's note leads the same way every
-                  other section does. */}
-              <Eyebrow>FOUNDER&rsquo;S NOTE</Eyebrow>
-
-              <Quote className="mt-6 h-10 w-10 text-orange-500/40" />
-
-              {/* A pull-quote, not a section headline — kept one step below
-                  the h2 ramp so it does not compete with the section
-                  headings above and below it. */}
-              <p className="mt-3 h-display text-[22px] leading-[1.25] tracking-tight text-navy-950 sm:text-[26px] lg:text-[28px]">
-                &ldquo;{COMPANY.founder.quote}&rdquo;
-              </p>
-              {/* Content update (About Page SEO doc) — original founder paragraph:
-              <p className="mt-6 text-sm text-charcoal">
-                Over the last 9 years, we have walked food factory floors, ridden delivery trucks,
-                stood behind franchise counters during peak rush, and sat through 14-hour
-                reconciliation marathons with finance teams. Every line of UpWon was written with
-                that lived experience. Not from a brief. Not from a feature spec. From the inside.
-              </p>
-              */}
-              <p className="mt-6 text-sm text-charcoal">
-                Nine years on factory floors, delivery trucks, franchise counters and 14-hour
-                finance reconciliations went into every line of UpWon — written from the inside,
-                not from a spec.
-              </p>
-              <div className="mt-7 flex flex-wrap gap-3">
-                <Link to="/demo" className="btn-primary">
-                  Talk to our team
-                  <ArrowUpRight className="h-4 w-4" />
-                </Link>
-                <Link to="/careers" className="btn-secondary">
-                  Join us
-                </Link>
-              </div>
-            </div>
-          </div>
-        </Container>
-      </section>
+      {/* Brief §19.2 — Founder's note. Authored in the admin panel's
+          About Us → Founder Note Section tab. */}
+      <FounderNoteSection />
 
       {/* Timeline */}
       <section className="relative overflow-hidden bg-white py-10 sm:py-12 lg:py-14">

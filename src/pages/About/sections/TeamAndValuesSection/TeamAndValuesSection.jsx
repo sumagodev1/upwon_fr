@@ -1,23 +1,36 @@
-import { useState, useEffect } from 'react';
+import { Fragment, useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { m as motion, AnimatePresence } from 'framer-motion';
 import { Linkedin, Compass, X, MapPin, Briefcase, ArrowRight } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import SectionIntro from '../../../../components/shared/SectionIntro/SectionIntro.jsx';
 import { COMPANY } from '../../../../data/company.js';
+import { fetchAboutTeamSection } from '../../../../lib/aboutPage.js';
 
 // Brief §19.3 — Team & Values.
 // Two halves:
-//   TOP — Team grid (founder + 4-5 senior leads). Avatars are initial-based
-//         placeholders until real headshots ship — kept consistent with the
-//         founder card pattern elsewhere on the page.
+//   TOP — Team grid (founder + 4-5 senior leads), authored in the admin panel's
+//         About Us → People Section (Team) tab: the section copy, and the people
+//         as an ordered list of name / role / meta line / optional photograph.
+//         Avatars are initial-based placeholders until real headshots ship —
+//         kept consistent with the founder card pattern elsewhere on the page.
 //   BOTTOM — 4 core values block: Domain First / Customer Obsession /
 //            Simplicity at Scale / India-Built for India. Each as a tile
-//            with icon + name + one-line operating principle.
+//            with icon + name + one-line operating principle. NOT authored, by
+//            the brief: the four operating principles stay in this file.
 //
-// Real names + LinkedIn URLs should be edited in the TEAM array below as the
-// senior leadership is finalised; placeholders are realistic-sounding role
-// titles so the page reads honestly before headshots are ready.
+// The TEAM array below is the fallback, not the source of truth — what the SSG
+// build bakes into the prerendered HTML and what renders if the API is
+// unreachable. It is also what the seed published verbatim, so a freshly seeded
+// API serves these same six people in this same order.
+//
+// The CMS does not hold the "Learn more" popup's content: it holds the card —
+// name, role, meta line, photograph — and not the bio, the focus chips or the
+// LinkedIn URL. So a published person's popup is looked up in the TEAM entries
+// below BY NAME (see BUILT_IN_PROFILES): the six the seed publishes keep the six
+// dialogs this page has always had, and a person the page has never heard of
+// simply has no Learn more control rather than a stranger's biography behind their
+// name. Ask for those three fields on the CMS person and the lookup goes away.
 const TEAM = [
   {
     name: COMPANY?.founder?.name || 'Nikhil Mehta',
@@ -83,6 +96,104 @@ const TEAM = [
 ];
 
 /*
+  The tint each card's avatar carries, by the person's position in the grid.
+
+  Not authored, and not in the API's shape: the colours are a rhythm across the
+  row rather than a property of a person, and they are the six the TEAM entries
+  above already carry, in the same order — so the seeded six publish into exactly
+  the grid the page draws today. A seventh person cycles back to the first tint.
+*/
+const ACCENTS = ['#E85A2A', '#1565C0', '#2E7D32', '#00695C', '#6A1B9A', '#C8820A'];
+
+/*
+  The built-in profiles, by name.
+
+  The popup's copy — the biography, the focus chips and the LinkedIn link — is not
+  in the CMS, so a published person brings none of it with them. What they can keep
+  is the profile this page has always shown for that NAME: the seed publishes these
+  six people verbatim, so matching on the name means publishing the section stops
+  deleting six dialogs' worth of content from the live page.
+
+  Matched on the trimmed, case-folded name and nothing else. Rename a placeholder to
+  a real person and their card simply has no Learn more control, which is the safe
+  direction — a biography must never end up under somebody else's name.
+*/
+const BUILT_IN_PROFILES = new Map(TEAM.map((person) => [person.name.trim().toLowerCase(), person]));
+
+/*
+  What the Learn more popup shows for a published person, or null when the page has
+  nothing for that name.
+
+  The authored fields win wherever the two could disagree, so the card and the
+  dialog can never say different things: the name and the role are the published
+  ones, the tint is the card's (a position in the grid, not a property of a person),
+  and the location line is the first segment of the published meta line, which is
+  how that line is composed — 'Nashik · Vision · Domain · Customer'. A meta line
+  with no separator is not split, because the whole of it beside a map pin would
+  read as a place when it is not one.
+
+  Everything else — the biography, the focus chips, the LinkedIn link, the founder's
+  pin — comes from the built-in profile, because there is nowhere else for it to
+  come from. Carry bio, focus and linkedinUrl on the CMS person and this whole
+  lookup goes away.
+*/
+function profileFor(member, accent) {
+  const builtIn = BUILT_IN_PROFILES.get(member.name.trim().toLowerCase());
+  if (!builtIn) return null;
+
+  const based = member.meta.includes('·') ? member.meta.split('·')[0].trim() : '';
+
+  return {
+    ...builtIn,
+    name: member.name,
+    role: member.role,
+    based: based || builtIn.based,
+    accent,
+  };
+}
+
+/*
+  The built-in section copy, written in the shape lib/aboutPage.js returns — the
+  orange half of the headline becoming the `**accent**` the API parses back into
+  `accent: true`, so a freshly seeded API publishes this very heading and the swap
+  is invisible.
+*/
+const FALLBACK_SECTION = {
+  eyebrow: 'People & principles',
+  headingLines: [
+    [
+      { text: 'The team behind UpWon — ', accent: false },
+      { text: 'and what we live by.', accent: true },
+    ],
+  ],
+  subtext:
+    'Six senior leads. Four operating principles. Each principle is a hiring filter, a product gate and a customer promise — not a poster.',
+};
+
+/*
+  One authored heading, rendered line by line with the accented parts in the
+  orange gradient — the same renderer the home hero, the Contact hero and the
+  Partner hero use. It reproduces exactly the markup this section's title has
+  always had: the second half wrapped in `gradient-text-orange`.
+*/
+function Heading({ lines }) {
+  return lines.map((parts, lineIndex) => (
+    <Fragment key={lineIndex}>
+      {lineIndex > 0 && <br />}
+      {parts.map((part, partIndex) =>
+        part.accent ? (
+          <span key={partIndex} className="gradient-text-orange">
+            {part.text}
+          </span>
+        ) : (
+          <Fragment key={partIndex}>{part.text}</Fragment>
+        ),
+      )}
+    </Fragment>
+  ));
+}
+
+/*
   Each principle carries its own illustration. NOTE: the India file ships
   with a space in its name (`about_built_for _india.webp`), so its path is
   percent-encoded — rename the file and this entry together if it is ever
@@ -124,8 +235,75 @@ const VALUES = [
 ];
 
 export default function TeamAndValuesSection() {
-  // Which team member's detail modal is open (null = closed).
+  // Which team member's detail modal is open (null = closed). Only a person the
+  // page has a profile for can open it — see the note at the top of this file.
   const [selected, setSelected] = useState(null);
+
+  /*
+    The section starts as the built-in one and is swapped for the published one
+    once the API answers — the same order as every other authored section on the
+    site. fetchAboutTeamSection resolves to null for every failure
+    (unconfigured, offline, CORS, nothing authored), and null means "keep what you
+    have".
+  */
+  const [published, setPublished] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchAboutTeamSection().then((section) => {
+      if (!cancelled && section) setPublished(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const copy = published ?? FALLBACK_SECTION;
+
+  /*
+    The people, in one shape whichever source they came from: the card renders
+    `meta` as the grey line under the role, so a built-in person's `based` and
+    `domain` are joined here exactly as the card used to join them.
+
+    WHICH LIST WINS. The published one, whenever the section HAS a list — and that
+    includes an empty one. `hasMembers` is the API saying whether any person row
+    exists at all, ACTIVE or INACTIVE, so "every person is Inactive" (render the
+    empty grid — somebody chose that, and putting the placeholder six back would
+    republish exactly what they took down) stops being the same answer as "there is
+    no person row at all" (nothing authored, keep the built-in six).
+    See lib/aboutPage.js.
+
+    `profile` is what the Learn more popup needs, and the CMS does not hold it —
+    see the note at the top of this file.
+  */
+  const people = useMemo(() => {
+    if (published?.hasMembers) {
+      return published.members.map((member, i) => {
+        const accent = ACCENTS[i % ACCENTS.length];
+        return {
+          name: member.name,
+          role: member.role,
+          meta: member.meta,
+          photo: member.photo,
+          photoAlt: member.photoAlt,
+          accent,
+          profile: profileFor(member, accent),
+        };
+      });
+    }
+
+    return TEAM.map((member) => ({
+      name: member.name,
+      role: member.role,
+      meta: `${member.based} · ${member.domain}`,
+      photo: null,
+      photoAlt: null,
+      accent: member.accent,
+      profile: member,
+    }));
+  }, [published]);
 
   return (
     <section
@@ -135,14 +313,11 @@ export default function TeamAndValuesSection() {
       <div className="absolute inset-0 grid-bg-light opacity-30" />
       <Container className="relative">
         <SectionIntro
-          eyebrow="People & principles"
-          title={
-            <>
-              The team behind UpWon —{' '}
-              <span className="gradient-text-orange">and what we live by.</span>
-            </>
-          }
-          description="Six senior leads. Four operating principles. Each principle is a hiring filter, a product gate and a customer promise — not a poster."
+          // Blank is not reachable from the panel — the server requires an
+          // eyebrow — so this only covers a row that somehow lost one.
+          eyebrow={copy.eyebrow ?? FALLBACK_SECTION.eyebrow}
+          title={<Heading lines={copy.headingLines} />}
+          description={copy.subtext}
         />
 
         {/* Team grid — people, not cards: a tinted avatar circle, the name,
@@ -150,7 +325,14 @@ export default function TeamAndValuesSection() {
             border or panel, so the row reads as a set of faces rather than a
             set of tiles. */}
         <div className="mt-10 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:mt-12 lg:grid-cols-3">
-          {TEAM.map((member, i) => {
+          {people.map((member, i) => {
+            /*
+              The first two words' initials — 'Neil SR Mashalkar' → 'NS' — which
+              is what these cards have always shown. The founder card on the same
+              page derives its monogram differently ('NM', first and last); the
+              API returns no `initials` field for either, deliberately, because
+              one server-side rule would have had to silently change one of them.
+            */
             const initials = member.name
               .split(' ')
               .map((w) => w[0])
@@ -171,21 +353,37 @@ export default function TeamAndValuesSection() {
                 }}
                 className="group flex min-w-0 flex-col items-start"
               >
-                {/* Headshots are not ready, so the monogram stands in — a
-                    tint of the person's accent rather than a solid block, to
-                    sit as quietly as a photograph would. */}
-                <span
-                  aria-hidden="true"
-                  className="grid h-[96px] w-[96px] shrink-0 place-items-center rounded-full transition-transform duration-500 group-hover:-translate-y-0.5"
-                  style={{ background: `${member.accent}1f` }}
-                >
+                {/* A published headshot sits where the monogram would, at the
+                    same 96px circle; the admin panel holds it to a square crop
+                    (400x400 minimum), which is what object-cover in a circle
+                    needs. Without one the monogram stands in — a tint of the
+                    person's accent rather than a solid block, to sit as quietly
+                    as a photograph would. */}
+                {member.photo ? (
+                  <img
+                    src={member.photo}
+                    alt={member.photoAlt ?? `${member.name}, ${member.role}`}
+                    width={400}
+                    height={400}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-[96px] w-[96px] shrink-0 rounded-full object-cover transition-transform duration-500 group-hover:-translate-y-0.5"
+                    style={{ background: `${member.accent}1f` }}
+                  />
+                ) : (
                   <span
-                    className="h-display text-[26px] font-bold tracking-tight"
-                    style={{ color: member.accent }}
+                    aria-hidden="true"
+                    className="grid h-[96px] w-[96px] shrink-0 place-items-center rounded-full transition-transform duration-500 group-hover:-translate-y-0.5"
+                    style={{ background: `${member.accent}1f` }}
                   >
-                    {initials}
+                    <span
+                      className="h-display text-[26px] font-bold tracking-tight"
+                      style={{ color: member.accent }}
+                    >
+                      {initials}
+                    </span>
                   </span>
-                </span>
+                )}
 
                 <h3 className="mt-5 h-display text-[19px] font-bold leading-snug tracking-tight text-navy-950">
                   {member.name}
@@ -196,23 +394,27 @@ export default function TeamAndValuesSection() {
                 </p>
 
                 <p className="mt-1 text-[13px] leading-relaxed text-navy-500">
-                  {member.based} · {member.domain}
+                  {member.meta}
                 </p>
 
-                <button
-                  type="button"
-                  onClick={() => setSelected(member)}
-                  aria-haspopup="dialog"
-                  className="mt-4 inline-flex items-center gap-2 rounded-full text-[13.5px] font-semibold text-navy-950 transition-colors duration-300 hover:text-orange-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40"
-                >
-                  Learn more
-                  <span
-                    aria-hidden="true"
-                    className="grid h-6 w-6 place-items-center rounded-full bg-navy-950 text-white transition-colors duration-300 group-hover:bg-orange-500"
+                {/* Rendered only for a person the page has a profile for — see
+                    BUILT_IN_PROFILES and the note at the top of this file. */}
+                {member.profile && (
+                  <button
+                    type="button"
+                    onClick={() => setSelected(member.profile)}
+                    aria-haspopup="dialog"
+                    className="mt-4 inline-flex items-center gap-2 rounded-full text-[13.5px] font-semibold text-navy-950 transition-colors duration-300 hover:text-orange-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40"
                   >
-                    <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.4} />
-                  </span>
-                </button>
+                    Learn more
+                    <span
+                      aria-hidden="true"
+                      className="grid h-6 w-6 place-items-center rounded-full bg-navy-950 text-white transition-colors duration-300 group-hover:bg-orange-500"
+                    >
+                      <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.4} />
+                    </span>
+                  </button>
+                )}
               </motion.article>
             );
           })}
