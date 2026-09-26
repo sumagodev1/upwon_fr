@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { m as motion } from 'framer-motion';
 import { Link, useParams } from 'react-router-dom';
 import {
@@ -16,15 +16,81 @@ import {
 import Container from '../../components/shared/Container/Container.jsx';
 import Seo, { articleJsonLd, breadcrumbJsonLd } from '../../components/shared/Seo/Seo.jsx';
 import { findIssueAndStory } from '../../data/newsletter.js';
+import { fetchInsiderIssues, fetchInsiderStory } from '../../lib/insiderPage.js';
 
 export default function NewsletterStoryPage() {
   const { issueSlug, storySlug } = useParams();
-  const { issue, story } = findIssueAndStory(issueSlug, storySlug);
+  const routeKey = `${issueSlug}/${storySlug}`;
+
+  /*
+    The static lookup renders first — it is what a prerender would bake in
+    and what renders if the API is unreachable — and the story published
+    through the admin panel's Insider → News tab replaces it once the API
+    answers.
+
+    Two calls, because they answer different questions: the story endpoint
+    carries the body, and the issue list says what is live (and feeds "Also
+    in this issue"). Both resolve to null for every failure — see
+    lib/insiderPage.js.
+
+    The answer is stored with the route it was for, so a slow reply for the
+    previous article can never paint over the next one.
+  */
+  const [published, setPublished] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([fetchInsiderStory(issueSlug, storySlug), fetchInsiderIssues()]).then(
+      ([found, issues]) => {
+        if (cancelled) return;
+        setPublished({ key: `${issueSlug}/${storySlug}`, found, issues });
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [issueSlug, storySlug]);
+
+  const settled = published?.key === routeKey;
+  const fetched = settled ? published : null;
+  const builtIn = findIssueAndStory(issueSlug, storySlug);
+
+  /*
+    A healthy issue list is the authority on what is live. A static story it
+    no longer carries was switched off or deleted in the admin panel, so it
+    stops rendering once the API has said so. With no list — API unreachable,
+    unconfigured, nothing published — the static copy stands.
+  */
+  const listedIssue = fetched?.issues?.find((i) => i.slug === issueSlug) ?? null;
+  const unpublished =
+    Boolean(fetched?.issues) &&
+    !(listedIssue?.stories ?? []).some((s) => s.slug === storySlug);
+
+  // The published story when there is one; otherwise the static one, unless
+  // the API says it is gone. Issue and story always come from the same source.
+  const resolved =
+    fetched?.found ?? (builtIn.story && !unpublished ? builtIn : null);
+  const issue = resolved?.issue ?? null;
+  const story = resolved?.story ?? null;
 
   // Scroll to top on slug change so each article loads fresh from the hero.
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [issueSlug, storySlug]);
+
+  // Not a static story and the API has not answered yet: hold the hero's
+  // frame rather than flashing "not found" at a story that exists only in the
+  // admin panel.
+  if (!story && !settled) {
+    return (
+      <section
+        aria-busy="true"
+        className="relative flex min-h-[68vh] items-center overflow-hidden bg-navy-950 pt-32 pb-12 md:min-h-[74vh] md:pt-40 md:pb-16"
+      >
+        <span className="sr-only">Loading story…</span>
+      </section>
+    );
+  }
 
   // 404 fallback — story or issue not found.
   if (!issue || !story) {
@@ -49,8 +115,12 @@ export default function NewsletterStoryPage() {
     );
   }
 
-  // Related stories — same issue, excluding the current one.
-  const related = issue.stories.filter((s) => s.slug !== story.slug).slice(0, 3);
+  // Related stories — same issue, excluding the current one. Taken from the
+  // published list when there is one, so they link only to live stories.
+  const siblings = fetched?.issues
+    ? (listedIssue?.stories ?? [])
+    : (builtIn.issue?.stories ?? []);
+  const related = siblings.filter((s) => s.slug !== story.slug).slice(0, 3);
 
   const storyUrl = `https://upwon.in/newsletter/${issue.slug}/${story.slug}`;
 
@@ -80,14 +150,17 @@ export default function NewsletterStoryPage() {
       />
       {/* ========== HERO — full-bleed story image with title overlaid ========== */}
       <section className="relative flex min-h-[68vh] items-center overflow-hidden bg-navy-950 pt-32 pb-12 md:min-h-[74vh] md:pt-40 md:pb-16">
-        {/* Background image */}
-        <img
-          src={story.image}
-          alt={story.title}
-          fetchpriority="high"
-          decoding="async"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
+        {/* Background image — a published story can lose its image (a
+            deleted upload); the navy base and overlay then carry the hero. */}
+        {story.image && (
+          <img
+            src={story.image}
+            alt={story.imageAlt || story.title}
+            fetchpriority="high"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )}
         {/* Legibility overlay — darkens the photo so white text stays readable,
             and fades to a darker base at the bottom where the copy sits. */}
         <div className="absolute inset-0 bg-gradient-to-b from-navy-950/80 via-navy-950/55 to-navy-950/92" />
@@ -290,13 +363,15 @@ export default function NewsletterStoryPage() {
                     to={`/newsletter/${issue.slug}/${r.slug}`}
                     className="group flex flex-col overflow-hidden rounded-2xl border border-cream-300 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-orange-200 hover:shadow-enterprise"
                   >
-                    <div className="relative aspect-[16/9] overflow-hidden">
-                      <img
-                        src={r.image}
-                        alt={r.title}
-                        loading="lazy" decoding="async"
-                        className="block h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                      />
+                    <div className="relative aspect-[16/9] overflow-hidden bg-cream-200">
+                      {r.image && (
+                        <img
+                          src={r.image}
+                          alt={r.imageAlt || r.title}
+                          loading="lazy" decoding="async"
+                          className="block h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                        />
+                      )}
                     </div>
                     <div className="flex flex-1 flex-col p-5">
                       <p className="text-[10px] font-bold uppercase tracking-[0.20em] text-orange-600">

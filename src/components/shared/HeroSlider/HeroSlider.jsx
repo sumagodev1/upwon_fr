@@ -29,7 +29,7 @@ function renderHeadline(headline) {
 //
 // Props
 //   slides[]         — { eyebrow?, headline, subhead, cta:{label,to}, secondaryCta?, bg,
-//                        bgMobile?, accent? }
+//                        mobileBg? | bgMobile?, accent? }  (both names accepted)
 //   intervalMs       — auto-advance interval (default 5000ms per brief)
 //   variant          — 'dark' (default — navy bg w/ photo overlay) | 'light'
 //   minHeight        — tailwind class for min height (default tall hero)
@@ -67,8 +67,20 @@ export default function HeroSlider({
   }, [slides.length, intervalMs]);
 
   if (!slides.length) return null;
-  const slide = slides[idx];
+  // Guarded against a slide set that SHRINKS after mount. The CMS-driven
+  // heroes (About, Insider) start on a 3-slide fallback and swap in the
+  // published list once the API answers — which can be a single slide. If
+  // that lands while the interval has already advanced idx past the new
+  // end, slides[idx] is undefined and the next line throws.
+  const slide = slides[idx] ?? slides[0];
   const accent = slide.accent || '#E85A2A';
+
+  // The phone crop, under either of the two names in circulation. The
+  // About/Insider loaders emit `mobileBg`; the ERP/FMS/POS/SFA-DMS loaders
+  // emit `bgMobile`. They were named independently on two branches and both
+  // are live, so read either — honouring one name alone silently serves
+  // phones the wide desktop file on the other four pages.
+  const mobileBg = slide.mobileBg || slide.bgMobile || null;
 
   const isDark = variant === 'dark';
   const textColor = isDark ? 'text-white' : 'text-navy-950';
@@ -92,9 +104,9 @@ export default function HeroSlider({
              * motion.picture rather than a wrapper around motion.img.
              *
              * Without a crop it stays the single <img> it has always been, so
-             * every page that passes no bgMobile renders exactly as before.
+             * every page that passes no crop renders exactly as before.
              */
-            (slide.bgMobile ? (
+            (mobileBg ? (
               <motion.picture
                 key={`bg-${idx}`}
                 initial={{ opacity: 0, scale: 1.08 }}
@@ -106,7 +118,7 @@ export default function HeroSlider({
                 }}
                 className="absolute inset-0 block h-full w-full"
               >
-                <source media="(max-width: 767px)" srcSet={slide.bgMobile} />
+                <source media="(max-width: 767px)" srcSet={mobileBg} />
                 <img
                   src={slide.bg}
                   alt=""
