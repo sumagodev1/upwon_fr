@@ -1,41 +1,22 @@
 import { m as motion, useReducedMotion } from 'framer-motion';
-import {
-  Sparkles,
-  Home,
-  Brush,
-  Droplet,
-  Scissors,
-  SprayCan,
-  WashingMachine,
-  ShieldCheck,
-  Baby,
-  HeartPulse,
-  Layers,
-  ShoppingBasket,
-} from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { nonFoodFmcgIcon } from '../../../../lib/nonFoodFmcgIcons.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
 const VIEWPORT = { once: true, amount: 0.1 };
 
-const CATEGORIES = [
-  { label: 'Personal Care Products', Icon: Sparkles },
-  { label: 'Home Care Products', Icon: Home },
-  { label: 'Cosmetics & Beauty Products', Icon: Brush },
-  { label: 'Skincare Products', Icon: Droplet },
-  { label: 'Haircare Products', Icon: Scissors },
-  { label: 'Household Cleaning Products', Icon: SprayCan },
-  { label: 'Detergents & Cleaning Supplies', Icon: WashingMachine },
-  { label: 'Hygiene Products', Icon: ShieldCheck },
-  { label: 'Baby Care Products', Icon: Baby },
-  { label: 'Health & Wellness Consumer Products', Icon: HeartPulse },
-  { label: 'Paper & Disposable Products', Icon: Layers },
-  { label: 'Household & Everyday Consumer Goods', Icon: ShoppingBasket },
-];
-
-export default function NonFoodFmcgIndustryCoverage() {
+/**
+ * CMS-only: the copy, the dashboard image and the categories come from the CMS via the page. With nothing published - or
+ * the API unreachable - the section renders nothing rather than falling back
+ * to built-in content. The dashboard is optional; without it the
+ * categories follow the copy directly.
+ *
+ * @param {{ section?: object | null }} props - the published section.
+ */
+export default function NonFoodFmcgIndustryCoverage({ section = null }) {
   const reduceMotion = useReducedMotion();
 
   const d = (value) => (reduceMotion ? 0 : value);
@@ -73,6 +54,10 @@ export default function NonFoodFmcgIndustryCoverage() {
     hover: { y: d(-5), transition: { duration: 0.28, ease: EASE } },
   };
 
+  if (!section) return null;
+
+  const { panel } = section;
+
   return (
     <section className="relative overflow-hidden bg-white py-12 sm:py-16 lg:py-20">
       <Container className="relative z-10">
@@ -84,30 +69,31 @@ export default function NonFoodFmcgIndustryCoverage() {
           viewport={VIEWPORT}
           className="mx-auto max-w-3xl text-center"
         >
-          <motion.div variants={fadeIn}>
-            <Eyebrow className="justify-center">INDUSTRY COVERAGE</Eyebrow>
-          </motion.div>
+          {section.eyebrow && (
+            <motion.div variants={fadeIn}>
+              <Eyebrow className="justify-center">{section.eyebrow}</Eyebrow>
+            </motion.div>
+          )}
 
           <motion.h2
             variants={fadeUp}
             className="mt-3 h-display text-[30px] leading-[1.1] tracking-tight text-navy-950 sm:text-[34px] lg:text-[36.8px]"
           >
-            Built for a Wide Range of{' '}
-            <span className="gradient-text-orange">
-              Non-Food FMCG Businesses.
-            </span>
+            <HeadingLines lines={section.headingLines} />
           </motion.h2>
 
-          <motion.p
-            variants={fadeUp}
-            className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
-          >
-            UpWon can support connected workflows across a wide range of
-            fast-moving consumer product categories, including:
-          </motion.p>
+          {section.subtext && (
+            <motion.p
+              variants={fadeUp}
+              className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
+            >
+              {section.subtext}
+            </motion.p>
+          )}
         </motion.div>
 
         {/* ================= DASHBOARD ================= */}
+        {panel && (
         <motion.div
           initial={{ opacity: 0, y: d(26), scale: reduceMotion ? 1 : 0.97 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -116,15 +102,14 @@ export default function NonFoodFmcgIndustryCoverage() {
           className="mx-auto mt-9 max-w-5xl sm:mt-11"
         >
           <img
-            src="/images/industry_cov_dashboard.webp"
-            alt="UpWon dashboard showing product, inventory, sales and distribution activity"
-            width={1598}
-            height={984}
+            src={panel.image}
+            alt={panel.alt}
             loading="lazy"
             decoding="async"
             className="block h-auto w-full"
           />
         </motion.div>
+        )}
 
         {/* ================= CATEGORIES ================= */}
         <motion.div
@@ -134,9 +119,11 @@ export default function NonFoodFmcgIndustryCoverage() {
           viewport={VIEWPORT}
           className="mx-auto mt-10 grid max-w-6xl gap-4 sm:grid-cols-2 lg:mt-12 lg:grid-cols-4"
         >
-          {CATEGORIES.map(({ label, Icon }) => (
+          {section.items.map(({ label, icon }, index) => {
+            const Icon = nonFoodFmcgIcon(icon);
+            return (
             <motion.div
-              key={label}
+              key={`${label}-${index}`}
               variants={cardVariants}
               whileHover="hover"
               className="flex min-w-0 items-center gap-3.5 rounded-[14px] border border-navy-950/[0.07] bg-white px-4 py-4 shadow-[0_8px_24px_rgba(25,35,55,0.05)] transition-shadow duration-300 hover:shadow-[0_14px_34px_rgba(25,35,55,0.1)]"
@@ -149,7 +136,8 @@ export default function NonFoodFmcgIndustryCoverage() {
                 {label}
               </span>
             </motion.div>
-          ))}
+            );
+          })}
         </motion.div>
       </Container>
     </section>

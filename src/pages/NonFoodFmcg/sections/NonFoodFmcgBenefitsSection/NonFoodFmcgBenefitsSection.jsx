@@ -1,37 +1,21 @@
 import { m as motion, useReducedMotion } from 'framer-motion';
-import {
-  PackageSearch,
-  ClipboardList,
-  Users,
-  Warehouse,
-  MapPin,
-  Truck,
-  Globe,
-  ClipboardCheck,
-  BarChart3,
-  Monitor,
-} from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { nonFoodFmcgIcon } from '../../../../lib/nonFoodFmcgIcons.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
 const VIEWPORT = { once: true, amount: 0.1 };
 
-const BENEFITS = [
-  { label: 'Product and inventory visibility', Icon: PackageSearch },
-  { label: 'Sales and order coordination', Icon: ClipboardList },
-  { label: 'Distributor and channel visibility', Icon: Users },
-  { label: 'Warehouse and stock management', Icon: Warehouse },
-  { label: 'Field sales and market execution', Icon: MapPin },
-  { label: 'Distribution and dispatch coordination', Icon: Truck },
-  { label: 'Multi-location operational visibility', Icon: Globe },
-  { label: 'Order and fulfillment management', Icon: ClipboardCheck },
-  { label: 'Retail and channel performance visibility', Icon: BarChart3 },
-  { label: 'Access to real-time business insights', Icon: Monitor },
-];
-
-export default function NonFoodFmcgBenefitsSection() {
+/**
+ * CMS-only: the copy and the benefits come from the CMS via the page. With nothing published - or
+ * the API unreachable - the section renders nothing rather than falling back
+ * to built-in content.
+ *
+ * @param {{ section?: object | null }} props - the published section.
+ */
+export default function NonFoodFmcgBenefitsSection({ section = null }) {
   const reduceMotion = useReducedMotion();
 
   const d = (value) => (reduceMotion ? 0 : value);
@@ -69,6 +53,8 @@ export default function NonFoodFmcgBenefitsSection() {
     hover: { y: d(-5), transition: { duration: 0.28, ease: EASE } },
   };
 
+  if (!section) return null;
+
   /* ================= SHARED CONTENT ================= */
 
   const content = (
@@ -81,29 +67,27 @@ export default function NonFoodFmcgBenefitsSection() {
         viewport={VIEWPORT}
         className="min-w-0 lg:self-start lg:pt-10 xl:pt-14"
       >
-        <motion.div variants={fadeIn}>
-          <Eyebrow>BENEFITS</Eyebrow>
-        </motion.div>
+        {section.eyebrow && (
+          <motion.div variants={fadeIn}>
+            <Eyebrow>{section.eyebrow}</Eyebrow>
+          </motion.div>
+        )}
 
         <motion.h2
           variants={fadeUp}
           className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]"
         >
-          Greater Control Over Every Channel.{' '}
-          <span className="gradient-text-orange">
-            Better Visibility Across Every Product Movement.
-          </span>
+          <HeadingLines lines={section.headingLines} />
         </motion.h2>
 
-        <motion.p
-          variants={fadeUp}
-          className="mt-4 max-w-xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
-        >
-          With UpWon, non-food FMCG businesses can connect their core operations
-          and reduce the complexity of managing products, inventory, warehouses,
-          sales, distributors, field teams, and distribution across multiple
-          teams and locations.
-        </motion.p>
+        {section.subtext && (
+          <motion.p
+            variants={fadeUp}
+            className="mt-4 max-w-xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
+          >
+            {section.subtext}
+          </motion.p>
+        )}
       </motion.div>
 
       {/* ---------- Benefit cards ---------- */}
@@ -115,9 +99,11 @@ export default function NonFoodFmcgBenefitsSection() {
         viewport={VIEWPORT}
         className="flex min-w-0 flex-wrap justify-center gap-4 lg:self-center"
       >
-        {BENEFITS.map(({ label, Icon }) => (
+        {section.items.map(({ label, icon }, index) => {
+          const Icon = nonFoodFmcgIcon(icon);
+          return (
           <motion.div
-            key={label}
+            key={`${label}-${index}`}
             variants={cardVariants}
             whileHover="hover"
             className="flex min-w-0 items-center gap-4 rounded-[16px] bg-white/95 px-5 py-5 shadow-[0_10px_30px_rgba(25,35,55,0.08)] backdrop-blur-[2px] transition-shadow duration-300 hover:shadow-[0_16px_40px_rgba(25,35,55,0.13)] sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.667rem)] lg:px-6 lg:py-6"
@@ -133,7 +119,8 @@ export default function NonFoodFmcgBenefitsSection() {
               {label}
             </span>
           </motion.div>
-        ))}
+          );
+        })}
       </motion.div>
     </div>
   );

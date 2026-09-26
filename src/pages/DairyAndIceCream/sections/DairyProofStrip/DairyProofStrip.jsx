@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { m as motion, useReducedMotion } from 'framer-motion';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
 
@@ -10,46 +11,25 @@ const VIEWPORT = { once: true, amount: 0.2 };
 // Seconds each stat holds before the card turns over
 const CARD_INTERVAL = 4200;
 
-const CLIENTS = [
-  { name: 'Winni', src: '/images/testimonial/winni.webp' },
-  { name: 'U2 Cake', src: '/images/testimonial/u2cake.webp' },
-  { name: 'OFC', src: '/images/testimonial/ofc.webp' },
-  { name: 'Monginis', src: '/images/testimonial/mongignis.webp' },
-  { name: 'Kaka Halwai', src: '/images/testimonial/kaka%20halwai.webp' },
-  { name: 'Gokul', src: '/images/testimonial/gokul.webp' },
-];
-
-/*
-  The figures are the scale numbers the site already states on the other
-  industry proof strips, so nothing new is claimed here.
-*/
-const STATS = [
-  {
-    value: '2.5 Cr+',
-    label: 'Products managed across connected operations',
-    photo: '/images/dairy_proof_strip1.webp',
-  },
-  {
-    value: '18,000+',
-    label: 'Inventory points tracked across locations',
-    photo: '/images/dairy_proof_strip2.webp',
-  },
-  {
-    value: '45+',
-    label: 'Distribution locations kept in one flow',
-    photo: '/images/dairy_proof_strip3.webp',
-  },
-];
-
-export default function DairyProofStrip() {
+/**
+ * CMS-only: the copy, the client logos and the figures - each with the
+ * photograph the card shows while it is up - come from the CMS via the page.
+ * With nothing published, or the API unreachable, the section renders nothing
+ * rather than falling back to built-in content.
+ *
+ * @param {{ section?: object | null }} props - the published section.
+ */
+export default function DairyProofStrip({ section = null }) {
   const reduceMotion = useReducedMotion();
   const [tick, setTick] = useState(0);
+  const clients = section?.logos ?? [];
+  const stats = section?.stats ?? [];
 
   // One clock for the strip: the card turns over to its next stat and the
   // logo tiles cross-fade to their next brand on the same beat. Reduced
   // motion holds the opening arrangement.
   useEffect(() => {
-    if (reduceMotion) return undefined;
+    if (reduceMotion || !section) return undefined;
 
     const id = window.setInterval(
       () => setTick((current) => current + 1),
@@ -57,9 +37,12 @@ export default function DairyProofStrip() {
     );
 
     return () => window.clearInterval(id);
-  }, [reduceMotion]);
+  }, [reduceMotion, section]);
 
-  const active = tick % STATS.length;
+  if (!section) return null;
+
+  // Guarded: a section can be published with logos and no figures.
+  const active = stats.length > 0 ? tick % stats.length : 0;
 
   const d = (value) => (reduceMotion ? 0 : value);
   const stagger = (value) => (reduceMotion ? 0 : value);
@@ -100,7 +83,7 @@ export default function DairyProofStrip() {
     visible: { opacity: 1, scale: 1, transition: { duration: 0.7, ease: EASE } },
   };
 
-  const stat = STATS[active];
+  const stat = stats[active];
 
   return (
     <section className="relative overflow-hidden bg-white py-12 sm:py-14 lg:py-16">
@@ -114,35 +97,31 @@ export default function DairyProofStrip() {
           className="min-w-0"
         >
           <motion.div variants={fadeIn}>
-            <Eyebrow>TRUSTED BY GROWING BRANDS</Eyebrow>
+            {section.eyebrow && <Eyebrow>{section.eyebrow}</Eyebrow>}
           </motion.div>
 
           <motion.h2
             variants={fadeUp}
             className="mt-3 h-display text-[24px] leading-[1.14] tracking-tight text-navy-950 sm:text-[28px] lg:text-[32px]"
           >
-            Join the food, dairy and FMCG brands
-            {/* Held to two lines rather than one long run at desktop widths */}
-            <br className="hidden sm:block" />{' '}
-            <span className="gradient-text-orange">
-              running their operations on UpWon.
-            </span>
+            <HeadingLines lines={section.headingLines} />
           </motion.h2>
 
-          <motion.p
-            variants={fadeUp}
-            className="mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
-          >
-            Teams across bakery, sweets, dairy, and FMCG use UpWon to keep
-            production, inventory, warehouses, sales, and distribution
-            connected across their locations.
-          </motion.p>
+          {section.subtext && (
+            <motion.p
+              variants={fadeUp}
+              className="mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
+            >
+              {section.subtext}
+            </motion.p>
+          )}
         </motion.div>
 
         {/* ================= LOGOS + STAT CARD ================= */}
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.55fr_0.85fr] lg:items-stretch">
           {/* ---------- Client grid ---------- */}
           {/* Cells overlap by a pixel so shared edges read as one hairline */}
+          {clients.length > 0 && (
           <motion.div
             variants={tilesGroup}
             initial="hidden"
@@ -150,8 +129,8 @@ export default function DairyProofStrip() {
             viewport={VIEWPORT}
             className="-m-px grid min-w-0 grid-cols-2 sm:grid-cols-3"
           >
-            {CLIENTS.map((_, tileIndex) => {
-              const showing = (tileIndex + tick) % CLIENTS.length;
+            {clients.map((_, tileIndex) => {
+              const showing = (tileIndex + tick) % clients.length;
 
               return (
                 <motion.div
@@ -159,9 +138,9 @@ export default function DairyProofStrip() {
                   variants={tileVariants}
                   className="group relative -mb-px -mr-px h-[120px] overflow-hidden border border-navy-950/[0.07] bg-white sm:h-[140px]"
                 >
-                  {CLIENTS.map((client, index) => (
+                  {clients.map((client, index) => (
                     <motion.div
-                      key={client.name}
+                      key={`${client.name}-${index}`}
                       animate={{
                         opacity: index === showing ? 1 : 0,
                         y: index === showing ? 0 : d(6),
@@ -187,8 +166,10 @@ export default function DairyProofStrip() {
               );
             })}
           </motion.div>
+          )}
 
           {/* ---------- Stat card ---------- */}
+          {stat && (
           <motion.div
             variants={cardVariants}
             initial="hidden"
@@ -196,9 +177,9 @@ export default function DairyProofStrip() {
             viewport={VIEWPORT}
             className="relative min-h-[260px] min-w-0 overflow-hidden rounded-[16px] bg-navy-950 lg:min-h-0"
           >
-            {STATS.map((item, index) => (
+            {stats.map((item, index) => (
               <motion.img
-                key={item.photo}
+                key={`${item.photo}-${index}`}
                 src={item.photo}
                 alt=""
                 aria-hidden="true"
@@ -235,9 +216,9 @@ export default function DairyProofStrip() {
 
               {/* Which stat is showing */}
               <div className="mt-5 flex items-center gap-1.5">
-                {STATS.map((item, index) => (
+                {stats.map((item, index) => (
                   <span
-                    key={item.photo}
+                    key={`${item.photo}-${index}`}
                     aria-hidden="true"
                     className={`h-[3px] rounded-full transition-all duration-500 ${
                       index === active ? 'w-6 bg-orange-500' : 'w-2.5 bg-white/35'
@@ -247,6 +228,7 @@ export default function DairyProofStrip() {
               </div>
             </div>
           </motion.div>
+          )}
         </div>
       </Container>
     </section>

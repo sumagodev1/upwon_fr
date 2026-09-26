@@ -1,64 +1,11 @@
 import { m as motion, useReducedMotion } from 'framer-motion';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
 
 const VIEWPORT = { once: true, amount: 0.15 };
-
-/*
-  Values are the scale figures the site already states on the bakery and sweets
-  proof strips, so nothing new is claimed here. Business Insights has no
-  natural figure, so it carries a qualitative value — the same approach
-  industries.js takes for food processing ("Tracked", "Unified", "Compliant").
-*/
-const PROOF_POINTS = [
-  {
-    value: '2.5 Cr+',
-    title: 'Products',
-    description:
-      'Keep product information and movement connected across your operations.',
-  },
-  {
-    value: '18,000+',
-    title: 'Inventory',
-    description:
-      'Maintain clearer visibility of stock across warehouses and locations.',
-  },
-  {
-    value: '25,000+',
-    title: 'Sales Channels',
-    description:
-      'Connect orders, distributors, retailers, and sales activity in one flow.',
-  },
-  {
-    value: '45+',
-    title: 'Distribution',
-    description:
-      'Coordinate product movement from warehouses to every sales channel.',
-  },
-  {
-    value: '3 Lakh+',
-    title: 'Field Teams',
-    description:
-      'Bring sales activity and market execution closer to your core operations.',
-  },
-  {
-    value: 'Real-time',
-    title: 'Business Insights',
-    description:
-      'Access connected visibility across sales, inventory, distribution, and performance.',
-  },
-];
-
-const CLIENTS = [
-  { name: 'Winni', src: '/images/testimonial/winni.webp' },
-  { name: 'U2 Cake', src: '/images/testimonial/u2cake.webp' },
-  { name: 'OFC', src: '/images/testimonial/ofc.webp' },
-  { name: 'Monginis', src: '/images/testimonial/mongignis.webp' },
-  { name: 'Kaka Halwai', src: '/images/testimonial/kaka%20halwai.webp' },
-  { name: 'Gokul', src: '/images/testimonial/gokul.webp' },
-];
 
 function ClientLogo({ client }) {
   return (
@@ -74,7 +21,14 @@ function ClientLogo({ client }) {
   );
 }
 
-export default function NonFoodFmcgProofStrip() {
+/**
+ * CMS-only: the copy, the figures and the logo marquee come from the CMS via the page. With nothing published - or
+ * the API unreachable - the section renders nothing rather than falling back
+ * to built-in content.
+ *
+ * @param {{ section?: object | null }} props - the published section.
+ */
+export default function NonFoodFmcgProofStrip({ section = null }) {
   const reduceMotion = useReducedMotion();
 
   const d = (value) => (reduceMotion ? 0 : value);
@@ -117,6 +71,16 @@ export default function NonFoodFmcgProofStrip() {
     hover: { y: d(-6), transition: { duration: 0.28, ease: EASE } },
   };
 
+  if (!section) return null;
+
+  const clients = section.logos;
+  // The API calls a figure's title its `label`.
+  const proofPoints = section.stats.map((stat) => ({
+    value: stat.value,
+    title: stat.label,
+    description: stat.description,
+  }));
+
   return (
     <section className="relative overflow-hidden bg-[#f7f8fa] py-12 sm:py-16 lg:py-20">
       <Container className="relative z-10">
@@ -128,30 +92,31 @@ export default function NonFoodFmcgProofStrip() {
           viewport={VIEWPORT}
           className="max-w-3xl"
         >
-          <motion.div variants={fadeIn}>
-            <Eyebrow>TRUSTED BY NON-FOOD FMCG BRANDS</Eyebrow>
-          </motion.div>
+          {section.eyebrow && (
+            <motion.div variants={fadeIn}>
+              <Eyebrow>{section.eyebrow}</Eyebrow>
+            </motion.div>
+          )}
 
           <motion.h2
             variants={fadeUp}
             className="mt-3 h-display text-[30px] leading-[1.1] tracking-tight text-navy-950 sm:text-[34px] lg:text-[36.8px]"
           >
-            Better Visibility Across{' '}
-            <span className="gradient-text-orange">
-              Products, Channels, and Operations.
-            </span>
+            <HeadingLines lines={section.headingLines} />
           </motion.h2>
 
-          <motion.p
-            variants={fadeUp}
-            className="mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
-          >
-            From what you make to where it sells, every part of the operation
-            works from the same connected information.
-          </motion.p>
+          {section.subtext && (
+            <motion.p
+              variants={fadeUp}
+              className="mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
+            >
+              {section.subtext}
+            </motion.p>
+          )}
         </motion.div>
 
         {/* ================= PROOF POINTS ================= */}
+        {proofPoints.length > 0 && (
         <motion.div
           variants={cardsGroup}
           initial="hidden"
@@ -159,9 +124,9 @@ export default function NonFoodFmcgProofStrip() {
           viewport={VIEWPORT}
           className="mt-9 grid gap-4 sm:mt-11 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
         >
-          {PROOF_POINTS.map(({ value, title, description }) => (
+          {proofPoints.map(({ value, title, description }, index) => (
             <motion.article
-              key={title}
+              key={`${title}-${index}`}
               variants={cardVariants}
               whileHover="hover"
               className="flex min-w-0 flex-col rounded-[16px] border border-navy-950/[0.06] bg-white px-5 py-6 shadow-[0_10px_30px_rgba(25,35,55,0.06)] transition-shadow duration-300 hover:shadow-[0_16px_40px_rgba(25,35,55,0.11)]"
@@ -180,10 +145,12 @@ export default function NonFoodFmcgProofStrip() {
             </motion.article>
           ))}
         </motion.div>
+        )}
 
         {/* ================= CLIENT MARQUEE ================= */}
         {/* Two identical copies with animate-ticker shifting the track -50%,
             so the loop runs continuously. The second copy is decorative. */}
+        {clients.length > 0 && (
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -198,17 +165,18 @@ export default function NonFoodFmcgProofStrip() {
                 : 'animate-ticker [animation-duration:38s] hover:[animation-play-state:paused]'
             }`}
           >
-            {CLIENTS.map((client) => (
-              <ClientLogo key={client.name} client={client} />
+            {clients.map((client, index) => (
+              <ClientLogo key={`${client.name}-${index}`} client={client} />
             ))}
 
             <div className="flex items-center gap-10 md:gap-16" aria-hidden="true">
-              {CLIENTS.map((client) => (
-                <ClientLogo key={`dup-${client.name}`} client={client} />
+              {clients.map((client, index) => (
+                <ClientLogo key={`dup-${client.name}-${index}`} client={client} />
               ))}
             </div>
           </div>
         </motion.div>
+        )}
       </Container>
     </section>
   );
