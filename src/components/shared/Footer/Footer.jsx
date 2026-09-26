@@ -1,11 +1,46 @@
 import { Link } from 'react-router-dom';
-import { Linkedin, Twitter, Mail, MapPin, Phone, Globe } from 'lucide-react';
 import Logo from '../Logo/Logo.jsx';
 import { COMPANY } from '../../../data/company.js';
 import { PLATFORM_NAV } from '../../../data/platformNav.js';
 import { INDUSTRIES } from '../../../data/industries.js';
 import { submitLead } from '../../../lib/leads.js';
-import { useState } from 'react';
+import { fetchSocialMediaLinks } from '../../../lib/socialMediaLinks.js';
+import { socialIcon } from '../../../lib/socialIcons.jsx';
+import { useEffect, useState } from 'react';
+
+// The contact lines and social buttons are authored in the admin panel's
+// Social Media Links area (lib/socialMediaLinks.js). These two lists are what
+// the footer shows until that read lands — on the prerendered HTML, during
+// hydration, and whenever the API is unconfigured, unreachable or has nothing
+// authored — so they reproduce the footer exactly as it read before the CMS,
+// in the shape the lib returns.
+const FALLBACK_CONTACT_LINES = [
+  { kind: 'ADDRESS', icon: 'MapPin', text: COMPANY.contact.address, href: null },
+  {
+    kind: 'EMAIL',
+    icon: 'Mail',
+    text: COMPANY.contact.email,
+    href: `mailto:${COMPANY.contact.email}`,
+  },
+  {
+    kind: 'PHONE',
+    icon: 'Phone',
+    text: COMPANY.contact.phone,
+    href: `tel:${COMPANY.contact.phone}`,
+  },
+  // Plain text, as it always was here; a published WEBSITE line is a link.
+  { kind: 'WEBSITE', icon: 'Globe', text: COMPANY.contact.website, href: null },
+];
+
+// Placeholders with no destination, exactly as before the CMS. They disappear
+// the moment an admin adds a real profile link (see hasSocialLinks).
+const FALLBACK_SOCIAL_LINKS = [
+  { label: 'LinkedIn', icon: 'Linkedin', url: '#' },
+  { label: 'Twitter', icon: 'Twitter', url: '#' },
+];
+
+// Only real off-site URLs open a new tab; the '#' placeholders never do.
+const isExternal = (href) => /^https?:\/\//i.test(href);
 
 // Outcome-led "Why UpWon" column — Tebra leads its footer with this so the
 // buyer sees the value, not the catalogue. Each link routes into the most
@@ -23,6 +58,27 @@ const WHY_LINKS = [
 export default function Footer() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+
+  // Null until the published lists land. The first render — which must match
+  // the prerendered HTML — always uses the built-in lists.
+  const [published, setPublished] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchSocialMediaLinks().then((links) => {
+      if (!cancelled && links) setPublished(links);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // hasX false means nothing is authored, so the built-in list stays; true
+  // with an empty array means every row was switched off, so none render.
+  const contactLines = published?.hasContactLines
+    ? published.contactLines
+    : FALLBACK_CONTACT_LINES;
+  const socialLinks = published?.hasSocialLinks ? published.socialLinks : FALLBACK_SOCIAL_LINKS;
 
   return (
     <footer className="relative overflow-hidden border-t border-navy-800 bg-navy-950 text-cream-100">
@@ -68,45 +124,53 @@ export default function Footer() {
               </p>
             </div>
 
-            <ul className="mt-6 space-y-2.5 text-sm text-cream-100/80">
-              <li className="flex items-start gap-2.5">
-                <MapPin className="mt-0.5 h-4 w-4 text-orange-500" />
-                {COMPANY.contact.address}
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Mail className="mt-0.5 h-4 w-4 text-orange-500" />
-                <a href={`mailto:${COMPANY.contact.email}`} className="hover:text-white">
-                  {COMPANY.contact.email}
-                </a>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Phone className="mt-0.5 h-4 w-4 text-orange-500" />
-                <a href={`tel:${COMPANY.contact.phone}`} className="hover:text-white">
-                  {COMPANY.contact.phone}
-                </a>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Globe className="mt-0.5 h-4 w-4 text-orange-500" />
-                {COMPANY.contact.website}
-              </li>
-            </ul>
+            {contactLines.length > 0 && (
+              <ul className="mt-6 space-y-2.5 text-sm text-cream-100/80">
+                {contactLines.map((line, index) => {
+                  const Icon = socialIcon(line.icon);
+                  return (
+                    <li key={`${line.kind}-${index}`} className="flex items-start gap-2.5">
+                      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-orange-500" />
+                      {line.href ? (
+                        <a
+                          href={line.href}
+                          className="hover:text-white"
+                          {...(isExternal(line.href)
+                            ? { target: '_blank', rel: 'noopener noreferrer' }
+                            : {})}
+                        >
+                          {line.text}
+                        </a>
+                      ) : (
+                        line.text
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
 
-            <div className="mt-6 flex items-center gap-3">
-              <a
-                href="#"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-cream-100/80 transition-colors hover:border-orange-500/40 hover:text-orange-500"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="h-4 w-4" />
-              </a>
-              <a
-                href="#"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-cream-100/80 transition-colors hover:border-orange-500/40 hover:text-orange-500"
-                aria-label="Twitter"
-              >
-                <Twitter className="h-4 w-4" />
-              </a>
-            </div>
+            {socialLinks.length > 0 && (
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                {socialLinks.map((link, index) => {
+                  const Icon = socialIcon(link.icon);
+                  return (
+                    <a
+                      key={`${link.icon}-${index}`}
+                      href={link.url}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/10 text-cream-100/80 transition-colors hover:border-orange-500/40 hover:text-orange-500"
+                      aria-label={link.label}
+                      title={link.label}
+                      {...(isExternal(link.url)
+                        ? { target: '_blank', rel: 'noopener noreferrer' }
+                        : {})}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </a>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Why UpWon — outcome-led column. Tebra puts this first because
