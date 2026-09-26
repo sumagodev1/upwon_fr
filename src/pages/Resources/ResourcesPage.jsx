@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { m as motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
@@ -25,10 +25,10 @@ import { submitLead } from '../../lib/leads.js';
 import {
   SORTED_POSTS,
   CATEGORIES_WITH_COUNTS,
-  getCategory,
-  getFeaturedPost,
   formatPostDate,
 } from '../../data/blog.js';
+import { fetchBlogIndex } from '../../lib/blog.js';
+import { blogIcon } from '../../lib/blogIcons.js';
 
 // §18.1 hub tab nav — Blog | Case Studies | Guides | Videos | Tools. Blog and
 // Tools route out; the rest jump to their section on this page.
@@ -50,8 +50,39 @@ const HUB_TABS = [
 // The hub is one of the brief's Priority-1 builds. Content here is
 // placeholder-but-credible — the structure is what the brief demands.
 
-// Blog categories + posts now live in src/data/blog.js — the hub renders the
-// latest posts from there and deep-links each card to /blog/:slug.
+// Blog categories + posts are authored in the admin panel under Resource Page
+// → Blog and read through lib/blog.js; src/data/blog.js is the built-in copy
+// the hub renders until the API answers (and for good whenever it cannot).
+// Either way the hub renders the latest posts and deep-links each card to
+// /blog/:slug.
+//
+// The listing in one shape, whichever source it came from — the same rule as
+// BlogPage.jsx, so the hub and /blog can never disagree about what is live:
+// `categories` are `{ id, label, icon, count }` with `icon` a lucide COMPONENT
+// (the shape data/blog.js's CATEGORIES_WITH_COUNTS already has), `posts` are
+// cards newest first.
+//
+// The published listing wins whenever the blog HAS posts — including an empty
+// list, which is every post switched off on purpose (`hasPosts`, see
+// lib/blog.js). Categories and posts swap as one unit, keyed off the posts. A
+// published category's icon name is resolved through lib/blogIcons.js, and its
+// count is taken from the list actually rendered, so a chip always says how
+// many cards clicking it shows.
+const BUILT_IN_LISTING = { categories: CATEGORIES_WITH_COUNTS, posts: SORTED_POSTS };
+
+function toBlogListing(index) {
+  if (!index?.hasPosts) return BUILT_IN_LISTING;
+
+  return {
+    categories: index.categories.map((category) => ({
+      id: category.slug,
+      label: category.label,
+      icon: blogIcon(category.icon),
+      count: index.posts.filter((post) => post.category === category.slug).length,
+    })),
+    posts: index.posts,
+  };
+}
 
 // 5 gated guides per brief §18.3
 const GUIDES = [
@@ -127,13 +158,45 @@ export default function ResourcesPage() {
   const [emailValue, setEmailValue] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
-  // Featured (latest) post leads the §18.1 hero; the grid shows the rest.
-  const featured = getFeaturedPost();
+  /*
+    The blog listing starts as the built-in one and is swapped for the
+    published one once the API answers. fetchBlogIndex resolves to null for
+    every failure (unconfigured, offline, CORS), and null means "keep what you
+    have".
+  */
+  const [blogIndex, setBlogIndex] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchBlogIndex().then((published) => {
+      if (!cancelled && published) setBlogIndex(published);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const { categories, posts } = useMemo(() => toBlogListing(blogIndex), [blogIndex]);
+
+  // A chip picked from the built-in listing may not exist in the published
+  // one; the grid then shows All rather than an empty lane nobody can see lit.
+  const selectedCat =
+    activeCat === 'all' || categories.some((c) => c.id === activeCat) ? activeCat : 'all';
+
+  const categoryOf = (id) => categories.find((c) => c.id === id) ?? null;
+
+  // Featured (latest) post leads the §18.1 hero; the grid shows the rest. Null
+  // only when a published listing has been emptied on purpose — the card is
+  // then left out.
+  const featured = posts[0] ?? null;
+  const featuredSlug = featured?.slug ?? null;
   const filteredArticles = useMemo(() => {
-    const rest = SORTED_POSTS.filter((p) => p.slug !== featured.slug);
-    if (activeCat === 'all') return rest;
-    return rest.filter((p) => p.category === activeCat);
-  }, [activeCat, featured.slug]);
+    const rest = posts.filter((p) => p.slug !== featuredSlug);
+    if (selectedCat === 'all') return rest;
+    return rest.filter((p) => p.category === selectedCat);
+  }, [posts, selectedCat, featuredSlug]);
 
   const filteredCases = useMemo(() => {
     if (caseFilter === 'all') return CASE_STUDIES;
@@ -181,52 +244,71 @@ export default function ResourcesPage() {
       {/* ========== §18.1 FEATURED (latest) ARTICLE ========== */}
       <section id="blog" className="relative overflow-hidden bg-white pt-8 scroll-mt-24">
         <Container className="relative">
-          <Link
-            to={`/blog/${featured.slug}`}
-            className="group grid overflow-hidden rounded-3xl border border-cream-300 bg-white shadow-enterprise transition-all duration-300 hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-enterprise-lg lg:grid-cols-2"
-          >
-            <div className="relative aspect-[16/10] overflow-hidden lg:aspect-auto">
-              <img
-                src={featured.image}
-                alt={featured.title}
-                loading="lazy"
-                decoding="async"
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-              />
-              <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-orange-500 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white shadow">
-                Latest on the blog
-              </span>
-            </div>
-            <div className="flex flex-col justify-center p-7 md:p-10">
-              {(() => {
-                const fc = getCategory(featured.category);
-                return (
-                  <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-orange-700">
-                    {fc?.icon && <fc.icon className="h-3 w-3" />}
-                    {fc?.label}
-                  </span>
-                );
-              })()}
-              <h2 className="mt-4 h-display text-balance text-[1.7rem] leading-[1.12] text-navy-950 group-hover:text-orange-600 md:text-[2.1rem]">
-                {featured.title}
-              </h2>
-              <p className="mt-3 text-[15px] leading-relaxed text-navy-700">
-                {featured.excerpt}
-              </p>
-              <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-[14px] text-navy-500">
-                <span>{formatPostDate(featured.date)}</span>
-                <span className="text-navy-300">·</span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Clock className="h-3.5 w-3.5 text-orange-500" />
-                  {featured.readTime}
-                </span>
-                <span className="ml-auto inline-flex items-center gap-1 font-semibold text-orange-600">
-                  Read article
-                  <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+          {featured && (
+            <Link
+              to={`/blog/${featured.slug}`}
+              className="group grid overflow-hidden rounded-3xl border border-cream-300 bg-white shadow-enterprise transition-all duration-300 hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-enterprise-lg lg:grid-cols-2"
+            >
+              <div className="relative aspect-[16/10] overflow-hidden lg:aspect-auto">
+                {/* A published post can have no image (none set, or an upload
+                    deleted out from under it); a navy panel then holds the
+                    card's shape. Every built-in post has one. The landscape
+                    desktop image on every screen: a post's phone crop is a
+                    portrait for the post page's top image only. */}
+                {featured.image ? (
+                  <img
+                    src={featured.image}
+                    alt={featured.title}
+                    loading="lazy"
+                    decoding="async"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                  />
+                ) : (
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-gradient-to-br from-navy-900 to-navy-950"
+                  />
+                )}
+                <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-orange-500 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white shadow">
+                  Latest on the blog
                 </span>
               </div>
-            </div>
-          </Link>
+              <div className="flex flex-col justify-center p-7 md:p-10">
+                {(() => {
+                  const fc = categoryOf(featured.category);
+                  return (
+                    <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-orange-700">
+                      {fc?.icon && <fc.icon className="h-3 w-3" />}
+                      {fc?.label}
+                    </span>
+                  );
+                })()}
+                <h2 className="mt-4 h-display text-balance text-[1.7rem] leading-[1.12] text-navy-950 group-hover:text-orange-600 md:text-[2.1rem]">
+                  {featured.title}
+                </h2>
+                <p className="mt-3 text-[15px] leading-relaxed text-navy-700">
+                  {featured.excerpt}
+                </p>
+                <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-[14px] text-navy-500">
+                  <span>{formatPostDate(featured.date)}</span>
+                  {/* Read time is optional on a published post. */}
+                  {featured.readTime && (
+                    <>
+                      <span className="text-navy-300">·</span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5 text-orange-500" />
+                        {featured.readTime}
+                      </span>
+                    </>
+                  )}
+                  <span className="ml-auto inline-flex items-center gap-1 font-semibold text-orange-600">
+                    Read article
+                    <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </div>
+              </div>
+            </Link>
+          )}
         </Container>
       </section>
 
@@ -251,7 +333,7 @@ export default function ResourcesPage() {
               type="button"
               onClick={() => setActiveCat('all')}
               className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[14px] font-semibold transition-all ${
-                activeCat === 'all'
+                selectedCat === 'all'
                   ? 'border-orange-500 bg-orange-500 text-white'
                   : 'border-cream-300 bg-white text-navy-700 hover:border-orange-200'
               }`}
@@ -259,8 +341,8 @@ export default function ResourcesPage() {
               <Filter className="h-3 w-3" />
               All
             </button>
-            {CATEGORIES_WITH_COUNTS.map((c) => {
-              const active = activeCat === c.id;
+            {categories.map((c) => {
+              const active = selectedCat === c.id;
               return (
                 <button
                   key={c.id}
@@ -289,7 +371,7 @@ export default function ResourcesPage() {
           {/* Post grid — deep-links each card to /blog/:slug */}
           <div className="mt-8 grid gap-5 lg:mt-10 md:grid-cols-2 lg:grid-cols-3">
             {filteredArticles.map((p, i) => {
-              const cat = getCategory(p.category);
+              const cat = categoryOf(p.category);
               return (
                 <motion.div
                   key={p.slug}
@@ -311,6 +393,8 @@ export default function ResourcesPage() {
                     </h3>
                     <p className="mt-2 text-sm text-charcoal">{p.excerpt}</p>
                     <div className="mt-5 flex items-center justify-between border-t border-cream-300 pt-4">
+                      {/* Empty when a published post has no read time; the
+                          span stays so "Read article" keeps to the right. */}
                       <span className="text-[14px] text-navy-500">{p.readTime}</span>
                       <span className="inline-flex items-center gap-1 text-[14px] font-semibold text-orange-600">
                         Read article
@@ -321,6 +405,17 @@ export default function ResourcesPage() {
                 </motion.div>
               );
             })}
+            {/* Only reachable once a published listing has been thinned out
+                or emptied; the built-in one always has posts in every lane. */}
+            {filteredArticles.length === 0 && (
+              <p className="col-span-full py-12 text-center text-sm text-navy-500">
+                {selectedCat !== 'all'
+                  ? 'No posts in this category yet — try another lane.'
+                  : featured
+                    ? 'More playbooks are on the way — the latest one is above.'
+                    : 'No playbooks published yet — check back soon.'}
+              </p>
+            )}
           </div>
 
           {/* See the full blog */}
