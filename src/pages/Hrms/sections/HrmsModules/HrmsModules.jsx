@@ -3,6 +3,7 @@ import { m as motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 /*
   HRMS "Recognition" — a Keka-style module showcase. The heading scrolls away,
@@ -16,6 +17,20 @@ import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
 
+/*
+  The built-in copy, written in the shape the API sends so that a CMS section
+  and the shipped one take one identical path through the render below.
+*/
+const EYEBROW = 'Every HR Need';
+const HEADING_LINES = [
+  [
+    { text: 'Advanced Platform for Every HR Need — ', accent: false },
+    { text: 'From Recruitment to Retirement.', accent: true },
+  ],
+];
+const SUBTEXT =
+  'One platform that understands a mixed workforce — office, plant and field — across the full employee lifecycle.';
+
 const MODULES = [
   { nav: 'Recruitment & Onboarding', img: '/images/recruitment.webp' },
   { nav: 'Attendance & Leave', img: '/images/Attendance_leave.webp' },
@@ -27,7 +42,7 @@ const MODULES = [
 ];
 
 // Left-aligned heading — reused by the desktop and mobile views.
-function Heading() {
+function Heading({ eyebrow, headingLines, subtext }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 18 }}
@@ -36,24 +51,22 @@ function Heading() {
       transition={{ duration: 0.6, ease: EASE }}
       className="max-w-3xl"
     >
-      <Eyebrow>Every HR Need</Eyebrow>
+      {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
       <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-        Advanced Platform for Every HR Need —{' '}
-        <span className="gradient-text-orange">From Recruitment to Retirement.</span>
+        <HeadingLines lines={headingLines} />
       </h2>
-      <p className="mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
-        One platform that understands a mixed workforce — office, plant and field — across the full
-        employee lifecycle.
-      </p>
+      {subtext && (
+        <p className="mt-4 max-w-2xl text-base leading-relaxed text-navy-600">{subtext}</p>
+      )}
     </motion.div>
   );
 }
 
 // Vertical nav list. `active` highlights the current module; clicking calls onPick.
-function ModuleNav({ active, onPick }) {
+function ModuleNav({ modules, active, onPick }) {
   return (
     <nav className="flex flex-col">
-      {MODULES.map((m, i) => {
+      {modules.map((m, i) => {
         const isActive = i === active;
         return (
           <button
@@ -98,12 +111,23 @@ function ModuleVisual({ m }) {
   );
 }
 
-export default function HrmsModules() {
+export default function HrmsModules({ section = null }) {
+  const eyebrow = section ? section.eyebrow : EYEBROW;
+  const headingLines = section ? section.headingLines : HEADING_LINES;
+  const subtext = section ? section.subtext : SUBTEXT;
+  const modules = section && section.modules.length > 0 ? section.modules : MODULES;
+
   const [active, setActive] = useState(0);
   const panelRefs = useRef([]);
 
-  // Scroll-spy: whichever screenshot is centered in the viewport sets the active
-  // nav item. The thin center band (rootMargin) keeps exactly one panel active.
+  /*
+    Scroll-spy: whichever screenshot is centered in the viewport sets the active
+    nav item. The thin center band (rootMargin) keeps exactly one panel active.
+
+    Re-run when the list changes: the published section arrives after the first
+    paint, and the panels observed on that paint are not the ones on screen
+    afterwards - without this the nav would stop following the scroll.
+  */
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -115,7 +139,7 @@ export default function HrmsModules() {
     );
     panelRefs.current.filter(Boolean).forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, []);
+  }, [modules]);
 
   // Click a nav item → scroll its screenshot into view (offset for the navbar).
   const scrollToIndex = (i) => {
@@ -130,19 +154,19 @@ export default function HrmsModules() {
       {/* ===== Desktop — sticky nav (left) + stacked scrolling screenshots (right) ===== */}
       <div className="hidden lg:block">
         <Container>
-          <Heading />
+          <Heading eyebrow={eyebrow} headingLines={headingLines} subtext={subtext} />
 
           <div className="mt-10 grid grid-cols-[minmax(0,300px)_1fr] gap-12">
             {/* Sticky nav */}
             <div>
               <div className="sticky top-32">
-                <ModuleNav active={active} onPick={scrollToIndex} />
+                <ModuleNav modules={modules} active={active} onPick={scrollToIndex} />
               </div>
             </div>
 
             {/* Stacked screenshots — scroll one after another */}
             <div className="flex flex-col gap-10">
-              {MODULES.map((m, i) => (
+              {modules.map((m, i) => (
                 <div
                   key={m.nav}
                   data-index={i}
@@ -161,9 +185,9 @@ export default function HrmsModules() {
 
       {/* ===== Mobile — heading + stacked cards ===== */}
       <Container className="lg:hidden">
-        <Heading />
+        <Heading eyebrow={eyebrow} headingLines={headingLines} subtext={subtext} />
         <div className="mt-10 flex flex-col gap-12">
-          {MODULES.map((m, i) => (
+          {modules.map((m, i) => (
             <motion.div
               key={m.nav}
               initial={{ opacity: 0, y: 20 }}

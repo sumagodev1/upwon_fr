@@ -4,6 +4,7 @@ import { m as motion } from 'framer-motion';
 import { ChevronRight, ArrowUpRight, ArrowLeft, ArrowRight } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 /*
   POS "Customer Outcomes" — a ClickUp-style testimonial marquee. Each card is a
@@ -14,41 +15,57 @@ import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
 
+/*
+  The built-in copy, written in the shape the API sends so that a CMS section
+  and the shipped one take one identical path through the render below.
+*/
+const EYEBROW = 'Customer Outcomes';
+const HEADING_LINES = [
+  [
+    { text: 'Software replaced. ', accent: false },
+    { text: 'Results delivered.', accent: true },
+  ],
+];
+const SUBTEXT = 'The receipts from real F&B brands running their counter on UpWon POS.';
+
 const CASES = [
   {
+    slug: 'u2-cake-visibility',
+    name: 'U2 Cake',
     logo: '/images/testimonial/u2cake.webp',
-    logoAlt: 'U2 Cake',
-    href: '/clients/u2-cake',
     photo: '/images/fms_hero2.webp',
     quote:
       'Every order, every outlet, every minute — fully visible on one screen. 6,000+ orders a day now run through UpWon POS without a single manual stock count.',
-    name: 'U2 Cake Leadership Team',
-    role: 'Bakery Chain · 250+ Outlets',
+    personName: 'U2 Cake Leadership Team',
+    personCompany: 'Bakery Chain · 250+ Outlets',
+    linkLabel: 'Read case study',
+    linkHref: '/clients/u2-cake',
   },
   {
+    slug: 'kaka-halwai-billing',
+    name: 'Kaka Halwai',
     logo: '/images/testimonial/kaka%20halwai.webp',
-    logoAlt: 'Kaka Halwai',
-    href: '/clients/kaka-halwai',
     photo: '/images/fms_hero1.webp',
     quote:
       'Billing at the counter is 48% faster and our stock finally matches reality. Recipe-level deduction means we know our true food cost on every sale, instantly.',
-    name: 'Kaka Halwai Operations',
-    role: 'Namkeen & Sweets',
+    personName: 'Kaka Halwai Operations',
+    personCompany: 'Namkeen & Sweets',
+    linkLabel: 'Read case study',
+    linkHref: '/clients/kaka-halwai',
   },
   {
+    slug: 'u2-cake-margins',
+    name: 'U2 Cake',
     logo: '/images/testimonial/u2cake.webp',
-    logoAlt: 'U2 Cake',
-    href: '/clients/u2-cake',
     photo: '/images/fms_hero3.webp',
     quote:
       '₹23 Lakh+ of daily business runs on one system — counter, kitchen and finance all reading the same numbers. Our margins are no longer a month-end guess.',
-    name: 'U2 Cake Finance Team',
-    role: 'Bakery Chain',
+    personName: 'U2 Cake Finance Team',
+    personCompany: 'Bakery Chain',
+    linkLabel: 'Read case study',
+    linkHref: '/clients/u2-cake',
   },
 ];
-
-// Duplicate the set so the marquee can loop seamlessly (translate 0 → -50%).
-const TRACK = [...CASES, ...CASES];
 
 function Card({ c }) {
   return (
@@ -58,7 +75,7 @@ function Card({ c }) {
         <div className="relative w-full shrink-0 md:w-[42%]">
           <img
             src={c.photo}
-            alt={c.logoAlt}
+            alt={c.name}
             loading="lazy"
             decoding="async"
             className="h-48 w-full object-cover md:h-full"
@@ -70,7 +87,7 @@ function Card({ c }) {
           <div className="flex items-center gap-1.5">
             <img
               src={c.logo}
-              alt={`${c.logoAlt} logo`}
+              alt={`${c.name} logo`}
               className="h-8 w-auto max-w-[150px] object-contain"
             />
             <ChevronRight className="h-5 w-5 text-navy-400" strokeWidth={2.2} />
@@ -82,14 +99,14 @@ function Card({ c }) {
 
           <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-[14px] font-bold text-navy-950">{c.name}</p>
-              <p className="mt-0.5 text-[14px] text-navy-500">{c.role}</p>
+              <p className="text-[14px] font-bold text-navy-950">{c.personName}</p>
+              <p className="mt-0.5 text-[14px] text-navy-500">{c.personCompany}</p>
             </div>
             <Link
-              to={c.href}
+              to={c.linkHref}
               className="group/link inline-flex items-center gap-1.5 text-[14px] font-semibold text-navy-900 underline-offset-4 transition-colors hover:text-orange-600 hover:underline"
             >
-              Read case study
+              {c.linkLabel}
               <ArrowUpRight
                 className="h-4 w-4 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5"
                 strokeWidth={2.2}
@@ -102,7 +119,7 @@ function Card({ c }) {
   );
 }
 
-export default function PosCustomerOutcomes() {
+export default function PosCustomerOutcomes({ section = null }) {
   const scroller = useRef(null);
   const paused = useRef(false);
 
@@ -134,6 +151,18 @@ export default function PosCustomerOutcomes() {
     }, 700);
   };
 
+  /*
+    A published set replaces the built-in one wholesale: a marquee mixing
+    authored cards with shipped ones would quote customers nobody chose.
+  */
+  const stories = section && section.stories.length > 0 ? section.stories : CASES;
+  const eyebrow = section ? section.eyebrow : EYEBROW;
+  const headingLines = section ? section.headingLines : HEADING_LINES;
+  const subtext = section ? section.subtext : SUBTEXT;
+
+  // Duplicated so the marquee loops seamlessly (it wraps at the halfway point).
+  const track = [...stories, ...stories];
+
   return (
     <section className="relative overflow-hidden bg-white py-16 md:py-24">
       <Container>
@@ -145,12 +174,12 @@ export default function PosCustomerOutcomes() {
           transition={{ duration: 0.6, ease: EASE }}
           className="mx-auto max-w-3xl text-center"
         >
-          <Eyebrow className="justify-center">Customer Outcomes</Eyebrow>
+          {eyebrow && <Eyebrow className="justify-center">{eyebrow}</Eyebrow>}
  <h2 className="mt-3 h-display text-[36.8px] leading-[1.08] tracking-tight text-navy-950">
-            Software replaced. <span className="gradient-text-orange">Results delivered.</span>
+            <HeadingLines lines={headingLines} />
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
-            The receipts from real F&amp;B brands running their counter on UpWon POS.
+            {subtext}
           </p>
         </motion.div>
       </Container>
@@ -171,8 +200,8 @@ export default function PosCustomerOutcomes() {
           }}
           className="flex gap-6 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          {TRACK.map((c, i) => (
-            <Card key={`${c.name}-${i}`} c={c} />
+          {track.map((c, i) => (
+            <Card key={`${c.slug}-${i}`} c={c} />
           ))}
         </div>
       </div>

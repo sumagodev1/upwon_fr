@@ -3,6 +3,7 @@ import { m as motion, AnimatePresence } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 /*
   HRMS "FAQ" — pre-empts the specific questions an HR / payroll buyer asks before
@@ -11,6 +12,20 @@ import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
 */
 
 const EASE = [0.22, 1, 0.3, 1];
+
+/*
+  The built-in copy, written in the shape the API sends so that a CMS section
+  and the shipped one take one identical path through the render below.
+*/
+const EYEBROW = 'FAQ';
+const HEADING_LINES = [
+  [
+    { text: 'Questions HR Leaders ', accent: false },
+    { text: 'Ask Before They Commit.', accent: true },
+  ],
+];
+const SUBTEXT =
+  'Practical, migration- and compliance-focused answers — the questions HR and payroll leaders actually ask before switching systems.';
 
 const FAQS = [
   {
@@ -39,7 +54,12 @@ const FAQS = [
   },
 ];
 
-export default function HrmsFaq() {
+export default function HrmsFaq({ section = null }) {
+  const eyebrow = section ? section.eyebrow : EYEBROW;
+  const headingLines = section ? section.headingLines : HEADING_LINES;
+  const subtext = section ? section.subtext : SUBTEXT;
+  const faqs = section && section.faqs.length > 0 ? section.faqs : FAQS;
+
   const [openIndex, setOpenIndex] = useState(0);
 
   return (
@@ -54,20 +74,18 @@ export default function HrmsFaq() {
           transition={{ duration: 0.6, ease: EASE }}
           className="mx-auto max-w-3xl text-center"
         >
-          <Eyebrow className="justify-center">FAQ</Eyebrow>
+          {eyebrow && <Eyebrow className="justify-center">{eyebrow}</Eyebrow>}
           <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-            Questions HR Leaders{' '}
-            <span className="gradient-text-orange">Ask Before They Commit.</span>
+            <HeadingLines lines={headingLines} />
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
-            Practical, migration- and compliance-focused answers — the questions HR and payroll
-            leaders actually ask before switching systems.
+            {subtext}
           </p>
         </motion.div>
 
         {/* Accordion */}
         <div className="mx-auto mt-12 max-w-3xl divide-y divide-cream-300 rounded-2xl border border-cream-300 bg-white shadow-sm">
-          {FAQS.map((f, i) => (
+          {faqs.map((f, i) => (
             <div key={f.q}>
               <button
                 type="button"

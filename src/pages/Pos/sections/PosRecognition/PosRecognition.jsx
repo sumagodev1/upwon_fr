@@ -1,43 +1,58 @@
 import { m as motion } from 'framer-motion';
-import {
-  Croissant,
-  Candy,
-  Sandwich,
-  IceCreamCone,
-  ShoppingBag,
-  UtensilsCrossed,
-  ChefHat,
-  CupSoda,
-  Store,
-  Sparkles,
-  ChevronRight,
-} from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { posIcon } from '../../../../lib/posIcons.js';
 
 /*
   POS "Recognition" — a category map that signals fit across every counter type
   this page targets (broader than the FMS franchise-only audience). Navy
   "premium features" layout: a sticky left heading beside a grid of dark cards.
+
+  CMS-driven when a `section` is passed, and falls back to the constants
+  otherwise — the same arrangement the page's other sections use, so the SSG
+  build and an unreachable API both render the map the site ships.
 */
 
 const EASE = [0.22, 1, 0.3, 1];
 const ORANGE = '#E85A2A';
 
+/*
+  The built-in copy, written in the shape the API sends so that a CMS section
+  and the shipped one take one identical path through the render below - icons
+  included, which are names here as they are in the payload and resolved
+  through posIcon() at render time.
+*/
+const EYEBROW = 'Recognition';
+const HEADING_LINES = [
+  [
+    { text: 'Built for Bakery Counters, Sweets Shops, Dine-In, QSR and ', accent: false },
+    { text: 'Every Food Retail Business in Between.', accent: true },
+  ],
+];
+const SUBTEXT =
+  'A quick category map so a range of counter-level buyers — not just franchisors — see themselves immediately.';
+
 const CATEGORIES = [
-  { icon: Croissant, title: 'Bakery & Confectionery', desc: 'Manage fresh batches, combos and counter sales seamlessly.' },
-  { icon: Candy, title: 'Sweets & Namkeen', desc: 'Track weight-based items, pricing tiers and festive sales.' },
-  { icon: Sandwich, title: 'QSR & Cafés', desc: 'KOT speed and delivery-aggregator orders on one screen.' },
-  { icon: IceCreamCone, title: 'Ice Cream & Dessert Parlours', desc: 'Handle flavours, toppings, combos and seasonal offers.' },
-  { icon: ShoppingBag, title: 'General Food Retail', desc: 'Streamline billing, stock and loyalty at the counter.' },
-  { icon: UtensilsCrossed, title: 'Dine-In Restaurants', desc: 'Table billing, split bills and smooth dine-in operations.' },
-  { icon: ChefHat, title: 'Cloud Kitchens & Takeaway', desc: 'Manage online orders, packaging and quick counter pickups.' },
-  { icon: CupSoda, title: 'Beverage & Juice Bars', desc: 'Add-ons, variations and fast billing at busy hours.' },
-  { icon: Store, title: 'Food Kiosks & Food Courts', desc: 'Compact setups with powerful billing and stock control.' },
-  { icon: Sparkles, title: 'Other Businesses', desc: 'A flexible solution for any counter that needs speed and control.' },
+  { icon: 'Croissant', title: 'Bakery & Confectionery', description: 'Manage fresh batches, combos and counter sales seamlessly.' },
+  { icon: 'Candy', title: 'Sweets & Namkeen', description: 'Track weight-based items, pricing tiers and festive sales.' },
+  { icon: 'Sandwich', title: 'QSR & Cafés', description: 'KOT speed and delivery-aggregator orders on one screen.' },
+  { icon: 'IceCreamCone', title: 'Ice Cream & Dessert Parlours', description: 'Handle flavours, toppings, combos and seasonal offers.' },
+  { icon: 'ShoppingBag', title: 'General Food Retail', description: 'Streamline billing, stock and loyalty at the counter.' },
+  { icon: 'UtensilsCrossed', title: 'Dine-In Restaurants', description: 'Table billing, split bills and smooth dine-in operations.' },
+  { icon: 'ChefHat', title: 'Cloud Kitchens & Takeaway', description: 'Manage online orders, packaging and quick counter pickups.' },
+  { icon: 'CupSoda', title: 'Beverage & Juice Bars', description: 'Add-ons, variations and fast billing at busy hours.' },
+  { icon: 'Store', title: 'Food Kiosks & Food Courts', description: 'Compact setups with powerful billing and stock control.' },
+  { icon: 'Sparkles', title: 'Other Businesses', description: 'A flexible solution for any counter that needs speed and control.' },
 ];
 
-export default function PosRecognition() {
+export default function PosRecognition({ section = null }) {
+  const eyebrow = section ? section.eyebrow : EYEBROW;
+  const headingLines = section ? section.headingLines : HEADING_LINES;
+  const subtext = section ? section.subtext : SUBTEXT;
+  const categories = section ? section.categories : CATEGORIES;
+
   return (
     <section
       className="relative bg-navy-950 pb-28 pt-28 md:pb-36 md:pt-36"
@@ -57,21 +72,19 @@ export default function PosRecognition() {
             transition={{ duration: 0.6, ease: EASE }}
             className="lg:sticky lg:top-32 lg:self-start"
           >
-            <Eyebrow className="justify-start">Recognition</Eyebrow>
+            {eyebrow && <Eyebrow className="justify-start">{eyebrow}</Eyebrow>}
  <h2 className="mt-3 h-display text-[36.8px] leading-[1.06] tracking-tight text-white">
-              Built for Bakery Counters, Sweets Shops, Dine-In, QSR and{' '}
-              <span className="gradient-text-orange">Every Food Retail Business in Between.</span>
+              <HeadingLines lines={headingLines} />
             </h2>
             <p className="mt-5 max-w-md text-[15px] leading-relaxed text-slate-300">
-              A quick category map so a range of counter-level buyers — not just franchisors — see
-              themselves immediately.
+              {subtext}
             </p>
           </motion.div>
 
           {/* Right — category cards */}
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {CATEGORIES.map((c, i) => {
-              const Icon = c.icon;
+            {categories.map((c, i) => {
+              const Icon = posIcon(c.icon);
               return (
                 <motion.div
                   key={c.title}
@@ -83,7 +96,7 @@ export default function PosRecognition() {
                 >
                   <Icon className="h-7 w-7" style={{ color: ORANGE }} strokeWidth={1.7} />
                   <h3 className="mt-5 text-[16px] font-bold leading-tight text-white">{c.title}</h3>
-                  <p className="mt-2 text-[14px] leading-relaxed text-slate-400">{c.desc}</p>
+                  <p className="mt-2 text-[14px] leading-relaxed text-slate-400">{c.description}</p>
                   <ChevronRight
                     className="mt-auto pt-5 opacity-70 transition-opacity group-hover:opacity-100"
                     style={{ color: ORANGE }}

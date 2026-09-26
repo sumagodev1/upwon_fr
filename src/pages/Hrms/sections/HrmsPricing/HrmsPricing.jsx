@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Check, ArrowRight, Sparkles } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 /*
   HRMS "Module Versions & Growth Path" — HREasy's real Core / Pro / Plus packages
@@ -12,6 +13,20 @@ import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
 */
 
 const EASE = [0.22, 1, 0.3, 1];
+
+/*
+  The built-in copy, written in the shape the API sends so that a CMS section
+  and the shipped one take one identical path through the render below.
+*/
+const EYEBROW = 'Module Versions & Growth Path';
+const HEADING_LINES = [
+  [
+    { text: 'Start With Core HR. ', accent: false },
+    { text: 'Grow Into Full Performance Management.', accent: true },
+  ],
+];
+const SUBTEXT =
+  "HREasy's Core, Pro and Plus packages — start where you are today and add depth as you scale, on the same platform.";
 
 const TIERS = [
   {
@@ -145,7 +160,12 @@ function TierCard({ tier, i }) {
   );
 }
 
-export default function HrmsPricing() {
+export default function HrmsPricing({ section = null }) {
+  const eyebrow = section ? section.eyebrow : EYEBROW;
+  const headingLines = section ? section.headingLines : HEADING_LINES;
+  const subtext = section ? section.subtext : SUBTEXT;
+  const tiers = section && section.tiers.length > 0 ? section.tiers : TIERS;
+
   return (
     <section className="relative overflow-hidden bg-[#f5f6fa] py-12 md:py-16">
       <Container>
@@ -157,20 +177,20 @@ export default function HrmsPricing() {
           transition={{ duration: 0.6, ease: EASE }}
           className="mx-auto max-w-3xl text-center"
         >
-          <Eyebrow className="justify-center">Module Versions &amp; Growth Path</Eyebrow>
+          {eyebrow && <Eyebrow className="justify-center">{eyebrow}</Eyebrow>}
           <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-            Start With Core HR.{' '}
-            <span className="gradient-text-orange">Grow Into Full Performance Management.</span>
+            <HeadingLines lines={headingLines} />
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
-            HREasy&apos;s Core, Pro and Plus packages — start where you are today and add depth as
-            you scale, on the same platform.
-          </p>
+          {subtext && (
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
+              {subtext}
+            </p>
+          )}
         </motion.div>
 
         {/* Tiers */}
         <div className="mt-16 grid items-stretch gap-6 md:grid-cols-3">
-          {TIERS.map((tier, i) => (
+          {tiers.map((tier, i) => (
             <TierCard key={tier.label} tier={tier} i={i} />
           ))}
         </div>

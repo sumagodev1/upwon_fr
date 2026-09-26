@@ -1,6 +1,7 @@
 import { m as motion } from 'framer-motion';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 /*
   HRMS Proof Strip — de-risks the visit with real, named-client numbers rather
@@ -13,57 +14,86 @@ import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
 
+/*
+  The built-in copy, written in the shape the API sends so that a CMS section
+  and the shipped one take one identical path through the render below.
+*/
+const EYEBROW = 'Proof Strip';
+const HEADING_LINES = [
+  [
+    { text: 'UpWon HRMS — ', accent: false },
+    { text: "Just What's Already Running.", accent: true },
+  ],
+];
+const SUBTEXT =
+  'Real, named-client proof from live deployments — not an inflated aggregate user count to win a headline war.';
+
 const L = {
-  monginis: { type: 'logo', name: 'Monginis', src: '/images/testimonial/mongignis.webp' },
-  kaka: { type: 'logo', name: 'Kaka Halwai', src: '/images/testimonial/kaka%20halwai.webp' },
-  u2: { type: 'logo', name: 'U2 Cake', src: '/images/testimonial/u2cake.webp' },
-  gokul: { type: 'logo', name: 'Gokul', src: '/images/testimonial/gokul.webp' },
-  ofc: { type: 'logo', name: 'OFC', src: '/images/testimonial/ofc.webp' },
-  winni: { type: 'logo', name: 'Winni', src: '/images/testimonial/winni.webp' },
+  monginis: { kind: 'LOGO', name: 'Monginis', image: '/images/testimonial/mongignis.webp' },
+  kaka: { kind: 'LOGO', name: 'Kaka Halwai', image: '/images/testimonial/kaka%20halwai.webp' },
+  u2: { kind: 'LOGO', name: 'U2 Cake', image: '/images/testimonial/u2cake.webp' },
+  gokul: { kind: 'LOGO', name: 'Gokul', image: '/images/testimonial/gokul.webp' },
+  ofc: { kind: 'LOGO', name: 'OFC', image: '/images/testimonial/ofc.webp' },
+  winni: { kind: 'LOGO', name: 'Winni', image: '/images/testimonial/winni.webp' },
 };
 
-const STAT_95 = { type: 'stat', value: '95%', label: 'fewer HR errors', client: 'Luft Food' };
-const STAT_40 = { type: 'stat', value: '40%', label: 'less admin time', client: 'Luft Food' };
+const STAT_95 = { kind: 'STAT', value: '95%', label: 'fewer HR errors', client: 'Luft Food' };
+const STAT_40 = { kind: 'STAT', value: '40%', label: 'less admin time', client: 'Luft Food' };
 
 const PROOF_MONGINIS = {
-  type: 'proof',
+  kind: 'PROOF',
   client: 'Monginis',
-  stat: '3 factories, 140 outlets',
+  headline: '3 factories, 140 outlets',
   line: 'Plants and retail outlets running on one HR system.',
 };
 const PROOF_LUFT = {
-  type: 'proof',
+  kind: 'PROOF',
   client: 'Luft Food',
-  stat: '250+ employees, 3 verticals',
+  headline: '250+ employees, 3 verticals',
   line: 'Office, plant and field on a single platform — one source of truth, one payroll run.',
 };
 
 // Each cell is a fixed-width column of the bento (full height = two card rows).
-// Shapes mix sizes: `tall` = one full-height card, `stack` = two stacked cards,
-// `wideTop` = a wide card over two half-width cards.
+// Shapes mix sizes: `TALL` = one full-height card, `STACK` = two stacked cards,
+// `WIDE_TOP` = a wide card over two half-width cards. A cell's cards are one
+// ordered list, because the shape is what decides where each one is drawn.
 const CELLS = [
-  { w: 'w-[360px]', shape: 'wideTop', top: PROOF_MONGINIS, bl: L.kaka, br: L.u2 },
-  { w: 'w-[320px]', shape: 'tall', card: PROOF_LUFT },
-  { w: 'w-[240px]', shape: 'stack', a: STAT_95, b: L.gokul },
-  { w: 'w-[240px]', shape: 'stack', a: L.ofc, b: STAT_40 },
-  { w: 'w-[190px]', shape: 'tall', card: L.winni },
-  { w: 'w-[190px]', shape: 'tall', card: L.monginis },
+  { width: 'WIDE', shape: 'WIDE_TOP', tiles: [PROOF_MONGINIS, L.kaka, L.u2] },
+  { width: 'MEDIUM', shape: 'TALL', tiles: [PROOF_LUFT] },
+  { width: 'SMALL', shape: 'STACK', tiles: [STAT_95, L.gokul] },
+  { width: 'SMALL', shape: 'STACK', tiles: [L.ofc, STAT_40] },
+  { width: 'NARROW', shape: 'TALL', tiles: [L.winni] },
+  { width: 'NARROW', shape: 'TALL', tiles: [L.monginis] },
 ];
+
+/*
+  Column width is a name here, not a measurement.
+
+  Tailwind only generates the classes it finds in this source, so a width that
+  arrived from the API as `w-[360px]` would name a class nobody built. The four
+  the bento uses are spelled out below, and the API sends one of these names.
+*/
+const WIDTH_CLASS = {
+  WIDE: 'w-[360px]',
+  MEDIUM: 'w-[320px]',
+  SMALL: 'w-[240px]',
+  NARROW: 'w-[190px]',
+};
 
 // A single card. Sizing (width/height) comes from the parent via `className`;
 // the base classes here set only look + internal alignment per card type.
 function Card({ tile, className = '' }) {
   const base = {
-    logo: 'items-center justify-center p-5',
-    stat: 'items-center justify-center p-5',
-    proof: 'flex-col justify-center p-6',
-  }[tile.type];
+    LOGO: 'items-center justify-center p-5',
+    STAT: 'items-center justify-center p-5',
+    PROOF: 'flex-col justify-center p-6',
+  }[tile.kind];
 
   return (
     <div className={`flex rounded-2xl border border-cream-300 bg-white shadow-sm ${base} ${className}`}>
-      {tile.type === 'logo' && (
+      {tile.kind === 'LOGO' && (
         <img
-          src={tile.src}
+          src={tile.image}
           alt={`${tile.name} logo`}
           loading="lazy"
           decoding="async"
@@ -72,7 +102,7 @@ function Card({ tile, className = '' }) {
       )}
 
       {/* Clay-style stat card — big figure left, uppercase caption right. */}
-      {tile.type === 'stat' && (
+      {tile.kind === 'STAT' && (
         <div className="flex items-center gap-3">
           <p className="num-display text-[2.6rem] leading-none text-navy-950">{tile.value}</p>
           <div className="min-w-0">
@@ -86,13 +116,13 @@ function Card({ tile, className = '' }) {
         </div>
       )}
 
-      {tile.type === 'proof' && (
+      {tile.kind === 'PROOF' && (
         <>
           <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-orange-600">
             {tile.client}
           </span>
           <p className="mt-2 h-display text-[1.5rem] leading-[1.1] tracking-tight text-navy-950">
-            {tile.stat}
+            {tile.headline}
           </p>
           <p className="mt-2 text-[13px] leading-relaxed text-navy-600">{tile.line}</p>
         </>
@@ -102,28 +132,30 @@ function Card({ tile, className = '' }) {
 }
 
 function Cell({ cell }) {
-  if (cell.shape === 'tall') {
+  const w = WIDTH_CLASS[cell.width];
+
+  if (cell.shape === 'TALL') {
     return (
-      <div className={`${cell.w} h-[320px] shrink-0`}>
-        <Card tile={cell.card} className="h-full w-full" />
+      <div className={`${w} h-[320px] shrink-0`}>
+        <Card tile={cell.tiles[0]} className="h-full w-full" />
       </div>
     );
   }
-  if (cell.shape === 'stack') {
+  if (cell.shape === 'STACK') {
     return (
-      <div className={`${cell.w} flex h-[320px] shrink-0 flex-col gap-4`}>
-        <Card tile={cell.a} className="w-full flex-1" />
-        <Card tile={cell.b} className="w-full flex-1" />
+      <div className={`${w} flex h-[320px] shrink-0 flex-col gap-4`}>
+        <Card tile={cell.tiles[0]} className="w-full flex-1" />
+        <Card tile={cell.tiles[1]} className="w-full flex-1" />
       </div>
     );
   }
-  // wideTop
+  // WIDE_TOP
   return (
-    <div className={`${cell.w} flex h-[320px] shrink-0 flex-col gap-4`}>
-      <Card tile={cell.top} className="w-full flex-1" />
+    <div className={`${w} flex h-[320px] shrink-0 flex-col gap-4`}>
+      <Card tile={cell.tiles[0]} className="w-full flex-1" />
       <div className="flex flex-1 gap-4">
-        <Card tile={cell.bl} className="h-full flex-1" />
-        <Card tile={cell.br} className="h-full flex-1" />
+        <Card tile={cell.tiles[1]} className="h-full flex-1" />
+        <Card tile={cell.tiles[2]} className="h-full flex-1" />
       </div>
     </div>
   );
@@ -147,7 +179,14 @@ function MarqueeRow({ cells, dir = 1, duration = 55 }) {
   );
 }
 
-export default function HrmsProofStrip() {
+export default function HrmsProofStrip({ section = null }) {
+  const eyebrow = section ? section.eyebrow : EYEBROW;
+  const headingLines = section ? section.headingLines : HEADING_LINES;
+  const subtext = section ? section.subtext : SUBTEXT;
+  // A published section always arrives with at least one drawable column: the
+  // fetch drops the columns it cannot draw, and returns null if none are left.
+  const cells = section ? section.cells : CELLS;
+
   return (
     <section className="relative overflow-hidden bg-white pb-10 pt-12 md:pb-12 md:pt-16">
       <Container>
@@ -159,20 +198,18 @@ export default function HrmsProofStrip() {
           transition={{ duration: 0.6, ease: EASE }}
           className="mx-auto max-w-3xl text-center"
         >
-          <Eyebrow className="justify-center">Proof Strip</Eyebrow>
+          {eyebrow && <Eyebrow className="justify-center">{eyebrow}</Eyebrow>}
           <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-            UpWon HRMS —{' '}
-            <span className="gradient-text-orange">Just What&apos;s Already Running.</span>
+            <HeadingLines lines={headingLines} />
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
-            Real, named-client proof from live deployments — not an inflated aggregate user count to
-            win a headline war.
+            {subtext}
           </p>
         </motion.div>
 
         {/* Bento — warm cream panel holding the continuously-scrolling mixed-size cards */}
         <div className="relative mt-12 overflow-hidden rounded-[2rem] border border-cream-300 bg-gradient-to-b from-cream-100 to-cream-200 p-4 shadow-sm sm:p-6">
-          <MarqueeRow cells={CELLS} dir={1} duration={55} />
+          <MarqueeRow cells={cells} dir={1} duration={55} />
 
           {/* edge fades — cards bleed off the sides like the reference */}
           <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-cream-100 to-transparent sm:w-24" />

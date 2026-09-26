@@ -2,6 +2,7 @@ import { m as motion } from 'framer-motion';
 import { Check, X } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 /*
   HRMS "UpWon vs the Alternatives" — for buyers who do compare. Honest,
@@ -13,17 +14,45 @@ import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
 
-const ROWS = [
-  { feature: 'Office payroll & statutory compliance', upwon: true, office: true },
-  { feature: 'Employee self-service & mobile app', upwon: true, office: true },
-  { feature: 'Leave, attendance & OT for desk staff', upwon: true, office: true },
-  { feature: 'Multi-shift factory & plant attendance', upwon: true, office: false },
-  { feature: 'Contract labour compliance (Factories Act)', upwon: true, office: false },
-  { feature: 'Connected to your production / ERP data', upwon: true, office: false },
-  { feature: 'One system for office, plant & franchise staff', upwon: true, office: false },
+/*
+  The built-in copy and grid, written in the shape the API sends so that a CMS
+  section and the shipped one take one identical path through the render below.
+*/
+const EYEBROW = 'UpWon vs the Alternatives';
+const HEADING_LINES = [
+  [
+    { text: "A Great HR App for Your Office Isn't the Same as ", accent: false },
+    { text: 'an HR System for Your Whole Business.', accent: true },
+  ],
+];
+const SUBTEXT =
+  'No star ratings — just the rows that actually differ: the shape of your workforce, and whether your HR connects to a manufacturing core.';
+
+const LEADER_LABEL = 'What your workforce needs';
+
+const COLUMNS = [
+  { id: 'upwon', name: 'UpWon HREasy', description: null, highlight: true },
+  { id: 'office', name: 'Office-First HRMS', description: 'Keka, greytHR', highlight: false },
 ];
 
-const COLS = 'grid grid-cols-[1.5fr_1fr_1fr] md:grid-cols-[1.7fr_1fr_1fr]';
+/** `cells` lines up with COLUMNS, left to right. */
+const ROWS = [
+  { feature: 'Office payroll & statutory compliance', cells: [true, true] },
+  { feature: 'Employee self-service & mobile app', cells: [true, true] },
+  { feature: 'Leave, attendance & OT for desk staff', cells: [true, true] },
+  { feature: 'Multi-shift factory & plant attendance', cells: [true, false] },
+  { feature: 'Contract labour compliance (Factories Act)', cells: [true, false] },
+  { feature: 'Connected to your production / ERP data', cells: [true, false] },
+  { feature: 'One system for office, plant & franchise staff', cells: [true, false] },
+];
+
+/*
+  The leader column is wider than the rest, which are equal. Built as an inline
+  style rather than a Tailwind class because the number of columns is content
+  now — an arbitrary `grid-cols-[…]` built from a variable would name a class
+  nobody generated at build time, and the grid would collapse.
+*/
+const templateFor = (count) => `1.5fr repeat(${count}, 1fr)`;
 
 function Cell({ yes, accent }) {
   return (
@@ -40,7 +69,16 @@ function Cell({ yes, accent }) {
   );
 }
 
-export default function HrmsComparison() {
+export default function HrmsComparison({ section = null }) {
+  const eyebrow = section ? section.eyebrow : EYEBROW;
+  const headingLines = section ? section.headingLines : HEADING_LINES;
+  const subtext = section ? section.subtext : SUBTEXT;
+  const leaderLabel = section ? section.leaderLabel : LEADER_LABEL;
+  const columns = section && section.columns.length > 0 ? section.columns : COLUMNS;
+  const rows = section && section.rows.length > 0 ? section.rows : ROWS;
+
+  const gridStyle = { gridTemplateColumns: templateFor(columns.length) };
+
   return (
     <section className="relative overflow-hidden bg-white py-12 md:py-16">
       <Container>
@@ -52,15 +90,15 @@ export default function HrmsComparison() {
           transition={{ duration: 0.6, ease: EASE }}
           className="mx-auto max-w-3xl text-center"
         >
-          <Eyebrow className="justify-center">UpWon vs the Alternatives</Eyebrow>
+          {eyebrow && <Eyebrow className="justify-center">{eyebrow}</Eyebrow>}
           <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-            A Great HR App for Your Office Isn&apos;t the Same as{' '}
-            <span className="gradient-text-orange">an HR System for Your Whole Business.</span>
+            <HeadingLines lines={headingLines} />
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
-            No star ratings — just the rows that actually differ: the shape of your workforce, and
-            whether your HR connects to a manufacturing core.
-          </p>
+          {subtext && (
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
+              {subtext}
+            </p>
+          )}
         </motion.div>
 
         {/* Comparison table */}
@@ -72,40 +110,58 @@ export default function HrmsComparison() {
           className="mt-12 overflow-hidden rounded-3xl border border-cream-300 shadow-sm"
         >
           {/* Header row */}
-          <div className={`${COLS} bg-white`}>
+          <div className="grid bg-white" style={gridStyle}>
             <div className="px-5 py-5 text-[13px] font-bold uppercase tracking-[0.12em] text-navy-400 md:px-7">
-              What your workforce needs
+              {leaderLabel}
             </div>
-            <div className="bg-orange-500 px-3 py-5 text-center">
-              <p className="text-[14px] font-bold leading-tight text-white md:text-[15px]">
-                UpWon HREasy
-              </p>
-            </div>
-            <div className="px-3 py-5 text-center">
-              <p className="text-[14px] font-bold leading-tight text-navy-900 md:text-[15px]">
-                Office-First HRMS
-              </p>
-              <p className="mt-0.5 text-[12px] text-navy-400">Keka, greytHR</p>
-            </div>
+            {columns.map((column) => (
+              <div
+                key={column.id}
+                className={`px-3 py-5 text-center ${column.highlight ? 'bg-orange-500' : ''}`}
+              >
+                <p
+                  className={`text-[14px] font-bold leading-tight md:text-[15px] ${
+                    column.highlight ? 'text-white' : 'text-navy-900'
+                  }`}
+                >
+                  {column.name}
+                </p>
+                {column.description && (
+                  <p
+                    className={`mt-0.5 text-[12px] ${
+                      column.highlight ? 'text-white/80' : 'text-navy-400'
+                    }`}
+                  >
+                    {column.description}
+                  </p>
+                )}
+              </div>
+            ))}
           </div>
 
           {/* Rows */}
-          {ROWS.map((row, i) => (
+          {rows.map((row, i) => (
             <motion.div
               key={row.feature}
               initial={{ opacity: 0, x: -12 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: '-40px' }}
               transition={{ duration: 0.4, delay: i * 0.05, ease: EASE }}
-              className={`${COLS} border-t border-cream-200 ${i % 2 === 1 ? 'bg-cream-200/60' : 'bg-white'}`}
+              style={gridStyle}
+              className={`grid border-t border-cream-200 ${i % 2 === 1 ? 'bg-cream-200/60' : 'bg-white'}`}
             >
               <div className="flex items-center px-5 py-4 text-[14px] font-medium text-navy-800 md:px-7 md:text-[15px]">
                 {row.feature}
               </div>
-              <div className="bg-orange-50">
-                <Cell yes={row.upwon} accent />
-              </div>
-              <Cell yes={row.office} />
+              {columns.map((column, index) =>
+                column.highlight ? (
+                  <div key={column.id} className="bg-orange-50">
+                    <Cell yes={row.cells[index]} accent />
+                  </div>
+                ) : (
+                  <Cell key={column.id} yes={row.cells[index]} />
+                ),
+              )}
             </motion.div>
           ))}
         </motion.div>

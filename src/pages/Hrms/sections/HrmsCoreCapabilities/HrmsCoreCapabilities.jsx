@@ -1,6 +1,7 @@
 import { m as motion } from 'framer-motion';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 /*
   HRMS "Core Capabilities" — shows the operational depth without a dry feature
@@ -11,6 +12,20 @@ import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
 */
 
 const EASE = [0.22, 1, 0.3, 1];
+
+/*
+  The built-in copy, written in the shape the API sends so that a CMS section
+  and the shipped one take one identical path through the render below.
+*/
+const EYEBROW = 'Core Capabilities';
+const HEADING_LINES = [
+  [
+    { text: 'Everything From Hiring to Exit — ', accent: false },
+    { text: 'For Every Kind of Employee You Have.', accent: true },
+  ],
+];
+const SUBTEXT =
+  'Every stage of the employee lifecycle — recruit to retire — built for office, plant, field and contract staff alike, not a dry feature list.';
 
 const CAPABILITIES = [
   {
@@ -76,7 +91,12 @@ function CapabilityCard({ cap, i }) {
   );
 }
 
-export default function HrmsCoreCapabilities() {
+export default function HrmsCoreCapabilities({ section = null }) {
+  const eyebrow = section ? section.eyebrow : EYEBROW;
+  const headingLines = section ? section.headingLines : HEADING_LINES;
+  const subtext = section ? section.subtext : SUBTEXT;
+  const capabilities = section && section.cards.length > 0 ? section.cards : CAPABILITIES;
+
   return (
     <section className="relative overflow-hidden bg-[#f5f6fa] py-12 md:py-16">
       <Container>
@@ -88,20 +108,20 @@ export default function HrmsCoreCapabilities() {
           transition={{ duration: 0.6, ease: EASE }}
           className="mx-auto max-w-3xl text-center"
         >
-          <Eyebrow className="justify-center">Core Capabilities</Eyebrow>
+          {eyebrow && <Eyebrow className="justify-center">{eyebrow}</Eyebrow>}
           <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-            Everything From Hiring to Exit —{' '}
-            <span className="gradient-text-orange">For Every Kind of Employee You Have.</span>
+            <HeadingLines lines={headingLines} />
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
-            Every stage of the employee lifecycle — recruit to retire — built for office, plant,
-            field and contract staff alike, not a dry feature list.
-          </p>
+          {subtext && (
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
+              {subtext}
+            </p>
+          )}
         </motion.div>
 
         {/* Card grid — four across, final three centered */}
         <div className="mt-12 flex flex-wrap justify-center gap-6">
-          {CAPABILITIES.map((cap, i) => (
+          {capabilities.map((cap, i) => (
             <CapabilityCard key={cap.title} cap={cap} i={i} />
           ))}
         </div>

@@ -21,6 +21,13 @@ import {
   fetchPosCtaSection,
   fetchPosFaqSection,
   fetchPosHeroSlides,
+  fetchPosProofSection,
+  fetchPosRecognitionSection,
+  fetchPosSecuritySection,
+  fetchPosAlternativesSection,
+  fetchPosGrowthSection,
+  fetchPosOutcomesSection,
+  fetchPosVideoSection,
 } from '../../lib/posPage.js';
 
 /*
@@ -66,11 +73,18 @@ export default function PosPage() {
   const product = findProductBySlug('pos');
 
   const [cmsSlides, setCmsSlides] = useState(null);
+  const [proof, setProof] = useState(null);
+  const [recognition, setRecognition] = useState(null);
+  const [video, setVideo] = useState(null);
+  const [growth, setGrowth] = useState(null);
+  const [security, setSecurity] = useState(null);
+  const [alternatives, setAlternatives] = useState(null);
+  const [outcomes, setOutcomes] = useState(null);
   const [faq, setFaq] = useState(null);
   const [cta, setCta] = useState(null);
 
   /*
-    The fetches live on the page rather than inside the three components:
+    The fetches live on the page rather than inside the ten components:
     HeroSlider and IndustryFaq are shared with several other pages, and
     PosFinalCta only renders here - so keeping the fetch here is what stops one
     page's content following a shared component onto another.
@@ -80,6 +94,27 @@ export default function PosPage() {
 
     fetchPosHeroSlides().then((slides) => {
       if (!cancelled && slides.length > 0) setCmsSlides(slides);
+    });
+    fetchPosProofSection().then((section) => {
+      if (!cancelled && section) setProof(section);
+    });
+    fetchPosRecognitionSection().then((section) => {
+      if (!cancelled && section) setRecognition(section);
+    });
+    fetchPosVideoSection().then((section) => {
+      if (!cancelled && section) setVideo(section);
+    });
+    fetchPosGrowthSection().then((section) => {
+      if (!cancelled && section) setGrowth(section);
+    });
+    fetchPosSecuritySection().then((section) => {
+      if (!cancelled && section) setSecurity(section);
+    });
+    fetchPosAlternativesSection().then((section) => {
+      if (!cancelled && section) setAlternatives(section);
+    });
+    fetchPosOutcomesSection().then((section) => {
+      if (!cancelled && section) setOutcomes(section);
     });
     fetchPosFaqSection().then((section) => {
       if (!cancelled && section) setFaq(section);
@@ -128,23 +163,32 @@ export default function PosPage() {
       <HeroSlider slides={heroSlides} variant="dark" intervalMs={4000} topPad="pt-32 md:pt-40" />
 
       {/* ========== PROOF STRIP — logo marquee + counter-level stats ========== */}
-      <PosProofStrip />
+      <PosProofStrip section={proof} />
 
       {/* ========== RECOGNITION — counter-type category map ========== */}
-      <PosRecognition />
+      <PosRecognition section={recognition} />
 
       {/* ========== VIDEO PRESENTATION — retail sales growth engine ========== */}
-      <IndustriesVideoIntro
-        eyebrow="See It in Action"
-        heading={
-          <>
-            It&apos;s Not Just a POS —{' '}
-            <span className="gradient-text-orange">It&apos;s a Retail Sales Growth Engine.</span>
-          </>
-        }
-        subtext="See how one screen runs your counter, your kitchen and your stock — and turns every sale into growth."
-        video="/video/video_test.mp4"
-      />
+      {video ? (
+        <IndustriesVideoIntro
+          {...(video.eyebrow ? { eyebrow: video.eyebrow } : {})}
+          headingLines={video.headingLines}
+          subtext={video.subtext}
+          video={video.video}
+        />
+      ) : (
+        <IndustriesVideoIntro
+          eyebrow="See It in Action"
+          heading={
+            <>
+              It&apos;s Not Just a POS —{' '}
+              <span className="gradient-text-orange">It&apos;s a Retail Sales Growth Engine.</span>
+            </>
+          }
+          subtext="See how one screen runs your counter, your kitchen and your stock — and turns every sale into growth."
+          video="/video/video_test.mp4"
+        />
+      )}
 
       {/* ========== UPWON'S APPROACH — one-data-core flow diagram ========== */}
       <PosApproach />
@@ -156,19 +200,19 @@ export default function PosPage() {
       <PosConnectedByDesign />
 
       {/* ========== MODULE VERSIONS & GROWTH PATH — CORE / PRO / PLUS tiers ========== */}
-      <PosGrowthPath />
+      <PosGrowthPath section={growth} />
 
       {/* ========== IMPLEMENTATION & PARTNERSHIP — setup-to-success timeline ========== */}
       <PosImplementation />
 
       {/* ========== SECURE, COMPLIANT, ACCOUNTABLE — compliance + data ownership ========== */}
-      <PosSecurity />
+      <PosSecurity section={security} />
 
       {/* ========== UPWON VS THE ALTERNATIVES — honest comparison ========== */}
-      <PosVsAlternatives />
+      <PosVsAlternatives section={alternatives} />
 
       {/* ========== CUSTOMER OUTCOMES — U2 Cake case study + Kaka Halwai proof ========== */}
-      <PosCustomerOutcomes />
+      <PosCustomerOutcomes section={outcomes} />
 
       {/* ========== FAQ — practical counter-level objections ========== */}
       {faq ? (
