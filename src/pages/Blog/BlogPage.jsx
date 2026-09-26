@@ -19,7 +19,7 @@ import { blogIcon } from '../../lib/blogIcons.js';
 // marketing) across six SEO-targeted categories, fronted by a featured
 // latest-article hero card (§18.1). Posts deep-link to /blog/:slug.
 //
-// Authored in the admin panel under Resource Page → Blog: the hero copy, the
+// Authored in the admin panel under Resource Page → Blog: the hero slides, the
 // "Insights by Topic" intro, the category chips and the posts all come from
 // lib/blog.js once the API answers. Until then — and for good whenever it
 // cannot answer — the page is the built-in one below and in data/blog.js,
@@ -28,10 +28,14 @@ import { blogIcon } from '../../lib/blogIcons.js';
 
 const HERO_ACCENT = '#E85A2A';
 
-/* Hero backdrops — the site’s shared hero artwork. This page has never
-   had dedicated hero photography of its own; drop a local webp in here
-   when it does and nothing else needs to change. */
+/* Hero backdrop — the site’s shared hero artwork: the built-in slide's, and
+   the one a published slide with no picture of its own falls back to. */
 const HERO_BG_A = '/images/hero%20bg.webp';
+
+/* Hero buttons — the same two on every slide, built-in or published. They
+   are not authored in the admin panel. */
+const HERO_CTA = { label: 'Request a Demo', to: '/demo' };
+const HERO_SECONDARY_CTA = { label: 'Browse the Knowledgebase', to: '/knowledgebase' };
 
 /* Hero slides — the page's own copy, on the site's standard slider. */
 const HERO_SLIDES = [
@@ -43,37 +47,34 @@ const HERO_SLIDES = [
       'Two deep-reads a month across six lanes — the operational fixes that move real numbers. No vendor fluff.',
     bg: HERO_BG_A,
     accent: HERO_ACCENT,
-    cta: { label: 'Request a Demo', to: '/demo' },
-    secondaryCta: { label: 'Browse the Knowledgebase', to: '/knowledgebase' },
+    cta: HERO_CTA,
+    secondaryCta: HERO_SECONDARY_CTA,
   },
 ];
 
 /*
-  The hero with the published copy laid over the built-in slide.
+  The published slides in the shape of HERO_SLIDES.
 
-  Only the words are authored, the two buttons' labels among them. The buttons'
-  links — /demo and /knowledgebase — the backdrop and the accent are the page's
-  own and stay put. A field lib/blog.js could not vouch for arrives as null and
-  keeps its built-in value, so one bad label never costs the hero its call to
-  action.
+  Only the words and the pictures are authored; the accent and the two buttons
+  are the page's own and stay put. A field lib/blog.js could not vouch for
+  arrives as null and takes its built-in value — the eyebrow the built-in
+  slide's, the backdrop HERO_BG_A.
 */
-function toHeroSlides(hero) {
-  if (!hero) return HERO_SLIDES;
+function toHeroSlides(published) {
+  if (!published) return HERO_SLIDES;
 
   const [builtIn] = HERO_SLIDES;
-  return [
-    {
-      ...builtIn,
-      eyebrow: hero.eyebrow ?? builtIn.eyebrow,
-      headline: hero.heading,
-      subhead: hero.subtext,
-      cta: { ...builtIn.cta, label: hero.primaryCtaLabel ?? builtIn.cta.label },
-      secondaryCta: {
-        ...builtIn.secondaryCta,
-        label: hero.secondaryCtaLabel ?? builtIn.secondaryCta.label,
-      },
-    },
-  ];
+  return published.map((slide) => ({
+    eyebrow: slide.eyebrow ?? builtIn.eyebrow,
+    headline: slide.heading,
+    subhead: slide.subtext,
+    bg: slide.image ?? HERO_BG_A,
+    // Null means no phone crop; HeroSlider then serves `bg` to every viewport.
+    mobileBg: slide.mobileImage,
+    accent: HERO_ACCENT,
+    cta: HERO_CTA,
+    secondaryCta: HERO_SECONDARY_CTA,
+  }));
 }
 
 /*
