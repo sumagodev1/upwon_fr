@@ -1,11 +1,18 @@
+import { Fragment, useEffect, useState } from 'react';
 import { m as motion, useReducedMotion } from 'framer-motion';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import { fetchSpicesAgroCoverageSection } from '../../../../lib/spicesAgroPage.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
 const VIEWPORT = { once: true, amount: 0.1 };
 
+/*
+  The fallback: the published tiles are the CMS's, and these are what the
+  section shows during the SSG build, while the fetch is in flight, and
+  whenever the API is unreachable.
+*/
 const CATEGORIES = [
   {
     label: 'Spices & Seasonings',
@@ -54,8 +61,49 @@ const CATEGORIES = [
   },
 ];
 
+/*
+  The CMS heading, drawn the way the built-in one is: the break between its
+  lines only from 640px up, so a phone runs it as one line. HeadingLines always
+  breaks, which is why this one is laid out here instead.
+*/
+function CmsHeading({ lines }) {
+  return lines.map((parts, lineIndex) => (
+    <Fragment key={lineIndex}>
+      {lineIndex > 0 && (
+        <>
+          <br className="hidden sm:block" />{' '}
+        </>
+      )}
+      {parts.map((part, partIndex) =>
+        part.accent ? (
+          <span key={partIndex} className="gradient-text-orange">
+            {part.text}
+          </span>
+        ) : (
+          <Fragment key={partIndex}>{part.text}</Fragment>
+        ),
+      )}
+    </Fragment>
+  ));
+}
+
 export default function SpicesAgroIndustryCoverage() {
   const reduceMotion = useReducedMotion();
+  const [cms, setCms] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchSpicesAgroCoverageSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const categories = cms ? cms.categories : CATEGORIES;
 
   const d = (value) => (reduceMotion ? 0 : value);
   const stagger = (value) => (reduceMotion ? 0 : value);
@@ -108,28 +156,37 @@ export default function SpicesAgroIndustryCoverage() {
           viewport={VIEWPORT}
           className="min-w-0"
         >
-          <motion.div variants={fadeIn}>
-            <Eyebrow>INDUSTRY COVERAGE</Eyebrow>
-          </motion.div>
+          {(!cms || cms.eyebrow) && (
+            <motion.div variants={fadeIn}>
+              <Eyebrow>{cms ? cms.eyebrow : 'INDUSTRY COVERAGE'}</Eyebrow>
+            </motion.div>
+          )}
 
           <motion.h2
             variants={fadeUp}
             className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]"
           >
-            Built for a Wide Range of
-            {/* Held to two lines rather than one long run at desktop widths */}
-            <br className="hidden sm:block" />{' '}
-            <span className="gradient-text-orange">
-              Spices &amp; Agro Processing Businesses.
-            </span>
+            {cms ? (
+              <CmsHeading lines={cms.headingLines} />
+            ) : (
+              <>
+                Built for a Wide Range of
+                {/* Held to two lines rather than one long run at desktop widths */}
+                <br className="hidden sm:block" />{' '}
+                <span className="gradient-text-orange">
+                  Spices &amp; Agro Processing Businesses.
+                </span>
+              </>
+            )}
           </motion.h2>
 
           <motion.p
             variants={fadeUp}
             className="mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
           >
-            UpWon can support connected workflows across processing and
-            value-added product categories, including:
+            {cms
+              ? cms.subtext
+              : 'UpWon can support connected workflows across processing and value-added product categories, including:'}
           </motion.p>
         </motion.div>
 
@@ -141,7 +198,7 @@ export default function SpicesAgroIndustryCoverage() {
           viewport={VIEWPORT}
           className="mt-10 grid auto-rows-fr grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 xl:gap-5"
         >
-          {CATEGORIES.map(({ label, photo }) => (
+          {categories.map(({ label, photo }) => (
             <motion.article
               key={label}
               variants={cardVariants}

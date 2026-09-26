@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { m as motion, useReducedMotion } from 'framer-motion';
 import {
   Settings,
@@ -15,11 +16,19 @@ import {
 } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { fetchEngineeringCoverageSection } from '../../../../lib/engineeringManufacturingPage.js';
+import { engineeringIcon } from '../../../../lib/engineeringIcons.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
 const VIEWPORT = { once: true, amount: 0.1 };
 
+/*
+  The fallback: the published business types are the CMS's, and these are what
+  the section shows during the SSG build, while the fetch is in flight, and
+  whenever the API is unreachable.
+*/
 const CATEGORIES = [
   { label: 'Engineering Components Manufacturing', Icon: Settings },
   { label: 'Industrial Equipment Manufacturing', Icon: Factory },
@@ -35,8 +44,33 @@ const CATEGORIES = [
   { label: 'Multi-Plant Manufacturing Businesses', Icon: Building2 },
 ];
 
+const BACKGROUND_SRC = '/images/eng_indust_cover.webp';
+
 export default function EngineeringIndustryCoverage() {
   const reduceMotion = useReducedMotion();
+  const [cms, setCms] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchEngineeringCoverageSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // The CMS's business types, in the shape the built-in ones already have.
+  const categories = cms
+    ? cms.categories.map((category) => ({
+        label: category.label,
+        Icon: engineeringIcon(category.icon),
+      }))
+    : CATEGORIES;
+  // A CMS without a background keeps the shipped illustration.
+  const background = cms?.image ?? BACKGROUND_SRC;
 
   const d = (value) => (reduceMotion ? 0 : value);
   const stagger = (value) => (reduceMotion ? 0 : value);
@@ -89,7 +123,7 @@ export default function EngineeringIndustryCoverage() {
         className="pointer-events-none absolute right-0 top-0 hidden w-[52%] lg:block xl:w-[48%]"
       >
         <img
-          src="/images/eng_indust_cover.webp"
+          src={background}
           alt=""
           aria-hidden="true"
           loading="lazy"
@@ -112,26 +146,35 @@ export default function EngineeringIndustryCoverage() {
             viewport={VIEWPORT}
             className="min-w-0 lg:max-w-[52%]"
           >
-            <motion.div variants={fadeIn}>
-              <Eyebrow>INDUSTRY COVERAGE</Eyebrow>
-            </motion.div>
+            {(!cms || cms.eyebrow) && (
+              <motion.div variants={fadeIn}>
+                <Eyebrow>{cms ? cms.eyebrow : 'INDUSTRY COVERAGE'}</Eyebrow>
+              </motion.div>
+            )}
 
             <motion.h2
               variants={fadeUp}
               className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]"
             >
-              Built for a Wide Range of{' '}
-              <span className="gradient-text-orange">
-                Engineering &amp; Manufacturing Businesses.
-              </span>
+              {cms ? (
+                <HeadingLines lines={cms.headingLines} />
+              ) : (
+                <>
+                  Built for a Wide Range of{' '}
+                  <span className="gradient-text-orange">
+                    Engineering &amp; Manufacturing Businesses.
+                  </span>
+                </>
+              )}
             </motion.h2>
 
             <motion.p
               variants={fadeUp}
               className="mt-4 max-w-xl text-[14.5px] leading-relaxed text-navy-600 sm:text-[15px]"
             >
-              UpWon can support connected workflows across a wide range of
-              engineering and manufacturing environments, including:
+              {cms
+                ? cms.subtext
+                : 'UpWon can support connected workflows across a wide range of engineering and manufacturing environments, including:'}
             </motion.p>
           </motion.div>
         </div>
@@ -144,7 +187,7 @@ export default function EngineeringIndustryCoverage() {
           viewport={VIEWPORT}
           className="mt-10 grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5"
         >
-          {CATEGORIES.map(({ label, Icon }) => (
+          {categories.map(({ label, Icon }) => (
             <motion.article
               key={label}
               variants={cardVariants}

@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import HeroSlider from '../../../../components/shared/HeroSlider/HeroSlider.jsx';
+import { fetchBeverageHeroSlides } from '../../../../lib/beveragePage.js';
 
 /*
   Beverages & Juices Hero Section
@@ -99,9 +101,33 @@ const heroSlides = [
 ];
 
 export default function BeveragesHeroSection() {
+  const [cmsSlides, setCmsSlides] = useState(null);
+
+  /*
+    The fetch lives here rather than on the page, because this section only
+    renders on /industries/beverage. The built-in slides above are the
+    fallback: shown during the SSG build, while the fetch is in flight, and
+    whenever the API is unreachable or has nothing published.
+  */
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchBeverageHeroSlides().then((slides) => {
+      if (!cancelled && slides.length > 0) setCmsSlides(slides);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // The accent is the page's, not the slide's, so it is applied to whichever
+  // list is in play.
+  const slides = cmsSlides ? cmsSlides.map((s) => ({ accent: ACCENT, ...s })) : heroSlides;
+
   return (
     <HeroSlider
-      slides={heroSlides}
+      slides={slides}
       variant="dark"
       intervalMs={5000}
       minHeight="min-h-[520px] sm:min-h-[560px] md:min-h-[620px]"

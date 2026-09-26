@@ -1,0 +1,87 @@
+import {
+  Activity,
+  Award,
+  BadgeCheck,
+  BarChart3,
+  Bell,
+  Boxes,
+  Brain,
+  Building2,
+  ClipboardCheck,
+  Clock,
+  Cloud,
+  Database,
+  Eye,
+  Factory,
+  FileCheck2,
+  Gauge,
+  Globe,
+  HelpCircle,
+  Layers,
+  LayoutDashboard,
+  Lightbulb,
+  LineChart,
+  Lock,
+  Network,
+  PieChart,
+  Rocket,
+  Settings,
+  Share2,
+  ShieldCheck,
+  SlidersHorizontal,
+  Sparkles,
+  Target,
+  TrendingUp,
+  Users,
+  Workflow,
+  Zap,
+} from 'lucide-react';
+
+/*
+  The Why UpWon page's icon lookup: the names the CMS stores, mapped back to
+  lucide components. Exactly the server's allowlist
+  (why-upwon-page/utils/icons.ts) - adding an icon means adding it in both
+  places. An unknown name falls back to a neutral glyph rather than breaking
+  the section.
+*/
+const ICONS = {
+  Activity,
+  Award,
+  BadgeCheck,
+  BarChart3,
+  Bell,
+  Boxes,
+  Brain,
+  Building2,
+  ClipboardCheck,
+  Clock,
+  Cloud,
+  Database,
+  Eye,
+  Factory,
+  FileCheck2,
+  Gauge,
+  Globe,
+  Layers,
+  LayoutDashboard,
+  Lightbulb,
+  LineChart,
+  Lock,
+  Network,
+  PieChart,
+  Rocket,
+  Settings,
+  Share2,
+  ShieldCheck,
+  SlidersHorizontal,
+  Sparkles,
+  Target,
+  TrendingUp,
+  Users,
+  Workflow,
+  Zap,
+};
+
+export function whyUpwonIcon(name) {
+  return ICONS[name] ?? HelpCircle;
+}

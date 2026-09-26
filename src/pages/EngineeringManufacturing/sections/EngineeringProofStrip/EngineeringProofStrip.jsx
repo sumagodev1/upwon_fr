@@ -3,6 +3,9 @@ import { m as motion, useReducedMotion } from 'framer-motion';
 import { Boxes, Factory, BarChart3 } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { fetchEngineeringTrustSection } from '../../../../lib/engineeringManufacturingPage.js';
+import { engineeringIcon } from '../../../../lib/engineeringIcons.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
@@ -24,12 +27,17 @@ const CLIENTS = [
   Each card turns over between the scale figures the site already states on
   the other industry proof strips, so nothing new is claimed here. The cards
   are offset by one step so they never all change at the same moment.
+
+  The fallback now: the published cards are the CMS's, and these are what the
+  section shows during the SSG build, while the fetch is in flight, and
+  whenever the API is unreachable. Colours are hex so both sources render
+  through the same inline style (#E85A2A is the theme's orange-500).
 */
 const CARDS = [
   {
     Icon: Boxes,
-    tint: 'bg-[#fdf0e6]',
-    ink: 'text-orange-500',
+    tint: '#fdf0e6',
+    ink: '#E85A2A',
     figures: [
       { value: '2.5 Cr+', label: 'Products managed across connected operations' },
       { value: '18,000+', label: 'Inventory points tracked across locations' },
@@ -37,8 +45,8 @@ const CARDS = [
   },
   {
     Icon: Factory,
-    tint: 'bg-[#e9f1fd]',
-    ink: 'text-[#2f6fed]',
+    tint: '#e9f1fd',
+    ink: '#2f6fed',
     figures: [
       { value: '45+', label: 'Distribution locations kept in one flow' },
       { value: '25,000+', label: 'Sales channels connected end to end' },
@@ -46,8 +54,8 @@ const CARDS = [
   },
   {
     Icon: BarChart3,
-    tint: 'bg-[#e8f7ed]',
-    ink: 'text-[#1f9d55]',
+    tint: '#e8f7ed',
+    ink: '#1f9d55',
     figures: [
       { value: '3 Lakh+', label: 'Field and floor teams working in one system' },
       { value: 'Real-time', label: 'Visibility across operations and reporting' },
@@ -72,6 +80,30 @@ function ClientLogo({ client }) {
 export default function EngineeringProofStrip() {
   const reduceMotion = useReducedMotion();
   const [tick, setTick] = useState(0);
+  const [cms, setCms] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchEngineeringTrustSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // The CMS's cards, in the shape the built-in ones already have.
+  const cards = cms
+    ? cms.cards.map((card) => ({
+        Icon: engineeringIcon(card.icon),
+        tint: card.tintColor,
+        ink: card.accentColor,
+        figures: card.figures,
+      }))
+    : CARDS;
+  const clients = cms ? cms.logos : CLIENTS;
 
   // One clock for all three cards; reduced motion holds the opening figures.
   useEffect(() => {
@@ -118,27 +150,35 @@ export default function EngineeringProofStrip() {
           viewport={VIEWPORT}
           className="min-w-0"
         >
-          <motion.div variants={fadeIn}>
-            <Eyebrow>TRUSTED BY GROWING BRANDS</Eyebrow>
-          </motion.div>
+          {(!cms || cms.eyebrow) && (
+            <motion.div variants={fadeIn}>
+              <Eyebrow>{cms ? cms.eyebrow : 'TRUSTED BY GROWING BRANDS'}</Eyebrow>
+            </motion.div>
+          )}
 
           <motion.h2
             variants={fadeUp}
             className="mt-3 h-display text-[22px] leading-snug tracking-tight text-navy-950 sm:text-[26px] lg:text-[28px]"
           >
-            Built to Keep Raw Materials, Production, Quality, Warehouses,{' '}
-            <span className="gradient-text-orange">
-              and Every Finished Product Movement Connected.
-            </span>
+            {cms ? (
+              <HeadingLines lines={cms.headingLines} />
+            ) : (
+              <>
+                Built to Keep Raw Materials, Production, Quality, Warehouses,{' '}
+                <span className="gradient-text-orange">
+                  and Every Finished Product Movement Connected.
+                </span>
+              </>
+            )}
           </motion.h2>
 
           <motion.p
             variants={fadeUp}
             className="mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
           >
-            Teams across manufacturing, food, dairy, and FMCG use UpWon to keep
-            procurement, production, quality, inventory, and dispatch connected
-            across their locations.
+            {cms
+              ? cms.subtext
+              : 'Teams across manufacturing, food, dairy, and FMCG use UpWon to keep procurement, production, quality, inventory, and dispatch connected across their locations.'}
           </motion.p>
         </motion.div>
 
@@ -150,7 +190,7 @@ export default function EngineeringProofStrip() {
           viewport={VIEWPORT}
           className="mt-8 grid auto-rows-fr gap-4 sm:grid-cols-3 lg:gap-5"
         >
-          {CARDS.map(({ Icon, tint, ink, figures }, index) => {
+          {cards.map(({ Icon, tint, ink, figures }, index) => {
             const figure = figures[(tick + index) % figures.length];
 
             return (
@@ -160,9 +200,10 @@ export default function EngineeringProofStrip() {
                 className="flex h-full min-w-0 items-start gap-4 rounded-[16px] border border-navy-950/[0.06] bg-white p-5 shadow-[0_10px_28px_rgba(25,35,55,0.06)]"
               >
                 <span
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] ${tint}`}
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px]"
+                  style={{ background: tint }}
                 >
-                  <Icon className={`h-6 w-6 ${ink}`} strokeWidth={1.7} />
+                  <Icon className="h-6 w-6" style={{ color: ink }} strokeWidth={1.7} />
                 </span>
 
                 <div className="min-w-0">
@@ -209,7 +250,7 @@ export default function EngineeringProofStrip() {
                 : 'animate-ticker [animation-duration:38s] hover:[animation-play-state:paused]'
             }`}
           >
-            {CLIENTS.map((client) => (
+            {clients.map((client) => (
               <ClientLogo key={client.name} client={client} />
             ))}
 
@@ -217,7 +258,7 @@ export default function EngineeringProofStrip() {
               className="flex items-center gap-10 md:gap-16"
               aria-hidden="true"
             >
-              {CLIENTS.map((client) => (
+              {clients.map((client) => (
                 <ClientLogo key={`dup-${client.name}`} client={client} />
               ))}
             </div>

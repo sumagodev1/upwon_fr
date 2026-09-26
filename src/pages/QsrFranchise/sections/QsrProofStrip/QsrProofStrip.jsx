@@ -1,12 +1,20 @@
+import { Fragment, useEffect, useState } from 'react';
 import { m as motion, useReducedMotion } from 'framer-motion';
 import { UtensilsCrossed, Warehouse, Store } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import { fetchQsrFranchiseTrustSection } from '../../../../lib/qsrFranchisePage.js';
+import { qsrFranchiseIcon } from '../../../../lib/qsrFranchiseIcons.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
 const VIEWPORT = { once: true, amount: 0.15 };
 
+/*
+  The fallback: the published logos, stats and photographs are the CMS's, and
+  these are what the section shows during the SSG build, while the fetch is in
+  flight, and whenever the API is unreachable.
+*/
 const CLIENTS = [
   { name: 'Winni', src: '/images/testimonial/winni.webp' },
   { name: 'U2 Cake', src: '/images/testimonial/u2cake.webp' },
@@ -46,6 +54,47 @@ const STATS = [
   },
 ];
 
+const SUBTEXT =
+  'From procurement and central production to outlet inventory, sales, people, and franchise operations—UpWon keeps every location working from the same information.';
+
+const SMALL_IMAGE = '/images/qsr_proof_strip1.webp';
+const TALL_IMAGE = '/images/qsr_proof_strip2.webp';
+
+/*
+  Where each stat tile sits in the desktop mosaic, by order. The photographs
+  hold the other two places.
+*/
+const STAT_POSITIONS = [
+  'lg:col-start-1 lg:row-start-1',
+  'lg:col-start-2 lg:row-start-1',
+  'lg:col-start-2 lg:row-start-2',
+];
+
+/*
+  A CMS heading, with the built-in one's line break: the break between lines
+  applies at desktop widths only, so narrower screens let the words run on.
+*/
+function CmsHeading({ lines }) {
+  return lines.map((parts, lineIndex) => (
+    <Fragment key={lineIndex}>
+      {lineIndex > 0 && (
+        <>
+          <br className="hidden xl:block" />{' '}
+        </>
+      )}
+      {parts.map((part, partIndex) =>
+        part.accent ? (
+          <span key={partIndex} className="gradient-text-orange">
+            {part.text}
+          </span>
+        ) : (
+          <Fragment key={partIndex}>{part.text}</Fragment>
+        ),
+      )}
+    </Fragment>
+  ));
+}
+
 function ClientLogo({ client }) {
   return (
     <div className="flex h-[54px] w-[130px] shrink-0 items-center justify-center sm:w-[150px]">
@@ -62,6 +111,27 @@ function ClientLogo({ client }) {
 
 export default function QsrProofStrip() {
   const reduceMotion = useReducedMotion();
+  const [cms, setCms] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchQsrFranchiseTrustSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const clients = cms ? cms.logos : CLIENTS;
+  const stats = cms
+    ? cms.stats.map((stat) => ({ ...stat, Icon: qsrFranchiseIcon(stat.icon) }))
+    : STATS;
+  // A CMS without a photograph of its own keeps the shipped one in that place.
+  const smallImage = cms?.smallImage ?? SMALL_IMAGE;
+  const tallImage = cms?.tallImage ?? TALL_IMAGE;
 
   const d = (value) => (reduceMotion ? 0 : value);
   const stagger = (value) => (reduceMotion ? 0 : value);
@@ -99,7 +169,7 @@ export default function QsrProofStrip() {
 
   const statTile = ({ value, label, description, Icon }, position) => (
     <motion.div
-      key={value}
+      key={position}
       variants={tileVariants}
       className={`flex min-h-[190px] min-w-0 flex-col rounded-[14px] border border-navy-950/[0.07] bg-white p-6 shadow-[0_10px_28px_rgba(25,35,55,0.05)] transition-shadow duration-300 hover:shadow-[0_16px_38px_rgba(25,35,55,0.1)] lg:min-h-0 ${position}`}
     >
@@ -134,29 +204,35 @@ export default function QsrProofStrip() {
           viewport={VIEWPORT}
           className="min-w-0"
         >
-          <motion.div variants={fadeIn}>
-            <Eyebrow>PROOF STRIP</Eyebrow>
-          </motion.div>
+          {(!cms || cms.eyebrow) && (
+            <motion.div variants={fadeIn}>
+              <Eyebrow>{cms ? cms.eyebrow : 'PROOF STRIP'}</Eyebrow>
+            </motion.div>
+          )}
 
           <motion.h2
             variants={fadeUp}
             className="mt-3 h-display text-[26px] leading-[1.14] tracking-tight text-navy-950 sm:text-[30px] lg:text-[34px]"
           >
-            Built to Keep Central Kitchens, Outlets, Franchise Networks,
-            {/* Held to two lines rather than one long run at desktop widths */}
-            <br className="hidden xl:block" />{' '}
-            <span className="gradient-text-orange">
-              and Every F&amp;B Operation Connected.
-            </span>
+            {cms ? (
+              <CmsHeading lines={cms.headingLines} />
+            ) : (
+              <>
+                Built to Keep Central Kitchens, Outlets, Franchise Networks,
+                {/* Held to two lines rather than one long run at desktop widths */}
+                <br className="hidden xl:block" />{' '}
+                <span className="gradient-text-orange">
+                  and Every F&amp;B Operation Connected.
+                </span>
+              </>
+            )}
           </motion.h2>
 
           <motion.p
             variants={fadeUp}
             className="mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
           >
-            From procurement and central production to outlet inventory, sales,
-            people, and franchise operations—UpWon keeps every location working
-            from the same information.
+            {cms ? cms.subtext : SUBTEXT}
           </motion.p>
         </motion.div>
 
@@ -177,16 +253,16 @@ export default function QsrProofStrip() {
                 : 'animate-ticker [animation-duration:38s] hover:[animation-play-state:paused]'
             }`}
           >
-            {CLIENTS.map((client) => (
-              <ClientLogo key={client.name} client={client} />
+            {clients.map((client, index) => (
+              <ClientLogo key={`${client.name}-${index}`} client={client} />
             ))}
 
             <div
               className="flex items-center gap-10 md:gap-16"
               aria-hidden="true"
             >
-              {CLIENTS.map((client) => (
-                <ClientLogo key={`dup-${client.name}`} client={client} />
+              {clients.map((client, index) => (
+                <ClientLogo key={`dup-${client.name}-${index}`} client={client} />
               ))}
             </div>
           </div>
@@ -200,8 +276,8 @@ export default function QsrProofStrip() {
           viewport={VIEWPORT}
           className="mt-4 grid gap-4 lg:grid-cols-3 lg:grid-rows-[210px_210px]"
         >
-          {statTile(STATS[0], 'lg:col-start-1 lg:row-start-1')}
-          {statTile(STATS[1], 'lg:col-start-2 lg:row-start-1')}
+          {stats[0] && statTile(stats[0], STAT_POSITIONS[0])}
+          {stats[1] && statTile(stats[1], STAT_POSITIONS[1])}
 
           {/* Kitchen floor */}
           <motion.div
@@ -209,7 +285,7 @@ export default function QsrProofStrip() {
             className="relative min-h-[210px] min-w-0 overflow-hidden rounded-[14px] bg-navy-950 lg:col-start-1 lg:row-start-2 lg:min-h-0"
           >
             <img
-              src="/images/qsr_proof_strip1.webp"
+              src={smallImage}
               alt=""
               aria-hidden="true"
               loading="lazy"
@@ -218,7 +294,7 @@ export default function QsrProofStrip() {
             />
           </motion.div>
 
-          {statTile(STATS[2], 'lg:col-start-2 lg:row-start-2')}
+          {stats[2] && statTile(stats[2], STAT_POSITIONS[2])}
 
           {/* Tall panel */}
           <motion.div
@@ -226,7 +302,7 @@ export default function QsrProofStrip() {
             className="relative min-h-[300px] min-w-0 overflow-hidden rounded-[14px] bg-navy-950 lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:min-h-0"
           >
             <img
-              src="/images/qsr_proof_strip2.webp"
+              src={tallImage}
               alt=""
               aria-hidden="true"
               loading="lazy"

@@ -1,7 +1,10 @@
+import { useEffect, useState } from 'react';
 import { m as motion, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, ArrowRight } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { fetchWhyUpwonHeroSection } from '../../../../lib/whyUpwonPage.js';
 
 /*
   Why UpWon — Hero Section
@@ -21,8 +24,43 @@ import Container from '../../../../components/shared/Container/Container.jsx';
 
 const EASE = [0.16, 1, 0.3, 1];
 
+/*
+  The built-in hero - the fallback now. The published one is the CMS's; these
+  are what the section shows during the SSG build, while the fetch is in
+  flight, and whenever the API is unreachable.
+*/
+const BG_DESKTOP = '/images/why_hero_desktop.webp';
+const BG_MOBILE = '/images/why_hero_mobile.webp';
+const IMAGE_ALT =
+  'The UpWon dashboard on a laptop, surrounded by floating tiles for real-time data, connected teams, automated workflows and complete visibility';
+const SUBTEXT =
+  'Manufacturing businesses need more than disconnected software and manual processes. UpWon brings your critical workflows, teams, and business data together in one connected platform.';
+const PRIMARY = { label: 'Explore UpWon', to: '/what-is-upwon' };
+const SECONDARY = { label: 'See How It Works', to: '/demo' };
+
 export default function WhyUpwonHeroSection() {
   const reduceMotion = useReducedMotion();
+  const [cms, setCms] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchWhyUpwonHeroSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const subtext = cms ? cms.subtext : SUBTEXT;
+  const primary = cms ? cms.primary : PRIMARY;
+  const secondary = cms ? cms.secondary : SECONDARY;
+  // A CMS without artwork keeps the hero's own.
+  const bgDesktop = cms?.desktopImage ?? BG_DESKTOP;
+  const bgMobile = cms?.mobileImage ?? BG_MOBILE;
+  const imageAlt = cms?.imageAlt ?? IMAGE_ALT;
 
   const d = (value) => (reduceMotion ? 0 : value);
 
@@ -47,13 +85,13 @@ export default function WhyUpwonHeroSection() {
       <picture className="absolute inset-0 -z-10">
         <source
           media="(min-width: 1024px)"
-          srcSet="/images/why_hero_desktop.webp"
+          srcSet={bgDesktop}
           width={1983}
           height={793}
         />
         <img
-          src="/images/why_hero_mobile.webp"
-          alt="The UpWon dashboard on a laptop, surrounded by floating tiles for real-time data, connected teams, automated workflows and complete visibility"
+          src={bgMobile}
+          alt={imageAlt}
           width={944}
           height={1665}
           fetchpriority="high"
@@ -85,43 +123,51 @@ export default function WhyUpwonHeroSection() {
           animate="visible"
           className="max-w-2xl lg:max-w-[46%] xl:max-w-[48%]"
         >
-          <motion.p
-            variants={fadeUp}
-            className="text-[11px] font-bold uppercase tracking-[0.22em] text-navy-600"
-          >
-            WHY UPWON
-          </motion.p>
+          {(!cms || cms.eyebrow) && (
+            <motion.p
+              variants={fadeUp}
+              className="text-[11px] font-bold uppercase tracking-[0.22em] text-navy-600"
+            >
+              {cms ? cms.eyebrow : 'WHY UPWON'}
+            </motion.p>
+          )}
 
           <motion.h1
             variants={fadeUp}
             className="mt-5 h-display text-balance text-[2rem] leading-[1.05] tracking-tightest text-navy-950 sm:text-[2.4rem] md:text-5xl lg:text-[2.5rem] xl:text-[2.9rem]"
           >
-            Why Growing Manufacturers{' '}
-            <span className="gradient-text-orange">Choose UpWon.</span>
+            {cms ? (
+              <HeadingLines lines={cms.headingLines} />
+            ) : (
+              <>
+                Why Growing Manufacturers{' '}
+                <span className="gradient-text-orange">Choose UpWon.</span>
+              </>
+            )}
           </motion.h1>
 
           <motion.p
             variants={fadeUp}
             className="mt-5 max-w-2xl text-balance text-base leading-relaxed text-navy-700 md:text-lg lg:text-base"
           >
-            Manufacturing businesses need more than disconnected software and
-            manual processes. UpWon brings your critical workflows, teams, and
-            business data together in one connected platform.
+            {subtext}
           </motion.p>
 
           <motion.div
             variants={fadeUp}
             className="mt-8 flex flex-col items-stretch gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3"
           >
-            <Link to="/what-is-upwon" className="btn-primary-glow !px-6 !py-3.5">
-              Explore UpWon
+            <Link to={primary.to} className="btn-primary-glow !px-6 !py-3.5">
+              {primary.label}
               <ArrowUpRight className="h-4 w-4" />
             </Link>
 
-            <Link to="/demo" className="btn-secondary !px-6 !py-3.5">
-              See How It Works
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            {secondary && (
+              <Link to={secondary.to} className="btn-secondary !px-6 !py-3.5">
+                {secondary.label}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
           </motion.div>
         </motion.div>
       </Container>

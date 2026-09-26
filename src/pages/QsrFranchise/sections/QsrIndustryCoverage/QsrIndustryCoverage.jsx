@@ -16,6 +16,9 @@ import {
 } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { fetchQsrFranchiseCoverageSection } from '../../../../lib/qsrFranchisePage.js';
+import { qsrFranchiseIcon } from '../../../../lib/qsrFranchiseIcons.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
@@ -27,6 +30,14 @@ const CARD_GAP = 20;
 // How fast the row drifts on its own, in pixels per second
 const DRIFT_SPEED = 40;
 
+const SUBTEXT =
+  'UpWon can support connected workflows across a wide range of food-service and multi-location business formats, including:';
+
+/*
+  The fallback: the published formats are the CMS's, and these are what the
+  section shows during the SSG build, while the fetch is in flight, and
+  whenever the API is unreachable.
+*/
 const FORMATS = [
   {
     label: 'Quick Service Restaurants (QSRs)',
@@ -92,6 +103,27 @@ const FORMATS = [
 
 export default function QsrIndustryCoverage() {
   const reduceMotion = useReducedMotion();
+  const [cms, setCms] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchQsrFranchiseCoverageSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const formats = cms
+    ? cms.categories.map((category) => ({
+        label: category.label,
+        photo: category.photo,
+        Icon: qsrFranchiseIcon(category.icon),
+      }))
+    : FORMATS;
 
   /* ================= CAROUSEL ================= */
 
@@ -167,9 +199,9 @@ export default function QsrIndustryCoverage() {
 
   /* ================= CARD ================= */
 
-  const renderCard = ({ label, photo, Icon }, isCopy = false) => (
+  const renderCard = ({ label, photo, Icon }, index, isCopy = false) => (
     <article
-      key={isCopy ? `copy-${label}` : label}
+      key={isCopy ? `copy-${index}-${label}` : `${index}-${label}`}
       data-card
       aria-hidden={isCopy ? 'true' : undefined}
       className="flex w-[190px] shrink-0 flex-col rounded-[16px] border border-navy-950/[0.06] bg-white p-2.5 shadow-[0_10px_28px_rgba(25,35,55,0.07)] transition-shadow duration-300 hover:shadow-[0_18px_40px_rgba(25,35,55,0.12)] xl:w-[206px]"
@@ -207,26 +239,35 @@ export default function QsrIndustryCoverage() {
           viewport={VIEWPORT}
           className="mx-auto max-w-3xl text-center"
         >
-          <motion.div variants={fadeIn}>
-            <Eyebrow className="justify-center">INDUSTRY COVERAGE</Eyebrow>
-          </motion.div>
+          {(!cms || cms.eyebrow) && (
+            <motion.div variants={fadeIn}>
+              <Eyebrow className="justify-center">
+                {cms ? cms.eyebrow : 'INDUSTRY COVERAGE'}
+              </Eyebrow>
+            </motion.div>
+          )}
 
           <motion.h2
             variants={fadeUp}
             className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]"
           >
-            Built for a Wide Range of QSR &amp;{' '}
-            <span className="gradient-text-orange">
-              Franchise F&amp;B Businesses.
-            </span>
+            {cms ? (
+              <HeadingLines lines={cms.headingLines} />
+            ) : (
+              <>
+                Built for a Wide Range of QSR &amp;{' '}
+                <span className="gradient-text-orange">
+                  Franchise F&amp;B Businesses.
+                </span>
+              </>
+            )}
           </motion.h2>
 
           <motion.p
             variants={fadeUp}
             className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
           >
-            UpWon can support connected workflows across a wide range of
-            food-service and multi-location business formats, including:
+            {cms ? cms.subtext : SUBTEXT}
           </motion.p>
         </motion.div>
       </Container>
@@ -258,10 +299,10 @@ export default function QsrIndustryCoverage() {
             className="flex min-w-0 flex-1 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             style={{ gap: CARD_GAP }}
           >
-            {FORMATS.map((format) => renderCard(format))}
+            {formats.map((format, index) => renderCard(format, index))}
 
             {/* Second copy of the set, so the drift wraps without a seam */}
-            {FORMATS.map((format) => renderCard(format, true))}
+            {formats.map((format, index) => renderCard(format, index, true))}
           </motion.div>
 
           <button

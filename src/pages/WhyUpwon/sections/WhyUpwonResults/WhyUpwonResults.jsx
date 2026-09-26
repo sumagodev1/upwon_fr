@@ -1,3 +1,4 @@
+import { Fragment, useEffect, useState } from 'react';
 import { m as motion, useReducedMotion } from 'framer-motion';
 import {
   FileCheck2,
@@ -9,6 +10,8 @@ import {
 } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import { fetchWhyUpwonResultsSection } from '../../../../lib/whyUpwonPage.js';
+import { whyUpwonIcon } from '../../../../lib/whyUpwonIcons.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
@@ -26,7 +29,52 @@ const VIEWPORT = { once: true, amount: 0.1 };
   back a figure with its own study or customer results, swap that one
   `stat` string for a value-based phrase ('Less', 'Faster', 'Connected')
   and the card layout carries on unchanged.
+
+  The copy, the figures and what the visuals say are the CMS's now; these are
+  what the section shows during the SSG build, while the fetch is in flight,
+  and whenever the API is unreachable. A published result keeps the colours
+  and the visual of the card at its position.
 */
+
+const SUBTEXT =
+  'By connecting workflows and improving visibility, businesses can reduce unnecessary manual work and make decisions with greater confidence.';
+
+/* What the three visuals say, built in */
+const VISUALS_TEXT = {
+  image: '/images/why_conn_workflow.webp',
+  imageAlt:
+    'Purchase, inventory, people, reports, finance and settings all connected to UpWon at the centre',
+  checklistStatus: 'Automated',
+  trendTitle: 'Business Insights',
+  trendBadge: 'Last 30 days',
+  trendNote: 'Faster decisions',
+  trendNoteSub: 'Better outcomes',
+};
+
+/*
+  A CMS heading, with the built-in one's line break: the break between lines
+  applies from 640px up, so narrower screens let the words run on.
+*/
+function CmsHeading({ lines }) {
+  return lines.map((parts, lineIndex) => (
+    <Fragment key={lineIndex}>
+      {lineIndex > 0 && (
+        <>
+          <br className="hidden sm:block" />{' '}
+        </>
+      )}
+      {parts.map((part, partIndex) =>
+        part.accent ? (
+          <span key={partIndex} className="gradient-text-orange">
+            {part.text}
+          </span>
+        ) : (
+          <Fragment key={partIndex}>{part.text}</Fragment>
+        ),
+      )}
+    </Fragment>
+  ));
+}
 
 const RESULTS = [
   {
@@ -82,6 +130,37 @@ const VISUAL_H = 'h-[300px]';
 
 export default function WhyUpwonResults() {
   const reduceMotion = useReducedMotion();
+  const [cms, setCms] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchWhyUpwonResultsSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Three visuals, so at most three cards; each takes the colours and the
+  // visual of the built-in card at its position.
+  const results = cms
+    ? cms.results.slice(0, RESULTS.length).map((result, index) => ({
+        ...RESULTS[index],
+        stat: result.stat,
+        title: result.title,
+        detail: result.description,
+        Icon: whyUpwonIcon(result.icon),
+      }))
+    : RESULTS;
+  // No panel means the visuals were never authored - keep the built-in text.
+  const text = cms?.panel ?? VISUALS_TEXT;
+  const automated = cms?.panel ? cms.panel.checklistItems : AUTOMATED;
+  // A panel without hub artwork of its own keeps the shipped one.
+  const hubSrc = cms?.panel?.image ?? VISUALS_TEXT.image;
+  const hubAlt = cms?.panel?.image ? cms.panel.imageAlt : VISUALS_TEXT.imageAlt;
 
   const d = (value) => (reduceMotion ? 0 : value);
   const stagger = (value) => (reduceMotion ? 0 : value);
@@ -143,9 +222,9 @@ export default function WhyUpwonResults() {
         variants={rowsGroup}
         className={`flex flex-col gap-2.5 rounded-[12px] bg-white/80 p-3 ring-1 ring-[#d7ebe0] ${VISUAL_H}`}
       >
-        {AUTOMATED.map((label) => (
+        {automated.map((label, index) => (
           <motion.li
-            key={label}
+            key={`${index}-${label}`}
             variants={rowIn}
             className="flex flex-1 items-center gap-3 rounded-[10px] bg-white px-3 py-2 ring-1 ring-navy-950/[0.05]"
           >
@@ -162,7 +241,7 @@ export default function WhyUpwonResults() {
                 {label}
               </span>
               <span className="mt-0.5 block text-[11.5px] leading-tight text-navy-500">
-                Automated
+                {text.checklistStatus}
               </span>
             </span>
 
@@ -181,11 +260,11 @@ export default function WhyUpwonResults() {
       >
         <div className="flex items-center justify-between gap-2">
           <span className="text-[13.5px] font-semibold text-navy-950">
-            Business Insights
+            {text.trendTitle}
           </span>
 
           <span className="rounded-[6px] bg-[#f1f5fc] px-2 py-1 text-[11px] font-semibold text-navy-600">
-            Last 30 days
+            {text.trendBadge}
           </span>
         </div>
 
@@ -250,9 +329,9 @@ export default function WhyUpwonResults() {
           />
 
           <span className="absolute left-[66.7%] top-[41.5%] -translate-x-1/2 -translate-y-[150%] rounded-[8px] bg-white px-2.5 py-1.5 text-[11px] font-semibold leading-tight text-navy-800 shadow-[0_6px_18px_rgba(25,35,55,0.12)] ring-1 ring-navy-950/[0.06]">
-            Faster decisions
+            {text.trendNote}
             <span className="block font-medium text-navy-500">
-              Better outcomes
+              {text.trendNoteSub}
             </span>
           </span>
         </div>
@@ -262,8 +341,8 @@ export default function WhyUpwonResults() {
     /* Every module reporting to the same centre */
     hub: (
       <img
-        src="/images/why_conn_workflow.webp"
-        alt="Purchase, inventory, people, reports, finance and settings all connected to UpWon at the centre"
+        src={hubSrc}
+        alt={hubAlt}
         width={1263}
         height={1246}
         loading="lazy"
@@ -289,26 +368,32 @@ export default function WhyUpwonResults() {
           viewport={VIEWPORT}
           className="max-w-3xl"
         >
-          <motion.div variants={fadeIn}>
-            <Eyebrow>BUILT FOR BETTER OPERATIONS</Eyebrow>
-          </motion.div>
+          {(!cms || cms.eyebrow) && (
+            <motion.div variants={fadeIn}>
+              <Eyebrow>{cms ? cms.eyebrow : 'BUILT FOR BETTER OPERATIONS'}</Eyebrow>
+            </motion.div>
+          )}
 
           <motion.h2
             variants={fadeUp}
             className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]"
           >
-            Less Complexity. More Control.
-            <br className="hidden sm:block" />{' '}
-            <span className="gradient-text-orange">Better Outcomes.</span>
+            {cms ? (
+              <CmsHeading lines={cms.headingLines} />
+            ) : (
+              <>
+                Less Complexity. More Control.
+                <br className="hidden sm:block" />{' '}
+                <span className="gradient-text-orange">Better Outcomes.</span>
+              </>
+            )}
           </motion.h2>
 
           <motion.p
             variants={fadeUp}
             className="mt-4 max-w-2xl text-[14.5px] leading-relaxed text-navy-600 sm:text-[15px]"
           >
-            By connecting workflows and improving visibility, businesses can
-            reduce unnecessary manual work and make decisions with greater
-            confidence.
+            {cms ? cms.subtext : SUBTEXT}
           </motion.p>
         </motion.div>
 
@@ -320,7 +405,7 @@ export default function WhyUpwonResults() {
           viewport={VIEWPORT}
           className="mt-8 grid gap-5 md:grid-cols-2 lg:mt-10 lg:grid-cols-3"
         >
-          {RESULTS.map(
+          {results.map(
             ({
               stat,
               title,

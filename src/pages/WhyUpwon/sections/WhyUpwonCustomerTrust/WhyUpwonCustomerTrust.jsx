@@ -4,7 +4,9 @@ import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 import { ALL_CASES } from '../../../../data/caseStudy.js';
+import { fetchWhyUpwonTestimonialsSection } from '../../../../lib/whyUpwonPage.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
@@ -20,6 +22,10 @@ const INTERVAL = 6500;
   studies in src/data/caseStudy.js, so the page can never drift from what
   those studies say. Attribution follows the site's convention — the role
   and the company, not an invented individual.
+
+  The fallback now: the published testimonials, logos and lines are the
+  CMS's, and these are what the section shows during the SSG build, while the
+  fetch is in flight, and whenever the API is unreachable.
 */
 const LOGOS = {
   monginis: '/images/testimonial/mongignis.webp',
@@ -29,6 +35,7 @@ const LOGOS = {
 
 const TESTIMONIALS = ALL_CASES.filter((item) => item.testimonial).map(
   (item) => ({
+    key: item.slug,
     quote: item.testimonial.quote,
     author: item.testimonial.author,
     role: item.testimonial.role,
@@ -39,6 +46,12 @@ const TESTIMONIALS = ALL_CASES.filter((item) => item.testimonial).map(
     logo: LOGOS[item.slug],
   }),
 );
+
+const LEAD_LINE = 'Trusted by Forward-Thinking Businesses';
+const BUTTON = { label: 'See Customer Stories', to: '/clients' };
+const WALL_LABEL = 'Trusted by leading brands';
+const SUBTEXT =
+  'From growing manufacturers to multi-plant enterprises, businesses trust UpWon to simplify operations, improve visibility, and run from one connected system.';
 
 /* The full client wall, as it appears on the industry proof strips */
 const CLIENTS = [
@@ -55,9 +68,37 @@ export default function WhyUpwonCustomerTrust() {
 
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [cms, setCms] = useState(null);
 
-  const count = TESTIMONIALS.length;
-  const active = TESTIMONIALS[idx];
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchWhyUpwonTestimonialsSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Each list falls back on its own: a CMS with logos but no testimonials yet
+  // keeps the built-in quotes, and the other way round.
+  const testimonials =
+    cms && cms.testimonials.length > 0
+      ? cms.testimonials.map((item, i) => ({ ...item, key: `cms-${i}` }))
+      : TESTIMONIALS;
+  const clients = cms && cms.logos.length > 0 ? cms.logos : CLIENTS;
+  // No panel means the lines were never authored - keep the built-in ones. A
+  // null line in a published panel means "hide it".
+  const leadLine = cms?.panel ? cms.panel.leadLine : LEAD_LINE;
+  const button = cms?.panel ? cms.panel.button : BUTTON;
+  const wallLabel = cms?.panel ? cms.panel.wallLabel : WALL_LABEL;
+
+  const count = testimonials.length;
+  // Kept in range when a published list of a different length arrives.
+  const position = count ? idx % count : 0;
+  const active = testimonials[position];
 
   // Auto-advance, held while the card is hovered or focused
   useEffect(() => {
@@ -116,45 +157,55 @@ export default function WhyUpwonCustomerTrust() {
             viewport={VIEWPORT}
             className="min-w-0"
           >
-            <motion.div variants={fadeIn}>
-              <Eyebrow>CUSTOMER TRUST &amp; TESTIMONIALS</Eyebrow>
-            </motion.div>
+            {(!cms || cms.eyebrow) && (
+              <motion.div variants={fadeIn}>
+                <Eyebrow>{cms ? cms.eyebrow : 'CUSTOMER TRUST & TESTIMONIALS'}</Eyebrow>
+              </motion.div>
+            )}
 
-            <motion.p
-              variants={fadeUp}
-              className="mt-4 text-[15.5px] font-medium text-navy-600 sm:text-base"
-            >
-              Trusted by Forward-Thinking Businesses
-            </motion.p>
+            {leadLine && (
+              <motion.p
+                variants={fadeUp}
+                className="mt-4 text-[15.5px] font-medium text-navy-600 sm:text-base"
+              >
+                {leadLine}
+              </motion.p>
+            )}
 
             <motion.h2
               variants={fadeUp}
               className="mt-2 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]"
             >
-              Built Around the Way Modern Businesses{' '}
-              <span className="gradient-text-orange">Work.</span>
+              {cms ? (
+                <HeadingLines lines={cms.headingLines} />
+              ) : (
+                <>
+                  Built Around the Way Modern Businesses{' '}
+                  <span className="gradient-text-orange">Work.</span>
+                </>
+              )}
             </motion.h2>
 
             <motion.p
               variants={fadeUp}
               className="mt-4 max-w-xl text-[14.5px] leading-relaxed text-navy-600 sm:text-[15px]"
             >
-              From growing manufacturers to multi-plant enterprises, businesses
-              trust UpWon to simplify operations, improve visibility, and run
-              from one connected system.
+              {cms ? cms.subtext : SUBTEXT}
             </motion.p>
 
-            <motion.div variants={fadeUp} className="mt-7">
-              <Link
-                to="/clients"
-                className="group inline-flex items-center gap-4 rounded-[10px] bg-navy-950 py-1.5 pl-6 pr-1.5 text-[14.5px] font-semibold text-white transition-colors duration-300 hover:bg-navy-900"
-              >
-                See Customer Stories
-                <span className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-orange-500 transition-colors duration-300 group-hover:bg-orange-600">
-                  <ArrowRight className="h-[18px] w-[18px]" strokeWidth={2.2} />
-                </span>
-              </Link>
-            </motion.div>
+            {button && (
+              <motion.div variants={fadeUp} className="mt-7">
+                <Link
+                  to={button.to}
+                  className="group inline-flex items-center gap-4 rounded-[10px] bg-navy-950 py-1.5 pl-6 pr-1.5 text-[14.5px] font-semibold text-white transition-colors duration-300 hover:bg-navy-900"
+                >
+                  {button.label}
+                  <span className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-orange-500 transition-colors duration-300 group-hover:bg-orange-600">
+                    <ArrowRight className="h-[18px] w-[18px]" strokeWidth={2.2} />
+                  </span>
+                </Link>
+              </motion.div>
+            )}
           </motion.div>
 
           {/* ================= RIGHT — the featured quote ================= */}
@@ -173,7 +224,7 @@ export default function WhyUpwonCustomerTrust() {
             <div className="flex flex-col items-center justify-center gap-5 bg-gradient-to-br from-[#eef3fb] via-[#f5f8fd] to-[#e9eff9] px-6 py-8">
               <AnimatePresence mode="wait">
                 <motion.img
-                  key={`logo-${active.slug}`}
+                  key={`logo-${active.key}`}
                   src={active.logo}
                   alt={active.brand}
                   loading="lazy"
@@ -185,7 +236,7 @@ export default function WhyUpwonCustomerTrust() {
 
               <AnimatePresence mode="wait">
                 <motion.p
-                  key={`meta-${active.slug}`}
+                  key={`meta-${active.key}`}
                   {...swap}
                   className="text-center text-[11.5px] font-semibold uppercase leading-relaxed tracking-[0.14em] text-navy-500"
                 >
@@ -209,7 +260,7 @@ export default function WhyUpwonCustomerTrust() {
               <div className="mt-4 min-h-[132px] sm:min-h-[148px]">
                 <AnimatePresence mode="wait">
                   <motion.blockquote
-                    key={`quote-${active.slug}`}
+                    key={`quote-${active.key}`}
                     {...swap}
                     className="h-display text-[16px] font-semibold leading-[1.5] tracking-tight text-navy-950 sm:text-[17.5px]"
                   >
@@ -220,7 +271,7 @@ export default function WhyUpwonCustomerTrust() {
 
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={`by-${active.slug}`}
+                  key={`by-${active.key}`}
                   {...swap}
                   className="mt-5 min-w-0"
                 >
@@ -257,7 +308,7 @@ export default function WhyUpwonCustomerTrust() {
 
                 <p className="text-[13px] font-semibold tabular-nums text-navy-400">
                   <span className="text-navy-950">
-                    {String(idx + 1).padStart(2, '0')}
+                    {String(position + 1).padStart(2, '0')}
                   </span>{' '}
                   / {String(count).padStart(2, '0')}
                 </p>
@@ -274,12 +325,14 @@ export default function WhyUpwonCustomerTrust() {
           viewport={VIEWPORT}
           className="mt-10 lg:mt-14"
         >
-          <motion.p
-            variants={fadeIn}
-            className="text-[11px] font-bold uppercase tracking-[0.2em] text-navy-500"
-          >
-            Trusted by leading brands
-          </motion.p>
+          {wallLabel && (
+            <motion.p
+              variants={fadeIn}
+              className="text-[11px] font-bold uppercase tracking-[0.2em] text-navy-500"
+            >
+              {wallLabel}
+            </motion.p>
+          )}
 
           {/* The wall runs as a loop rather than a fixed row, so it reads as
               "and more" without needing to say it. Two copies of the set sit
@@ -294,10 +347,10 @@ export default function WhyUpwonCustomerTrust() {
                 reduceMotion ? '' : 'upwon-brand-marquee'
               }`}
             >
-              {[...CLIENTS, ...CLIENTS].map(({ name, src }, i) => (
+              {[...clients, ...clients].map(({ name, src }, i) => (
                 <div
                   key={`${name}-${i}`}
-                  aria-hidden={i >= CLIENTS.length ? 'true' : undefined}
+                  aria-hidden={i >= clients.length ? 'true' : undefined}
                   className="flex items-center"
                 >
                   <span
@@ -308,7 +361,7 @@ export default function WhyUpwonCustomerTrust() {
                   <span className="flex h-[52px] w-[136px] shrink-0 items-center justify-center px-2 sm:w-[158px]">
                     <img
                       src={src}
-                      alt={i >= CLIENTS.length ? '' : name}
+                      alt={i >= clients.length ? '' : name}
                       loading="lazy"
                       decoding="async"
                       className="max-h-full w-auto max-w-full object-contain"

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { m as motion, useReducedMotion } from 'framer-motion';
 import {
   Boxes,
@@ -10,11 +11,19 @@ import {
   BarChart3,
 } from 'lucide-react';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { fetchSpicesAgroCapabilitiesSection } from '../../../../lib/spicesAgroPage.js';
+import { spicesAgroIcon } from '../../../../lib/spicesAgroIcons.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
 const VIEWPORT = { once: true, amount: 0.1 };
 
+/*
+  The fallback: the published capabilities are the CMS's, and these are what
+  the section shows during the SSG build, while the fetch is in flight, and
+  whenever the API is unreachable. CMS capabilities are numbered by position.
+*/
 const CAPABILITIES = [
   {
     number: '01',
@@ -74,8 +83,35 @@ const CAPABILITIES = [
   },
 ];
 
+const BACKGROUND_SRC = '/images/agro_core_capability_back.webp';
+
 export default function SpicesAgroCoreCapabilities() {
   const reduceMotion = useReducedMotion();
+  const [cms, setCms] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchSpicesAgroCapabilitiesSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // The CMS's capabilities, in the shape the built-in ones already have.
+  const capabilities = cms
+    ? cms.capabilities.map((capability, index) => ({
+        number: String(index + 1).padStart(2, '0'),
+        title: capability.title,
+        description: capability.description,
+        Icon: spicesAgroIcon(capability.icon),
+      }))
+    : CAPABILITIES;
+  // A CMS without a background keeps the shipped illustration.
+  const background = cms?.background ?? BACKGROUND_SRC;
 
   const d = (value) => (reduceMotion ? 0 : value);
   const stagger = (value) => (reduceMotion ? 0 : value);
@@ -121,7 +157,7 @@ export default function SpicesAgroCoreCapabilities() {
       {/* ================= BACKGROUND ================= */}
       <div className="pointer-events-none absolute inset-0">
         <img
-          src="/images/agro_core_capability_back.webp"
+          src={background}
           alt=""
           aria-hidden="true"
           loading="lazy"
@@ -147,27 +183,35 @@ export default function SpicesAgroCoreCapabilities() {
               viewport={VIEWPORT}
               className="min-w-0 lg:border-r lg:border-white/10 lg:pr-8"
             >
-              <motion.div variants={fadeIn}>
-                <Eyebrow variant="dark">CORE CAPABILITIES</Eyebrow>
-              </motion.div>
+              {(!cms || cms.eyebrow) && (
+                <motion.div variants={fadeIn}>
+                  <Eyebrow variant="dark">{cms ? cms.eyebrow : 'CORE CAPABILITIES'}</Eyebrow>
+                </motion.div>
+              )}
 
               <motion.h2
                 variants={fadeUp}
                 className="mt-4 h-display text-[26px] leading-[1.14] tracking-tight text-white sm:text-[30px] lg:text-[32px]"
               >
-                Built to Power Every Step of Your{' '}
-                <span className="text-orange-500">
-                  Spices &amp; Agro Processing Business
-                </span>
+                {cms ? (
+                  <HeadingLines lines={cms.headingLines} accentClassName="text-orange-500" />
+                ) : (
+                  <>
+                    Built to Power Every Step of Your{' '}
+                    <span className="text-orange-500">
+                      Spices &amp; Agro Processing Business
+                    </span>
+                  </>
+                )}
               </motion.h2>
 
               <motion.p
                 variants={fadeUp}
                 className="mt-4 text-[14px] leading-relaxed text-white/70 sm:text-[15px]"
               >
-                End-to-end capabilities to simplify operations, improve
-                visibility, and support the growth of your spices and
-                agro-processing business.
+                {cms
+                  ? cms.subtext
+                  : 'End-to-end capabilities to simplify operations, improve visibility, and support the growth of your spices and agro-processing business.'}
               </motion.p>
             </motion.div>
 
@@ -180,7 +224,7 @@ export default function SpicesAgroCoreCapabilities() {
               viewport={VIEWPORT}
               className="grid min-w-0 auto-rows-fr gap-x-6 gap-y-8 sm:grid-cols-2 xl:grid-cols-4 xl:gap-x-0 xl:gap-y-0"
             >
-              {CAPABILITIES.map(
+              {capabilities.map(
                 ({ number, title, description, Icon }, index) => (
                   <motion.article
                     key={number}

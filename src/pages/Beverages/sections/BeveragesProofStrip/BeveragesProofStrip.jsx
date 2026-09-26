@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { m as motion, useReducedMotion } from 'framer-motion';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { fetchBeverageTrustSection } from '../../../../lib/beveragePage.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
@@ -22,6 +24,10 @@ const CLIENTS = [
 /*
   The figures are the scale numbers the site already states on the other
   industry proof strips, so nothing new is claimed here.
+
+  The fallback now: the published stats and logos are the CMS's, and these are
+  what the section shows during the SSG build, while the fetch is in flight,
+  and whenever the API is unreachable.
 */
 const STATS = [
   {
@@ -63,18 +69,34 @@ function ClientLogo({ client }) {
 export default function BeveragesProofStrip() {
   const reduceMotion = useReducedMotion();
   const [active, setActive] = useState(0);
+  const [cms, setCms] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchBeverageTrustSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const stats = cms ? cms.stats : STATS;
+  const clients = cms ? cms.logos : CLIENTS;
 
   // The card turns over on its own; reduced motion holds the first stat.
   useEffect(() => {
-    if (reduceMotion) return undefined;
+    if (reduceMotion || stats.length < 2) return undefined;
 
     const id = window.setInterval(
-      () => setActive((current) => (current + 1) % STATS.length),
+      () => setActive((current) => (current + 1) % stats.length),
       CARD_INTERVAL
     );
 
     return () => window.clearInterval(id);
-  }, [reduceMotion]);
+  }, [reduceMotion, stats.length]);
 
   const d = (value) => (reduceMotion ? 0 : value);
   const stagger = (value) => (reduceMotion ? 0 : value);
@@ -98,7 +120,9 @@ export default function BeveragesProofStrip() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } },
   };
 
-  const stat = STATS[active];
+  // Guarded against a published list shorter than the one the timer started
+  // on, which would otherwise leave `active` past the end.
+  const stat = stats[active] ?? stats[0];
 
   // Two identical copies with animate-ticker shifting the track -50%, so each
   // row loops continuously. The second copy is decorative.
@@ -112,12 +136,12 @@ export default function BeveragesProofStrip() {
             }`
       }`}
     >
-      {CLIENTS.map((client) => (
+      {clients.map((client) => (
         <ClientLogo key={client.name} client={client} />
       ))}
 
       <div className="flex items-center gap-10 md:gap-14" aria-hidden="true">
-        {CLIENTS.map((client) => (
+        {clients.map((client) => (
           <ClientLogo key={`dup-${client.name}`} client={client} />
         ))}
       </div>
@@ -135,27 +159,35 @@ export default function BeveragesProofStrip() {
           viewport={VIEWPORT}
           className="min-w-0"
         >
-          <motion.div variants={fadeIn}>
-            <Eyebrow>TRUSTED BY GROWING BRANDS</Eyebrow>
-          </motion.div>
+          {(!cms || cms.eyebrow) && (
+            <motion.div variants={fadeIn}>
+              <Eyebrow>{cms ? cms.eyebrow : 'TRUSTED BY GROWING BRANDS'}</Eyebrow>
+            </motion.div>
+          )}
 
           <motion.h2
             variants={fadeUp}
             className="mt-3 h-display text-[22px] leading-snug tracking-tight text-navy-950 sm:text-[26px] lg:text-[28px]"
           >
-            Built to Keep Ingredients, Production, Quality,{' '}
-            <span className="gradient-text-orange">
-              and Every Sales Channel Connected.
-            </span>
+            {cms ? (
+              <HeadingLines lines={cms.headingLines} />
+            ) : (
+              <>
+                Built to Keep Ingredients, Production, Quality,{' '}
+                <span className="gradient-text-orange">
+                  and Every Sales Channel Connected.
+                </span>
+              </>
+            )}
           </motion.h2>
 
           <motion.p
             variants={fadeUp}
             className="mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
           >
-            Teams across beverages, food, dairy, and FMCG use UpWon to keep
-            procurement, production, quality, inventory, and distribution
-            connected across their locations.
+            {cms
+              ? cms.subtext
+              : 'Teams across beverages, food, dairy, and FMCG use UpWon to keep procurement, production, quality, inventory, and distribution connected across their locations.'}
           </motion.p>
         </motion.div>
 
@@ -174,69 +206,71 @@ export default function BeveragesProofStrip() {
           </motion.div>
 
           {/* ================= STAT CARD ================= */}
-          <motion.div
-            initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.97 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={VIEWPORT}
-            transition={{ duration: 0.7, ease: EASE, delay: 0.15 }}
-            className="relative min-h-[240px] min-w-0 overflow-hidden rounded-[16px] bg-navy-950 lg:min-h-0"
-          >
-            {STATS.map((item, index) => (
-              <motion.img
-                key={item.photo}
-                src={item.photo}
-                alt=""
-                aria-hidden="true"
-                loading="lazy"
-                decoding="async"
-                animate={{ opacity: index === active ? 1 : 0 }}
-                transition={{ duration: reduceMotion ? 0 : 0.7, ease: EASE }}
-                className="absolute inset-0 h-full w-full object-cover object-center"
-              />
-            ))}
+          {stat && (
+            <motion.div
+              initial={{ opacity: 0, scale: reduceMotion ? 1 : 0.97 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={VIEWPORT}
+              transition={{ duration: 0.7, ease: EASE, delay: 0.15 }}
+              className="relative min-h-[240px] min-w-0 overflow-hidden rounded-[16px] bg-navy-950 lg:min-h-0"
+            >
+              {stats.map((item, index) => item.photo && (
+                <motion.img
+                  key={`${index}-${item.photo}`}
+                  src={item.photo}
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                  decoding="async"
+                  animate={{ opacity: index === active ? 1 : 0 }}
+                  transition={{ duration: reduceMotion ? 0 : 0.7, ease: EASE }}
+                  className="absolute inset-0 h-full w-full object-cover object-center"
+                />
+              ))}
 
-            {/* The four photos are bright, so the card carries an even
-                scrim plus a heavier foot for the copy to sit on */}
-            <div className="absolute inset-0 bg-navy-950/55" />
-            <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/75 to-transparent" />
+              {/* The four photos are bright, so the card carries an even
+                  scrim plus a heavier foot for the copy to sit on */}
+              <div className="absolute inset-0 bg-navy-950/55" />
+              <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/75 to-transparent" />
 
-            <div className="relative flex h-full flex-col justify-end p-6">
-              <motion.p
-                key={`v-${active}`}
-                initial={{ opacity: 0, y: d(10) }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: EASE }}
-                className="h-display text-[40px] font-extrabold leading-none tracking-tight text-white sm:text-[46px]"
-              >
-                {stat.value}
-              </motion.p>
+              <div className="relative flex h-full flex-col justify-end p-6">
+                <motion.p
+                  key={`v-${active}`}
+                  initial={{ opacity: 0, y: d(10) }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, ease: EASE }}
+                  className="h-display text-[40px] font-extrabold leading-none tracking-tight text-white sm:text-[46px]"
+                >
+                  {stat.value}
+                </motion.p>
 
-              <motion.p
-                key={`l-${active}`}
-                initial={{ opacity: 0, y: d(10) }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.06, ease: EASE }}
-                className="mt-2 text-[13px] leading-snug text-white/80"
-              >
-                {stat.label}
-              </motion.p>
+                <motion.p
+                  key={`l-${active}`}
+                  initial={{ opacity: 0, y: d(10) }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.06, ease: EASE }}
+                  className="mt-2 text-[13px] leading-snug text-white/80"
+                >
+                  {stat.label}
+                </motion.p>
 
-              {/* Which stat is showing */}
-              <div className="mt-5 flex items-center gap-1.5">
-                {STATS.map((item, index) => (
-                  <span
-                    key={item.photo}
-                    aria-hidden="true"
-                    className={`h-[3px] rounded-full transition-all duration-500 ${
-                      index === active
-                        ? 'w-6 bg-orange-500'
-                        : 'w-2.5 bg-white/35'
-                    }`}
-                  />
-                ))}
+                {/* Which stat is showing */}
+                <div className="mt-5 flex items-center gap-1.5">
+                  {stats.map((item, index) => (
+                    <span
+                      key={`${index}-${item.value}`}
+                      aria-hidden="true"
+                      className={`h-[3px] rounded-full transition-all duration-500 ${
+                        index === active
+                          ? 'w-6 bg-orange-500'
+                          : 'w-2.5 bg-white/35'
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          )}
         </div>
       </Container>
     </section>
