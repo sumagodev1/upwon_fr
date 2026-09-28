@@ -1,98 +1,30 @@
 import { m as motion, useReducedMotion } from 'framer-motion';
-import {
-  Milk,
-  Factory,
-  ShieldCheck,
-  Truck,
-  Snowflake,
-  Package,
-  Users,
-  MapPin,
-  ClipboardList,
-  BarChart3,
-} from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { dairyIcon } from '../../../../lib/dairyIcons.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
 const VIEWPORT = { once: true, amount: 0.1 };
 
-const BENEFITS = [
-  {
-    number: '01',
-    title: 'Raw Material & Ingredient Visibility',
-    description:
-      'Keep milk, ingredients, and packaging materials visible across stores, plants, and warehouses.',
-    Icon: Milk,
-  },
-  {
-    number: '02',
-    title: 'Production & Inventory Coordination',
-    description:
-      'Keep production requirements connected with available materials and inventory levels.',
-    Icon: Factory,
-  },
-  {
-    number: '03',
-    title: 'Batch & Quality Visibility',
-    description:
-      'Maintain visibility across production batches and quality inspection touchpoints.',
-    Icon: ShieldCheck,
-  },
-  {
-    number: '04',
-    title: 'Finished-Product Movement',
-    description:
-      'Track finished goods through production, storage, dispatch, and delivery.',
-    Icon: Truck,
-  },
-  {
-    number: '05',
-    title: 'Cold Storage & Warehouse Coordination',
-    description:
-      'Coordinate cold storage, warehouse activity, and finished-product movement.',
-    Icon: Snowflake,
-  },
-  {
-    number: '06',
-    title: 'Stock & Inventory Management',
-    description:
-      'Manage stock levels and inventory movement across every operating location.',
-    Icon: Package,
-  },
-  {
-    number: '07',
-    title: 'Sales & Distribution Coordination',
-    description:
-      'Coordinate distributors, retailers, and sales teams through connected workflows.',
-    Icon: Users,
-  },
-  {
-    number: '08',
-    title: 'Multi-Location Operational Visibility',
-    description:
-      'Follow activity across plants, cold stores, warehouses, and sales locations.',
-    Icon: MapPin,
-  },
-  {
-    number: '09',
-    title: 'Order & Fulfillment Management',
-    description:
-      'Manage orders from creation through fulfillment across every channel.',
-    Icon: ClipboardList,
-  },
-  {
-    number: '10',
-    title: 'Access to Real-Time Business Insights',
-    description:
-      'Reach dashboards and reports covering production, inventory, sales, and operations.',
-    Icon: BarChart3,
-  },
-];
+/** Benefits are numbered by position: "01", "02"... */
+const numberOf = (index) => String(index + 1).padStart(2, '0');
 
-export default function DairyIceCreamBenefitsSection() {
+/**
+ * CMS-only: the copy, the image and the benefits - each an icon name, a title
+ * and a description - come from the CMS via the page. With nothing published,
+ * or the API unreachable, the section renders nothing rather than falling back
+ * to built-in content. The image is optional.
+ *
+ * @param {{ section?: object | null }} props - the published section.
+ */
+export default function DairyIceCreamBenefitsSection({ section = null }) {
   const reduceMotion = useReducedMotion();
+
+  if (!section) return null;
+
+  const { items } = section;
 
   const d = (value) => (reduceMotion ? 0 : value);
   const stagger = (value) => (reduceMotion ? 0 : value);
@@ -146,47 +78,43 @@ export default function DairyIceCreamBenefitsSection() {
               viewport={VIEWPORT}
             >
               <motion.div variants={fadeIn}>
-                <Eyebrow>THE BENEFITS</Eyebrow>
+                {section.eyebrow && <Eyebrow>{section.eyebrow}</Eyebrow>}
               </motion.div>
 
               <motion.h2
                 variants={fadeUp}
                 className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]"
               >
-                Greater Control Over Every Batch.{' '}
-                <span className="gradient-text-orange">
-                  Better Visibility Across Every Product Movement.
-                </span>
+                <HeadingLines lines={section.headingLines} />
               </motion.h2>
 
-              <motion.p
-                variants={fadeUp}
-                className="mt-4 max-w-xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
-              >
-                With UpWon, dairy and ice cream businesses can connect their core
-                operations and reduce the complexity of managing raw materials,
-                production, quality, inventory, cold storage, warehouses, sales,
-                and distribution across multiple teams and locations.
-              </motion.p>
+              {section.subtext && (
+                <motion.p
+                  variants={fadeUp}
+                  className="mt-4 max-w-xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
+                >
+                  {section.subtext}
+                </motion.p>
+              )}
             </motion.div>
 
-            <motion.div
-              variants={imageVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={VIEWPORT}
-              className="mt-8 min-w-0"
-            >
-              <img
-                src="/images/dairy_benefits_sec.webp"
-                alt="Milk and ingredients, a bottling line, ice cream scoops and a cold storage warehouse"
-                width={1536}
-                height={1024}
-                loading="lazy"
-                decoding="async"
-                className="block h-auto w-full rounded-[16px]"
-              />
-            </motion.div>
+            {section.panel && (
+              <motion.div
+                variants={imageVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={VIEWPORT}
+                className="mt-8 min-w-0"
+              >
+                <img
+                  src={section.panel.image}
+                  alt={section.panel.alt}
+                  loading="lazy"
+                  decoding="async"
+                  className="block h-auto w-full rounded-[16px]"
+                />
+              </motion.div>
+            )}
           </div>
 
           {/* ================= RIGHT — BENEFIT LIST ================= */}
@@ -199,14 +127,17 @@ export default function DairyIceCreamBenefitsSection() {
             viewport={VIEWPORT}
             className="grid min-w-0 gap-x-10 sm:grid-cols-2 xl:gap-x-12"
           >
-            {BENEFITS.map(({ number, title, description, Icon }, index) => (
+            {items.map(({ icon, title, description }, index) => {
+              const Icon = dairyIcon(icon);
+              const number = numberOf(index);
+              return (
               <motion.div
-                key={number}
+                key={`${number}-${title}`}
                 variants={itemVariants}
                 className={`flex min-w-0 items-start gap-4 border-navy-950/[0.07] py-5 ${
-                  index < BENEFITS.length - 1 ? 'border-b' : ''
+                  index < items.length - 1 ? 'border-b' : ''
                 } ${
-                  index >= BENEFITS.length - 2 ? 'sm:border-b-0' : 'sm:border-b'
+                  index >= items.length - 2 ? 'sm:border-b-0' : 'sm:border-b'
                 }`}
               >
                 <span className="flex h-[62px] w-[62px] shrink-0 items-center justify-center rounded-full bg-white shadow-[0_8px_22px_rgba(25,35,55,0.08)]">
@@ -226,7 +157,8 @@ export default function DairyIceCreamBenefitsSection() {
                   </p>
                 </div>
               </motion.div>
-            ))}
+              );
+            })}
           </motion.div>
         </div>
       </Container>

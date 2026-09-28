@@ -3,6 +3,7 @@ import { m as motion, AnimatePresence } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 /*
   Non-food FMCG "FAQ" — the practical questions brand and channel teams
@@ -11,31 +12,19 @@ import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
 
-const FAQS = [
-  {
-    q: 'What is non-food FMCG ERP software?',
-    a: 'A connected business platform that brings together the core workflows of a non-food FMCG business — procurement, product management, inventory, warehouses, sales, distribution, finance and reporting — so those teams work from shared information rather than separate tools and spreadsheets.',
-  },
-  {
-    q: 'Can UpWon help manage distributors and sales channels?',
-    a: 'Yes. Distributors, sales teams, retailers, orders, inventory and distribution workflows connect to the same system, so channel activity stays visible to your team instead of sitting in separate registers, spreadsheets or chat threads.',
-  },
-  {
-    q: 'Can the platform support inventory across multiple locations?',
-    a: 'Yes. Inventory is managed across warehouses, branches, distributor locations and other operational points in one system, so stock position and movement can be seen per location rather than assembled from separate sheets.',
-  },
-  {
-    q: 'Can UpWon help manage field sales operations?',
-    a: 'Yes. Sales activity, market visits, order collection and customer interactions run through connected workflows, so what happens in the market is visible alongside inventory, orders and dispatch rather than reported separately after the fact.',
-  },
-  {
-    q: 'Can we start with selected solutions and expand later?',
-    a: 'Yes. The suite is modular and connected, so most businesses start with whichever area is causing the most friction and adopt the rest as they go. Because the workflows share one platform, the data built up in the first phase carries into the next.',
-  },
-];
-
-export default function NonFoodFmcgFaqSection() {
+/**
+ * CMS-only: the copy and questions come from the CMS via the page. With no
+ * published questions, or the API unreachable, the section renders nothing
+ * rather than falling back to built-in content.
+ *
+ * @param {{ section?: object | null }} props - the published copy and questions.
+ */
+export default function NonFoodFmcgFaqSection({ section = null }) {
   const [openIndex, setOpenIndex] = useState(0);
+
+  if (!section) return null;
+
+  const { faqs } = section;
 
   return (
     <section className="relative overflow-hidden bg-cream-100 py-12 md:py-16">
@@ -50,22 +39,22 @@ export default function NonFoodFmcgFaqSection() {
           transition={{ duration: 0.6, ease: EASE }}
           className="mx-auto max-w-3xl text-center"
         >
-          <Eyebrow className="justify-center">FAQ</Eyebrow>
+          {section.eyebrow && <Eyebrow className="justify-center">{section.eyebrow}</Eyebrow>}
 
           <h2 className="mt-3 h-display text-[30px] leading-[1.1] tracking-tight text-navy-950 sm:text-[34px] lg:text-[36.8px]">
-            Questions FMCG Brand Teams{' '}
-            <span className="gradient-text-orange">Ask Before They Switch.</span>
+            <HeadingLines lines={section.headingLines} />
           </h2>
 
-          <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base">
-            Practical answers to what non-food FMCG teams want to know before
-            moving products, channels and field operations onto one platform.
-          </p>
+          {section.subtext && (
+            <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base">
+              {section.subtext}
+            </p>
+          )}
         </motion.div>
 
         {/* ================= ACCORDION ================= */}
         <div className="mx-auto mt-10 max-w-3xl divide-y divide-cream-300 rounded-2xl border border-cream-300 bg-white shadow-sm md:mt-12">
-          {FAQS.map((faq, index) => (
+          {faqs.map((faq, index) => (
             <div key={faq.q}>
               <button
                 type="button"

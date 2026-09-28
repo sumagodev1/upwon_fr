@@ -53,7 +53,12 @@ const FAQS = [
   },
 ];
 
-export default function VmsFaqSection() {
+export default function VmsFaqSection({ section = null }) {
+  const eyebrow = section ? section.eyebrow : EYEBROW;
+  const headingLines = section ? section.headingLines : HEADING_LINES;
+  const subtext = section ? section.subtext : SUBTEXT;
+  const faqs = section && section.faqs.length > 0 ? section.faqs : FAQS;
+
   const [openIndex, setOpenIndex] = useState(0);
 
   return (

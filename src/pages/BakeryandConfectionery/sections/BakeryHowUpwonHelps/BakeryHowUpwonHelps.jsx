@@ -1,10 +1,22 @@
 import { m as motion } from 'framer-motion';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
 
-export default function BakeryHowUpwonHelps() {
+/**
+ * CMS-only: the copy and the one live diagram come from the CMS via the page.
+ * With no live diagram, or the API unreachable, the section renders nothing
+ * rather than falling back to built-in content.
+ *
+ * @param {{ section?: object | null }} props - the published copy and diagram.
+ */
+export default function BakeryHowUpwonHelps({ section = null }) {
+  if (!section) return null;
+
+  const { image, alt } = section;
+
   return (
     <section className="relative overflow-hidden bg-[#f7f8fa] py-12 sm:py-14 md:py-16 lg:py-20">
       <Container className="relative">
@@ -16,23 +28,19 @@ export default function BakeryHowUpwonHelps() {
           transition={{ duration: 0.6, ease: EASE }}
           className="mx-auto max-w-4xl text-center"
         >
-          <Eyebrow className="justify-center">
-            HOW UPWON HELPS
-          </Eyebrow>
+          {section.eyebrow && (
+            <Eyebrow className="justify-center">{section.eyebrow}</Eyebrow>
+          )}
 
           <h2 className="mt-3 h-display text-[32px] leading-[1.1] tracking-tight text-navy-950 sm:text-[25px] md:text-[31px] lg:text-[36.8px]">
-            One Connected{' '}
-            <span className="gradient-text-orange">
-              Platform
-            </span>{' '}
-            for Your Bakery Operations
+            <HeadingLines lines={section.headingLines} />
           </h2>
 
-          <p className="mx-auto mt-4 max-w-3xl text-[15px] leading-relaxed text-navy-600 sm:text-base md:text-[17px]">
-            UpWon connects the key workflows behind your bakery and confectionery
-            business—so teams can move from reactive operations to better planned,
-            data-driven decisions.
-          </p>
+          {section.subtext && (
+            <p className="mx-auto mt-4 max-w-3xl text-[15px] leading-relaxed text-navy-600 sm:text-base md:text-[17px]">
+              {section.subtext}
+            </p>
+          )}
         </motion.div>
 
         {/* ================= FULL CONNECTED PLATFORM IMAGE ================= */}
@@ -48,8 +56,8 @@ export default function BakeryHowUpwonHelps() {
           className="mx-auto mt-8 w-full sm:mt-10 md:mt-12"
         >
           <img
-            src="/images/how_UpWon_helps.webp"
-            alt="UpWon connected platform for bakery operations"
+            src={image}
+            alt={alt}
             loading="lazy"
             decoding="async"
             className="block h-auto w-full"

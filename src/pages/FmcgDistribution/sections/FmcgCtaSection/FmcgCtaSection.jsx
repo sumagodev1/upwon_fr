@@ -1,56 +1,83 @@
 import { Link } from 'react-router-dom';
 import { m as motion } from 'framer-motion';
 import { ArrowRight, Boxes } from 'lucide-react';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
 
-const HEADING = (
-  <>
-    Ready to Bring More Control to Your{' '}
-    <span className="gradient-text-orange">
-      FMCG Distribution Operations?
-    </span>
-  </>
-);
+/**
+ * A button's link. Site paths stay client-side routes; the CMS also allows an
+ * absolute URL, which react-router's Link would treat as a relative path.
+ */
+function CtaLink({ to, children, ...rest }) {
+  if (/^https?:\/\//.test(to)) {
+    return (
+      <a href={to} target="_blank" rel="noopener noreferrer" {...rest}>
+        {children}
+      </a>
+    );
+  }
+  return (
+    <Link to={to} {...rest}>
+      {children}
+    </Link>
+  );
+}
 
-const SUBTEXT =
-  'Connect inventory, warehouses, orders, distributors, and business operations through one platform designed to support the speed and complexity of FMCG distribution.';
-
-function CtaButtons({ compact = false }) {
+function CtaButtons({ primary, secondary, compact = false }) {
   const height = compact ? 'min-h-[48px]' : 'min-h-[52px]';
   const width = compact ? 'w-full' : 'w-full sm:w-auto';
 
   return (
     <>
-      <Link
-        to="/contact"
+      <CtaLink
+        to={primary.href}
         className={`group inline-flex ${height} ${width} items-center justify-center gap-2 rounded-[9px] bg-orange-500 px-6 text-[14px] font-semibold text-white shadow-[0_12px_30px_rgba(232,90,42,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-orange-600 active:scale-[0.99]`}
       >
-        Request a Demo
+        {primary.label}
         <ArrowRight
           size={17}
           strokeWidth={2}
           className="transition-transform duration-300 group-hover:translate-x-1"
         />
-      </Link>
+      </CtaLink>
 
-      <Link
-        to="/what-is-upwon"
+      {secondary && (
+      <CtaLink
+        to={secondary.href}
         className={`group inline-flex ${height} ${width} items-center justify-center gap-2 rounded-[9px] border border-navy-950/20 bg-white/70 px-6 text-[14px] font-semibold text-navy-950 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-navy-950/35 hover:bg-white/90 active:scale-[0.99]`}
       >
         <Boxes size={19} strokeWidth={1.9} className="text-orange-500" />
-        Explore UpWon Solutions
+        {secondary.label}
         <ArrowRight
           size={17}
           strokeWidth={2}
           className="transition-transform duration-300 group-hover:translate-x-1"
         />
-      </Link>
+      </CtaLink>
+      )}
     </>
   );
 }
 
-export default function FmcgCtaSection() {
+/**
+ * CMS-only: the copy, artwork and buttons come from the CMS via the page. With
+ * no published band, or the API unreachable, the section renders nothing rather
+ * than falling back to built-in content.
+ *
+ * The phone banner uses the mobile crop when there is one and crops the
+ * desktop artwork otherwise; with no artwork at all the band keeps its tint.
+ *
+ * @param {{ section?: object | null }} props - the published band.
+ */
+export default function FmcgCtaSection({ section = null }) {
+  if (!section) return null;
+
+  const { desktopImage, primary, secondary } = section;
+  const mobileImage = section.mobileImage ?? desktopImage;
+  const heading = <HeadingLines lines={section.headingLines} />;
+  const buttons = { primary, secondary };
+
   return (
     <section className="relative w-full overflow-hidden bg-[#f7f8fa] px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
       {/* =========================================================
@@ -62,14 +89,16 @@ export default function FmcgCtaSection() {
         <div className="relative w-full md:min-h-[560px] lg:min-h-[620px]">
           {/* object-top keeps the crop off the bottom (floor and conveyor)
               rather than centring it, which was clipping the head. */}
-          <img
-            src="/images/fmcg_cta_sec.webp"
-            alt=""
-            aria-hidden="true"
-            loading="lazy"
-            decoding="async"
-            className="absolute inset-0 h-full w-full object-cover object-top"
-          />
+          {desktopImage && (
+            <img
+              src={desktopImage}
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-cover object-top"
+            />
+          )}
 
           <div className="relative flex min-h-[560px] w-full items-center px-6 sm:px-8 md:px-10 lg:min-h-[620px] lg:px-12">
             <motion.div
@@ -86,18 +115,20 @@ export default function FmcgCtaSection() {
                 transition={{ duration: 0.65, delay: 0.05, ease: EASE }}
                 className="h-display text-[28px] leading-[1.1] tracking-tight text-navy-950 lg:text-[33px] xl:text-[36.8px]"
               >
-                {HEADING}
+                {heading}
               </motion.h2>
 
-              <motion.p
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.1, ease: EASE }}
-                className="mt-4 max-w-[560px] text-[14px] leading-relaxed text-navy-600 lg:text-[15px] xl:text-base"
-              >
-                {SUBTEXT}
-              </motion.p>
+              {section.subtext && (
+                <motion.p
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.1, ease: EASE }}
+                  className="mt-4 max-w-[560px] text-[14px] leading-relaxed text-navy-600 lg:text-[15px] xl:text-base"
+                >
+                  {section.subtext}
+                </motion.p>
+              )}
 
               <motion.div
                 initial={{ opacity: 0, y: 18 }}
@@ -106,7 +137,7 @@ export default function FmcgCtaSection() {
                 transition={{ duration: 0.6, delay: 0.16, ease: EASE }}
                 className="mt-7 flex w-full flex-col items-start gap-3 sm:w-auto sm:flex-row"
               >
-                <CtaButtons />
+                <CtaButtons {...buttons} />
               </motion.div>
             </motion.div>
           </div>
@@ -114,21 +145,23 @@ export default function FmcgCtaSection() {
       </div>
 
       {/* =========================================================
-          MOBILE CTA — no mobile artwork exists, so the photographed
-          right-hand side is cropped into a banner and the copy runs
-          underneath on a matching tint.
+          MOBILE CTA — the mobile crop when one is set, otherwise the
+          photographed right-hand side of the desktop artwork is cropped
+          into a banner, and the copy runs underneath on a matching tint.
       ========================================================= */}
       <div className="block w-full overflow-hidden rounded-[18px] md:hidden">
-        <div className="relative h-[230px] w-full overflow-hidden">
-          <img
-            src="/images/fmcg_cta_sec.webp"
-            alt=""
-            aria-hidden="true"
-            loading="lazy"
-            decoding="async"
-            className="h-full w-full object-cover object-right"
-          />
-        </div>
+        {mobileImage && (
+          <div className="relative h-[230px] w-full overflow-hidden">
+            <img
+              src={mobileImage}
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover object-right"
+            />
+          </div>
+        )}
 
         <div className="relative z-10 w-full bg-[#faf9f6] px-6 pb-9 pt-7 text-left">
           <motion.h2
@@ -138,18 +171,20 @@ export default function FmcgCtaSection() {
             transition={{ duration: 0.6, ease: EASE }}
             className="h-display w-full text-[27px] leading-[1.1] tracking-tight text-navy-950"
           >
-            {HEADING}
+            {heading}
           </motion.h2>
 
-          <motion.p
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.55, delay: 0.08, ease: EASE }}
-            className="mt-3 w-full text-[14.5px] leading-relaxed text-navy-600"
-          >
-            {SUBTEXT}
-          </motion.p>
+          {section.subtext && (
+            <motion.p
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.55, delay: 0.08, ease: EASE }}
+              className="mt-3 w-full text-[14.5px] leading-relaxed text-navy-600"
+            >
+              {section.subtext}
+            </motion.p>
+          )}
 
           <motion.div
             initial={{ opacity: 0, y: 15 }}
@@ -158,7 +193,7 @@ export default function FmcgCtaSection() {
             transition={{ duration: 0.55, delay: 0.14, ease: EASE }}
             className="mt-6 flex w-full flex-col gap-2.5"
           >
-            <CtaButtons compact />
+            <CtaButtons {...buttons} compact />
           </motion.div>
         </div>
       </div>

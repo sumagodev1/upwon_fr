@@ -1,56 +1,68 @@
 import { Link } from 'react-router-dom';
-import {
-    ArrowRight,
-    BarChart3,
-    Boxes,
-    ShoppingCart,
-    Settings,
-} from 'lucide-react';
+import { ArrowRight, Boxes } from 'lucide-react';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { erpIcon } from '../../../../lib/erpIcons.js';
 
-const CTA_FEATURES = [
-    {
-        icon: ShoppingCart,
-        label: 'Streamline',
-        subLabel: 'Procurement',
-    },
-    {
-        icon: Boxes,
-        label: 'Manage',
-        subLabel: 'Inventory',
-    },
-    {
-        icon: Settings,
-        label: 'Plan',
-        subLabel: 'Production',
-    },
-    {
-        icon: BarChart3,
-        label: 'Make Better',
-        subLabel: 'Decisions',
-    },
-];
+/**
+ * A button's link. Site paths stay client-side routes; the CMS also allows an
+ * absolute URL, which react-router's Link would treat as a relative path.
+ */
+function CtaLink({ to, children, ...rest }) {
+    if (/^https?:\/\//.test(to)) {
+        return (
+            <a href={to} target="_blank" rel="noopener noreferrer" {...rest}>
+                {children}
+            </a>
+        );
+    }
+    return (
+        <Link to={to} {...rest}>
+            {children}
+        </Link>
+    );
+}
 
-export default function BakeryCtaSection() {
+/**
+ * CMS-only: the copy, artwork, buttons and marks come from the CMS via the
+ * page. With no published band, or the API unreachable, the section renders
+ * nothing rather than falling back to built-in content. Artwork is optional -
+ * without it the band keeps its light ground.
+ *
+ * @param {{ section?: object | null }} props - the published band.
+ */
+export default function BakeryCtaSection({ section = null }) {
+    if (!section) return null;
+
+    const { desktopImage, mobileImage, primary, secondary } = section;
+    const features = section.features.map((feature) => ({
+        ...feature,
+        icon: erpIcon(feature.icon),
+    }));
+
     return (
         <section className="relative w-full overflow-hidden bg-[#f7f7f5] py-4 sm:py-6 lg:py-8">
             {/* Full Width CTA */}
             <div className="relative mx-auto w-full max-w-[1800px] overflow-hidden rounded-[18px] border border-orange-200/60">
                 
                 {/* ================= BACKGROUND IMAGES ================= */}
+                {(desktopImage || mobileImage) && (
                 <picture className="absolute inset-0 block h-full w-full">
                     {/* Mobile Image */}
-                    <source
-                        media="(max-width: 767px)"
-                        srcSet="/images/bake_mb_cta.webp"
-                    />
+                    {mobileImage && desktopImage && (
+                        <source
+                            media="(max-width: 767px)"
+                            srcSet={mobileImage}
+                        />
+                    )}
 
                     {/* Desktop Image */}
                     <img
-                        src="/images/bake_cta_back.webp"
+                        src={desktopImage ?? mobileImage}
                         alt="UpWon bakery operations platform"
                         className="h-full w-full object-cover object-center"
                     />
                 </picture>
+                )}
 
                 {/* ================= MOBILE OVERLAY ================= */}
                 {/* Stronger overlay on mobile for text readability */}
@@ -68,29 +80,23 @@ export default function BakeryCtaSection() {
                         
                         {/* Heading */}
                         <h2 className="h-display text-[32px] leading-[1.1] tracking-tight text-navy-950 sm:text-[38px] md:text-[31px] lg:text-[36.8px]">
-                            Ready to Bring More{' '}
-                            <span className="block gradient-text-orange">
-                                Control to Your
-                            </span>
-                            <span className="block gradient-text-orange">
-                                Bakery Operations?
-                            </span>
+                            <HeadingLines lines={section.headingLines} />
                         </h2>
 
                         {/* Description */}
-                        <p className="mt-5 max-w-[590px] text-[15px] leading-[1.7] text-[#4d596b] sm:text-[16px] md:text-[17px]">
-                            Connect procurement, inventory, production, and business
-                            operations with a system designed to support growing bakery
-                            and confectionery businesses.
-                        </p>
+                        {section.subtext && (
+                            <p className="mt-5 max-w-[590px] text-[15px] leading-[1.7] text-[#4d596b] sm:text-[16px] md:text-[17px]">
+                                {section.subtext}
+                            </p>
+                        )}
 
                         {/* CTA Buttons */}
                         <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                            <Link
-                                to="/contact"
+                            <CtaLink
+                                to={primary.href}
                                 className="group inline-flex min-h-[54px] items-center justify-center gap-4 rounded-[13px] bg-[#f4510b] px-6 text-[15px] font-semibold text-white shadow-[0_12px_25px_rgba(244,81,11,0.22)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#df4306]"
                             >
-                                Request a Demo
+                                {primary.label}
 
                                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 transition-transform duration-300 group-hover:translate-x-1">
                                     <ArrowRight
@@ -98,10 +104,11 @@ export default function BakeryCtaSection() {
                                         strokeWidth={2.5}
                                     />
                                 </span>
-                            </Link>
+                            </CtaLink>
 
-                            <Link
-                                to="/what-is-upwon"
+                            {secondary && (
+                            <CtaLink
+                                to={secondary.href}
                                 className="group inline-flex min-h-[54px] items-center justify-center gap-3 rounded-[13px] border border-[#d8d0c7] bg-white/70 px-6 text-[15px] font-semibold text-[#303949] backdrop-blur-sm transition duration-300 hover:border-[#e85d24]/40 hover:bg-white/90"
                             >
                                 <Boxes
@@ -110,26 +117,28 @@ export default function BakeryCtaSection() {
                                     strokeWidth={1.9}
                                 />
 
-                                Explore UpWon Solutions
+                                {secondary.label}
 
                                 <ArrowRight
                                     size={18}
                                     className="transition-transform duration-300 group-hover:translate-x-1"
                                     strokeWidth={2}
                                 />
-                            </Link>
+                            </CtaLink>
+                            )}
                         </div>
 
                         {/* ================= BOTTOM FEATURES ================= */}
+                        {features.length > 0 && (
                         <div className="mt-8 grid max-w-[650px] grid-cols-2 border-t border-[#d9d1c9]/80 pt-6 sm:grid-cols-4">
-                            {CTA_FEATURES.map((feature, index) => {
+                            {features.map((feature, index) => {
                                 const Icon = feature.icon;
 
                                 return (
                                     <div
                                         key={feature.label}
                                         className={`flex flex-col items-center px-2 py-2 text-center sm:px-3 ${
-                                            index !== CTA_FEATURES.length - 1
+                                            index !== features.length - 1
                                                 ? 'sm:border-r sm:border-[#d9d1c9]/80'
                                                 : ''
                                         }`}
@@ -152,6 +161,7 @@ export default function BakeryCtaSection() {
                                 );
                             })}
                         </div>
+                        )}
                     </div>
                 </div>
             </div>

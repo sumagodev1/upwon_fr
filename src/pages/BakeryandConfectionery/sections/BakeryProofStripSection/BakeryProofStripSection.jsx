@@ -1,66 +1,23 @@
 import { m as motion } from 'framer-motion';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
 
-const STATS = [
-  {
-    value: '25,000+',
-    label: 'Invoices processed daily',
-    icon: '/images/bakery_invoice.webp',
-  },
-  {
-    value: '18,000+',
-    label: 'Orders fulfilled daily',
-    icon: '/images/bakery_orders.webp',
-  },
-  {
-    value: '2.5 Cr+',
-    label: 'Products managed',
-    icon: '/images/bakery_product_managed.webp',
-    featured: true,
-  },
-  {
-    value: '650+',
-    label: 'Bakeries & outlets',
-    icon: '/images/bakery_outlet.webp',
-  },
-  {
-    value: '45+',
-    label: 'Cities served',
-    icon: '/images/bakery_served.webp',
-  },
-];
+/**
+ * CMS-only: the copy, logos and figures all come from the CMS via the page.
+ * With nothing published - or the API unreachable - the section renders
+ * nothing rather than falling back to built-in content.
+ *
+ * @param {{ section?: object | null }} props - the published trust section.
+ */
+export default function BakeryProofStripSection({ section = null }) {
+  if (!section) return null;
 
-const TRUSTED_BRANDS = [
-  {
-    name: 'Winni',
-    image: '/images/testimonial/winni.webp',
-  },
-  {
-    name: 'U2 Cake',
-    image: '/images/testimonial/u2cake.webp',
-  },
-  {
-    name: 'OFC',
-    image: '/images/testimonial/ofc.webp',
-  },
-  {
-    name: 'Monginis',
-    image: '/images/testimonial/mongignis.webp',
-  },
-  {
-    name: 'Kaka Halwai',
-    image: '/images/testimonial/kaka halwai.webp',
-  },
-  {
-    name: 'Gokul',
-    image: '/images/testimonial/gokul.webp',
-  },
-];
+  const brands = section.logos;
+  const stats = section.stats;
 
-export default function BakeryProofStripSection() {
   return (
     <section className="relative overflow-hidden bg-[#fffaf4] py-14 md:py-20">
       {/* ================= BACKGROUND BAKERY ILLUSTRATION ================= */}
@@ -86,25 +43,22 @@ export default function BakeryProofStripSection() {
           className="mx-auto max-w-4xl text-center"
         >
           <div className="flex items-center justify-center gap-3">
-            <Eyebrow>
-              TRUSTED BY BAKERS ACROSS INDIA
-            </Eyebrow>
+            {section.eyebrow && <Eyebrow>{section.eyebrow}</Eyebrow>}
           </div>
 
           <h2 className="mt-4 h-display text-3xl font-semibold leading-tight text-navy-950 sm:text-4xl">
-            Powering Growth for{' '}
-            <span className="gradient-text-orange">
-              Bakery & Confectionery Businesses
-            </span>
+            <HeadingLines lines={section.headingLines} />
           </h2>
 
-          <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-navy-600 md:text-base">
-            From artisan bakeries to large multi-location brands, thousands trust
-            UpWon to run their operations every day.
-          </p>
+          {section.subtext && (
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-navy-600 md:text-base">
+              {section.subtext}
+            </p>
+          )}
         </motion.div>
 
         {/* ================= TRUSTED BRANDS ================= */}
+        {brands.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -113,7 +67,7 @@ export default function BakeryProofStripSection() {
           className="mx-auto mt-8 max-w-6xl"
         >
           <div className="grid grid-cols-2 overflow-hidden rounded-[22px] border border-[#eadfd3] bg-white/75 shadow-[0_12px_35px_rgba(100,65,35,0.07)] backdrop-blur-sm sm:grid-cols-3 lg:grid-cols-6">
-            {TRUSTED_BRANDS.map((brand, index) => (
+            {brands.map((brand, index) => (
               <motion.div
                 key={brand.name}
                 initial={{ opacity: 0, scale: 0.96 }}
@@ -125,7 +79,7 @@ export default function BakeryProofStripSection() {
                   delay: index * 0.06,
                 }}
                 className={`flex min-h-[88px] items-center justify-center px-4 ${
-                  index !== TRUSTED_BRANDS.length - 1
+                  index !== brands.length - 1
                     ? 'border-[#eadfd3] lg:border-r'
                     : ''
                 }`}
@@ -141,8 +95,10 @@ export default function BakeryProofStripSection() {
             ))}
           </div>
         </motion.div>
+        )}
 
         {/* ================= BAKERY STATS ================= */}
+        {stats.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -150,7 +106,7 @@ export default function BakeryProofStripSection() {
           transition={{ duration: 0.6, ease: EASE, delay: 0.12 }}
           className="mx-auto mt-7 grid max-w-6xl grid-cols-1 overflow-hidden rounded-[22px] border border-[#eadfd3] bg-white/80 shadow-[0_14px_40px_rgba(100,65,35,0.08)] backdrop-blur-sm sm:grid-cols-2 lg:grid-cols-5"
         >
-          {STATS.map((stat, index) => (
+          {stats.map((stat, index) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, y: 16 }}
@@ -162,20 +118,22 @@ export default function BakeryProofStripSection() {
                 delay: index * 0.08,
               }}
               className={`relative flex min-h-[190px] flex-col items-center justify-center px-5 py-7 text-center ${
-                index !== STATS.length - 1
+                index !== stats.length - 1
                   ? 'border-b border-[#eadfd3] lg:border-b-0 lg:border-r'
                   : ''
               } ${stat.featured ? 'bg-[#fffdf9]' : ''}`}
             >
               {/* ================= ICON ================= */}
-              <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full">
-                <img
-                  src={stat.icon}
-                  alt=""
-                  aria-hidden="true"
-                  className="h-full w-full object-cover"
-                />
-              </div>
+              {stat.icon && (
+                <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full">
+                  <img
+                    src={stat.icon}
+                    alt=""
+                    aria-hidden="true"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              )}
 
               {/* ================= VALUE ================= */}
               <div className="mt-4">
@@ -198,6 +156,7 @@ export default function BakeryProofStripSection() {
             </motion.div>
           ))}
         </motion.div>
+        )}
 
         {/* ================= BOTTOM MESSAGE ================= */}
         {/*

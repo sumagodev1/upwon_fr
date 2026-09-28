@@ -1,40 +1,11 @@
 import { m as motion, useReducedMotion } from 'framer-motion';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
 
 const VIEWPORT = { once: true, amount: 0.2 };
-
-const CLIENTS = [
-  { name: 'Winni', src: '/images/testimonial/winni.webp' },
-  { name: 'U2 Cake', src: '/images/testimonial/u2cake.webp' },
-  { name: 'OFC', src: '/images/testimonial/ofc.webp' },
-  { name: 'Monginis', src: '/images/testimonial/mongignis.webp' },
-  { name: 'Kaka Halwai', src: '/images/testimonial/kaka halwai.webp' },
-  { name: 'Gokul', src: '/images/testimonial/gokul.webp' },
-];
-
-const STATS = [
-  {
-    value: '40%',
-    label: 'faster order processing',
-    description:
-      'Move orders from creation to fulfillment through structured workflows instead of manual follow-up.',
-  },
-  {
-    value: '50–80%',
-    label: 'operational leakage cut',
-    description:
-      'Close the gaps across schemes, claims and stock movement that quietly erode margin.',
-  },
-  {
-    value: '40%',
-    label: 'higher distributor fill rates',
-    description:
-      'Keep distributor stock replenished with clearer visibility into demand across the channel.',
-  },
-];
 
 function ClientLogo({ client }) {
   return (
@@ -50,8 +21,20 @@ function ClientLogo({ client }) {
   );
 }
 
-export default function FmcgProofStripSection() {
+/**
+ * CMS-only: the copy, the logo marquee and the figures come from the CMS via
+ * the page. With nothing published - or the API unreachable - the section
+ * renders nothing rather than falling back to built-in content.
+ *
+ * @param {{ section?: object | null }} props - the published trust section.
+ */
+export default function FmcgProofStripSection({ section = null }) {
   const reduceMotion = useReducedMotion();
+
+  if (!section) return null;
+
+  const clients = section.logos;
+  const stats = section.stats;
 
   const fadeIn = {
     hidden: { opacity: 0 },
@@ -79,36 +62,34 @@ export default function FmcgProofStripSection() {
           }}
           className="mx-auto max-w-3xl text-center"
         >
-          <motion.div variants={fadeIn}>
-            <Eyebrow className="justify-center">
-              TRUSTED ACROSS FMCG DISTRIBUTION
-            </Eyebrow>
-          </motion.div>
+          {section.eyebrow && (
+            <motion.div variants={fadeIn}>
+              <Eyebrow className="justify-center">{section.eyebrow}</Eyebrow>
+            </motion.div>
+          )}
 
           <motion.h2
             variants={fadeUp}
             className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]"
           >
-            Powering Growth for{' '}
-            <span className="gradient-text-orange">
-              FMCG Distribution Businesses
-            </span>
+            <HeadingLines lines={section.headingLines} />
           </motion.h2>
 
-          <motion.p
-            variants={fadeUp}
-            className="mx-auto mt-4 max-w-2xl text-[14.5px] leading-relaxed text-navy-600 sm:text-base"
-          >
-            From regional distributors to multi-location FMCG brands, teams use
-            UpWon to keep inventory, orders, and channel operations moving every
-            day.
-          </motion.p>
+          {section.subtext && (
+            <motion.p
+              variants={fadeUp}
+              className="mx-auto mt-4 max-w-2xl text-[14.5px] leading-relaxed text-navy-600 sm:text-base"
+            >
+              {section.subtext}
+            </motion.p>
+          )}
         </motion.div>
       </Container>
 
       {/* ================= CLIENT MARQUEE ================= */}
       {/* The track holds two identical copies and animate-ticker shifts it
           -50%, so the loop is seamless. The second copy is decorative. */}
+      {clients.length > 0 && (
       <Container className="relative mt-8 sm:mt-10">
         <motion.div
           initial={{ opacity: 0 }}
@@ -124,20 +105,22 @@ export default function FmcgProofStripSection() {
                 : 'animate-ticker [animation-duration:38s] hover:[animation-play-state:paused]'
             }`}
           >
-            {CLIENTS.map((client) => (
-              <ClientLogo key={client.name} client={client} />
+            {clients.map((client, index) => (
+              <ClientLogo key={`${client.name}-${index}`} client={client} />
             ))}
 
             <div className="flex items-center gap-10 md:gap-16" aria-hidden="true">
-              {CLIENTS.map((client) => (
-                <ClientLogo key={`dup-${client.name}`} client={client} />
+              {clients.map((client, index) => (
+                <ClientLogo key={`dup-${client.name}-${index}`} client={client} />
               ))}
             </div>
           </div>
         </motion.div>
       </Container>
+      )}
 
       {/* ================= PROOF NUMBERS ================= */}
+      {stats.length > 0 && (
       <Container className="relative mt-10 sm:mt-14 lg:mt-16">
         <motion.div
           initial="hidden"
@@ -151,9 +134,9 @@ export default function FmcgProofStripSection() {
           }}
           className="mx-auto grid max-w-6xl gap-8 sm:grid-cols-3 sm:gap-10 lg:gap-14"
         >
-          {STATS.map(({ value, label, description }) => (
+          {stats.map(({ value, label, description }, index) => (
             <motion.div
-              key={label}
+              key={`${label}-${index}`}
               variants={{
                 hidden: { opacity: 0, y: reduceMotion ? 0 : 18 },
                 visible: {
@@ -179,6 +162,7 @@ export default function FmcgProofStripSection() {
           ))}
         </motion.div>
       </Container>
+      )}
     </section>
   );
 }

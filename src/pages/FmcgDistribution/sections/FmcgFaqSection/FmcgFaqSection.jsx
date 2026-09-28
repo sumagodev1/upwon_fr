@@ -3,6 +3,7 @@ import { m as motion, AnimatePresence } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 /*
   FMCG distribution "FAQ" — the practical questions distribution and
@@ -11,35 +12,19 @@ import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
 
-const FAQS = [
-  {
-    q: 'Can UpWon handle stock across multiple warehouses, branches and distribution points?',
-    a: 'Yes. Inventory is managed across warehouses, distribution centers, branches and other storage locations in one system, so teams can see product availability and stock movement per location rather than reconciling separate registers. Stock transfers, inward and outward movements, and returns are tracked across the network.',
-  },
-  {
-    q: 'How does batch and expiry tracking work for fast-moving products?',
-    a: 'Products can be tracked at batch level through the distribution cycle, with visibility into expiry-sensitive inventory. That helps teams prioritise the right stock for dispatch, spot ageing inventory earlier, and reduce avoidable losses instead of discovering issues at the point of delivery.',
-  },
-  {
-    q: 'We work through distributors and retailers. Does the platform cover that?',
-    a: 'Yes. Distributor and channel operations connect to the same system as your internal workflows, so orders, stock movement and transactions across the channel stay visible to your team rather than sitting in separate spreadsheets or email threads.',
-  },
-  {
-    q: 'Do we have to move every workflow across at once?',
-    a: 'No. Most teams start with the area causing the most friction — commonly inventory visibility or order fulfillment — and connect procurement, warehousing, distribution and reporting as they go. Because the workflows share one platform, data built up in the first phase carries into the next.',
-  },
-  {
-    q: 'Can it connect with the systems we already run?',
-    a: 'Yes. UpWon can operate alongside your existing environment and connect through APIs and integration workflows for master data, orders, inventory and transactions, so adopting it does not require replacing everything you already have in place.',
-  },
-  {
-    q: 'What visibility do managers get without asking the team for reports?',
-    a: 'Dashboards and reports cover inventory, orders, warehouse movement, sales activity and overall distribution performance. The intent is that operational questions can be answered from the system directly, rather than through a manual consolidation exercise at the end of every week or month.',
-  },
-];
-
-export default function FmcgFaqSection() {
+/**
+ * CMS-only: the copy and questions come from the CMS via the page. With no
+ * published questions, or the API unreachable, the section renders nothing
+ * rather than falling back to built-in content.
+ *
+ * @param {{ section?: object | null }} props - the published copy and questions.
+ */
+export default function FmcgFaqSection({ section = null }) {
   const [openIndex, setOpenIndex] = useState(0);
+
+  if (!section) return null;
+
+  const { faqs } = section;
 
   return (
     <section className="relative overflow-hidden bg-cream-100 py-12 md:py-16">
@@ -54,22 +39,22 @@ export default function FmcgFaqSection() {
           transition={{ duration: 0.6, ease: EASE }}
           className="mx-auto max-w-3xl text-center"
         >
-          <Eyebrow className="justify-center">FAQ</Eyebrow>
+          {section.eyebrow && <Eyebrow className="justify-center">{section.eyebrow}</Eyebrow>}
 
           <h2 className="mt-3 h-display text-[30px] leading-[1.1] tracking-tight text-navy-950 sm:text-[34px] lg:text-[36.8px]">
-            Questions Distribution Teams{' '}
-            <span className="gradient-text-orange">Ask Before They Switch.</span>
+            <HeadingLines lines={section.headingLines} />
           </h2>
 
-          <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base">
-            Practical answers to what FMCG distribution teams want to know before
-            moving inventory, orders and channel operations onto one platform.
-          </p>
+          {section.subtext && (
+            <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base">
+              {section.subtext}
+            </p>
+          )}
         </motion.div>
 
         {/* ================= ACCORDION ================= */}
         <div className="mx-auto mt-10 max-w-3xl divide-y divide-cream-300 rounded-2xl border border-cream-300 bg-white shadow-sm md:mt-12">
-          {FAQS.map((faq, index) => (
+          {faqs.map((faq, index) => (
             <div key={faq.q}>
               <button
                 type="button"

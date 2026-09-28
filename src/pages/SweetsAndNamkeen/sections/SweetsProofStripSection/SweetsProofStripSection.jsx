@@ -1,29 +1,12 @@
 import { m as motion, useReducedMotion } from 'framer-motion';
-import { Store, ShoppingCart, Candy, Building2, Truck, Users } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { sweetsIcon } from '../../../../lib/sweetsIcons.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
 const VIEWPORT = { once: true, amount: 0.15 };
-
-const CLIENTS = [
-  { name: 'Kaka Halwai', src: '/images/testimonial/kaka%20halwai.webp' },
-  { name: 'Gokul', src: '/images/testimonial/gokul.webp' },
-  { name: 'Winni', src: '/images/testimonial/winni.webp' },
-  { name: 'Monginis', src: '/images/testimonial/mongignis.webp' },
-  { name: 'U2 Cake', src: '/images/testimonial/u2cake.webp' },
-  { name: 'OFC', src: '/images/testimonial/ofc.webp' },
-];
-
-const STATS = [
-  { value: '25,000+', label: 'Sweet & Namkeen Businesses', Icon: Store },
-  { value: '18,000+', label: 'Outlets Managed', Icon: ShoppingCart },
-  { value: '2.5 Cr+', label: 'Products Tracked Every Day', Icon: Candy },
-  { value: '650+', label: 'Manufacturing Units', Icon: Building2 },
-  { value: '45+', label: 'Cities Across India', Icon: Truck },
-  { value: '3 Lakh+', label: 'Users Trust UpWon', Icon: Users },
-];
 
 function ClientLogo({ client }) {
   return (
@@ -39,7 +22,14 @@ function ClientLogo({ client }) {
   );
 }
 
-export default function SweetsProofStripSection() {
+/**
+ * CMS-only: the copy, the logo marquee and the figures come from the CMS via
+ * the page. With nothing published - or the API unreachable - the section
+ * renders nothing rather than falling back to built-in content.
+ *
+ * @param {{ section?: object | null }} props - the published trust section.
+ */
+export default function SweetsProofStripSection({ section = null }) {
   const reduceMotion = useReducedMotion();
 
   const d = (value) => (reduceMotion ? 0 : value);
@@ -76,6 +66,11 @@ export default function SweetsProofStripSection() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } },
   };
 
+  if (!section) return null;
+
+  const clients = section.logos;
+  const stats = section.stats;
+
   return (
     <section className="relative overflow-hidden bg-[#fdf4ea] py-12 sm:py-16 lg:py-20">
       {/* ================= BACKGROUND ================= */}
@@ -102,35 +97,34 @@ export default function SweetsProofStripSection() {
           viewport={VIEWPORT}
           className="mx-auto max-w-4xl text-center"
         >
-          <motion.div variants={fadeIn}>
-            <Eyebrow className="justify-center">
-              TRUSTED BY SWEET &amp; NAMKEEN BUSINESSES ACROSS INDIA
-            </Eyebrow>
-          </motion.div>
+          {section.eyebrow && (
+            <motion.div variants={fadeIn}>
+              <Eyebrow className="justify-center">{section.eyebrow}</Eyebrow>
+            </motion.div>
+          )}
 
           <motion.h2
             variants={fadeUp}
             className="mt-4 h-display text-[30px] leading-[1.1] tracking-tight text-navy-950 sm:text-[34px] lg:text-[36.8px]"
           >
-            Powering Growth for{' '}
-            <span className="gradient-text-orange">
-              Sweet &amp; Namkeen Businesses
-            </span>
+            <HeadingLines lines={section.headingLines} />
           </motion.h2>
 
 
-          <motion.p
-            variants={fadeUp}
-            className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
-          >
-            From traditional sweet shops to leading snack brands and multi-outlet
-            chains, UpWon helps you run every operation, every day.
-          </motion.p>
+          {section.subtext && (
+            <motion.p
+              variants={fadeUp}
+              className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
+            >
+              {section.subtext}
+            </motion.p>
+          )}
         </motion.div>
 
         {/* ================= CLIENT MARQUEE ================= */}
         {/* Two identical copies with animate-ticker shifting the track -50%,
             so the loop is seamless. The second copy is decorative. */}
+        {clients.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: d(18) }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -146,23 +140,25 @@ export default function SweetsProofStripSection() {
                   : 'animate-ticker [animation-duration:38s] hover:[animation-play-state:paused]'
               }`}
             >
-              {CLIENTS.map((client) => (
-                <ClientLogo key={client.name} client={client} />
+              {clients.map((client, index) => (
+                <ClientLogo key={`${client.name}-${index}`} client={client} />
               ))}
 
               <div
                 className="flex items-center gap-10 md:gap-16"
                 aria-hidden="true"
               >
-                {CLIENTS.map((client) => (
-                  <ClientLogo key={`dup-${client.name}`} client={client} />
+                {clients.map((client, index) => (
+                  <ClientLogo key={`dup-${client.name}-${index}`} client={client} />
                 ))}
               </div>
             </div>
           </div>
         </motion.div>
+        )}
 
         {/* ================= STATS ================= */}
+        {stats.length > 0 && (
         <motion.div
           variants={statsGroup}
           initial="hidden"
@@ -170,12 +166,14 @@ export default function SweetsProofStripSection() {
           viewport={VIEWPORT}
           className="mx-auto mt-5 grid max-w-6xl grid-cols-2 overflow-hidden rounded-[22px] border border-[#f0dfcc] bg-white/80 shadow-[0_14px_40px_rgba(120,70,35,0.08)] backdrop-blur-sm sm:mt-6 sm:grid-cols-3 lg:grid-cols-6"
         >
-          {STATS.map(({ value, label, Icon }, index) => (
+          {stats.map(({ value, label, icon }, index) => {
+            const Icon = sweetsIcon(icon);
+            return (
             <motion.div
-              key={label}
+              key={`${label}-${index}`}
               variants={statVariants}
               className={`flex flex-col items-center px-3 py-7 text-center sm:px-4 ${
-                index !== STATS.length - 1
+                index !== stats.length - 1
                   ? 'border-b border-[#f2e5d6] sm:border-b-0 lg:border-r'
                   : ''
               }`}
@@ -193,8 +191,10 @@ export default function SweetsProofStripSection() {
               </p>
 
             </motion.div>
-          ))}
+            );
+          })}
         </motion.div>
+        )}
       </Container>
     </section>
   );

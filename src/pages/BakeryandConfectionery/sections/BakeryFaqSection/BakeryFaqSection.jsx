@@ -3,6 +3,7 @@ import { m as motion, AnimatePresence } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 /*
   Bakery & Confectionery "FAQ" — the practical questions bakery owners and
@@ -11,35 +12,19 @@ import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
 
-const FAQS = [
-  {
-    q: 'Can we see what a product actually costs when ingredient prices keep moving?',
-    a: 'Yes. Recipes and formulations are held in the system with their ingredient quantities, so when purchase rates for inputs like sugar, maida or ghee change, the cost impact can be seen against the products that use them. Ingredient substitutions can be modelled the same way, rather than reworking costing sheets by hand.',
-  },
-  {
-    q: 'How does the platform help reduce daily wastage?',
-    a: 'Shelf life and expiry are tracked at batch level with FEFO dispatch, so older stock moves first and ageing inventory is visible before it becomes a write-off. Production, dispatch and outlet stock sit in the same system, which makes it easier to see where wastage is actually occurring instead of discovering it at month-end.',
-  },
-  {
-    q: 'Our custom cake orders come in over calls and WhatsApp. Can those be managed here?',
-    a: 'Yes. Custom and special orders can be recorded as structured orders with their delivery date, specification and outlet, so they carry through to production planning and dispatch. The intent is that an order stops living only in a chat thread where it can be missed or entered twice.',
-  },
-  {
-    q: 'How do we keep quality consistent across multiple outlets?',
-    a: 'Recipes are versioned with controlled access, and central-kitchen to outlet flows are managed in one place. Combined with batch-level traceability, that gives you a record of what was produced where and to which version of the recipe — which is also what a food-safety recall needs.',
-  },
-  {
-    q: 'What happens during festival and wedding-season peaks?',
-    a: 'Production and procurement planning work from your own sales and inventory history rather than memory, so seasonal ramps can be planned ahead. Peaks will always be demanding, but the aim is to enter them with visibility into what needs to be produced, packed and stocked at each outlet.',
-  },
-  {
-    q: 'Do we have to replace our existing billing or accounting system to start?',
-    a: 'No. Most bakeries start with the area causing the most friction — commonly inventory, production planning or outlet coordination — and connect the rest as they go. UpWon can operate alongside your current environment and connect through APIs and integration workflows for master data, orders and transactions.',
-  },
-];
-
-export default function BakeryFaqSection() {
+/**
+ * CMS-only: the copy and questions come from the CMS via the page. With no
+ * published questions, or the API unreachable, the section renders nothing
+ * rather than falling back to built-in content.
+ *
+ * @param {{ section?: object | null }} props - the published copy and questions.
+ */
+export default function BakeryFaqSection({ section = null }) {
   const [openIndex, setOpenIndex] = useState(0);
+
+  if (!section) return null;
+
+  const { faqs } = section;
 
   return (
     <section className="relative overflow-hidden bg-cream-100 py-12 md:py-16">
@@ -54,23 +39,22 @@ export default function BakeryFaqSection() {
           transition={{ duration: 0.6, ease: EASE }}
           className="mx-auto max-w-3xl text-center"
         >
-          <Eyebrow className="justify-center">FAQ</Eyebrow>
+          {section.eyebrow && <Eyebrow className="justify-center">{section.eyebrow}</Eyebrow>}
 
           <h2 className="mt-3 h-display text-[30px] leading-[1.1] tracking-tight text-navy-950 sm:text-[34px] lg:text-[36.8px]">
-            Questions Bakery Owners{' '}
-            <span className="gradient-text-orange">Ask Before They Switch.</span>
+            <HeadingLines lines={section.headingLines} />
           </h2>
 
-          <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base">
-            Practical answers to what bakery and confectionery teams want to know
-            before moving production, inventory and outlet operations onto one
-            platform.
-          </p>
+          {section.subtext && (
+            <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base">
+              {section.subtext}
+            </p>
+          )}
         </motion.div>
 
         {/* ================= ACCORDION ================= */}
         <div className="mx-auto mt-10 max-w-3xl divide-y divide-cream-300 rounded-2xl border border-cream-300 bg-white shadow-sm md:mt-12">
-          {FAQS.map((faq, index) => (
+          {faqs.map((faq, index) => (
             <div key={faq.q}>
               <button
                 type="button"

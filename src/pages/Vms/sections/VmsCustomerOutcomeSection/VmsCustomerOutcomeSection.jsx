@@ -616,7 +616,7 @@ function VideoCard({ video, isActive, onClick }) {
                     This prevents all 3 videos from playing simultaneously.
                 ========================================================= */}
                 <video
-                    src={activeVideo.src || VIDEO_SRC}
+                    src={video.src || VIDEO_SRC}
                     muted
                     playsInline
                     preload="metadata"

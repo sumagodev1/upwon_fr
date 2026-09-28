@@ -7,57 +7,11 @@ import {
 } from 'framer-motion';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
 
 const VIEWPORT = { once: true, amount: 0.2 };
-
-const CATEGORIES = [
-  { label: 'Milk Processing', photo: '/images/ind_cov_milk_process.webp' },
-  { label: 'Flavoured Milk', photo: '/images/ind_cov_flavered_milk.webp' },
-  {
-    label: 'Yogurt & Cultured Products',
-    photo: '/images/ind_cov_yogert.webp',
-  },
-  { label: 'Cheese & Paneer', photo: '/images/ind_cov_cheese_paneer.webp' },
-  { label: 'Butter & Ghee', photo: '/images/ind_cov_butter_ghee.webp' },
-  {
-    label: 'Cream & Dairy Ingredients',
-    photo: '/images/ind_cov_cream_dairy.webp',
-  },
-  {
-    label: 'Ice Cream Manufacturing',
-    photo: '/images/ind_cov_icecream_manfact.webp',
-  },
-  { label: 'Frozen Desserts', photo: '/images/ind_cov_frozen_desert.webp' },
-  {
-    label: 'Ice Cream Parlours',
-    photo: '/images/ind_cov_icecream_parlor.webp',
-  },
-  { label: 'Dairy Distribution', photo: '/images/ind_cov_dairy_distrub.webp' },
-  {
-    label: 'Dairy Retail Operations',
-    photo: '/images/ind_cov_dairy_retail.webp',
-  },
-  {
-    label: 'Multi-Location Dairy & Ice Cream Businesses',
-    photo: '/images/ind_cov_multi_loc.webp',
-  },
-];
-
-const HEADING = (
-  <>
-    Built for a Wide Range of
-    {/* Held to two lines rather than one long run at desktop widths */}
-    <br className="hidden sm:block" />{' '}
-    <span className="gradient-text-orange">
-      Dairy &amp; Ice Cream Businesses.
-    </span>
-  </>
-);
-
-const SUBTEXT =
-  'UpWon can support connected workflows across dairy and frozen product categories, including:';
 
 function CategoryCard({ label, photo, className = '' }) {
   return (
@@ -79,8 +33,24 @@ function CategoryCard({ label, photo, className = '' }) {
   );
 }
 
-export default function DairyIndustryCoverage() {
+/**
+ * CMS-only: the copy and the categories - each a name and a photograph - come
+ * from the CMS via the page. With nothing published, or the API unreachable,
+ * the section renders nothing rather than falling back to built-in content.
+ *
+ * The body is its own component so the scroll hooks only run once there is a
+ * section to measure - their refs are attached from the first render.
+ *
+ * @param {{ section?: object | null }} props - the published section.
+ */
+export default function DairyIndustryCoverage({ section = null }) {
+  if (!section) return null;
+  return <CoverageBody section={section} />;
+}
+
+function CoverageBody({ section }) {
   const reduceMotion = useReducedMotion();
+  const categories = section.items;
 
   /* ================= HORIZONTAL SCROLL ================= */
 
@@ -155,22 +125,24 @@ export default function DairyIndustryCoverage() {
       className="min-w-0"
     >
       <motion.div variants={fadeIn}>
-        <Eyebrow>INDUSTRY COVERAGE</Eyebrow>
+        {section.eyebrow && <Eyebrow>{section.eyebrow}</Eyebrow>}
       </motion.div>
 
       <motion.h2
         variants={fadeUp}
         className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]"
       >
-        {HEADING}
+        <HeadingLines lines={section.headingLines} />
       </motion.h2>
 
-      <motion.p
-        variants={fadeUp}
-        className="mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
-      >
-        {SUBTEXT}
-      </motion.p>
+      {section.subtext && (
+        <motion.p
+          variants={fadeUp}
+          className="mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
+        >
+          {section.subtext}
+        </motion.p>
+      )}
     </motion.div>
   );
 
@@ -204,7 +176,7 @@ export default function DairyIndustryCoverage() {
                 style={{ x: reduceMotion ? 0 : x }}
                 className="flex w-max gap-6"
               >
-                {CATEGORIES.map((category) => (
+                {categories.map((category) => (
                   <CategoryCard
                     key={category.label}
                     {...category}
@@ -236,7 +208,7 @@ export default function DairyIndustryCoverage() {
           {heading}
 
           <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
-            {CATEGORIES.map((category) => (
+            {categories.map((category) => (
               <CategoryCard key={category.label} {...category} />
             ))}
           </div>

@@ -2,22 +2,46 @@ import { Link } from 'react-router-dom';
 import { m as motion, useReducedMotion } from 'framer-motion';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
 
 const VIEWPORT = { once: true, amount: 0.2 };
 
-// Each tile links straight through to that product's page.
-const PRODUCTS = [
-  { label: 'Cloud ERP', icon: '/images/ERP.webp', to: '/products/erp' },
-  { label: 'SFA & DMS', icon: '/images/SFA-DMS.webp', to: '/products/sfa-dms' },
-  { label: 'HREasy', icon: '/images/HRMS.webp', to: '/products/hrms' },
-  { label: 'WMS', icon: '/images/WMS.webp', to: '/products/wms' },
-  { label: 'FMS', icon: '/images/FMS.webp', to: '/products/fms' },
-];
+/**
+ * A tile's link. Site paths stay client-side routes; the CMS also allows an
+ * absolute URL, which react-router's Link would treat as a relative path.
+ */
+function TileLink({ to, children, ...rest }) {
+  if (/^https?:\/\//.test(to)) {
+    return (
+      <a href={to} target="_blank" rel="noopener noreferrer" {...rest}>
+        {children}
+      </a>
+    );
+  }
+  return (
+    <Link to={to} {...rest}>
+      {children}
+    </Link>
+  );
+}
 
-export default function BakeryConnectedTechSection() {
+/**
+ * CMS-only: the copy and the product tiles - each linking through to that
+ * product's page - come from the CMS via the page. With nothing published, or
+ * the API unreachable, the section renders nothing rather than falling back to
+ * built-in content.
+ *
+ * @param {{ section?: object | null }} props - the published copy and tiles.
+ */
+export default function BakeryConnectedTechSection({ section = null }) {
   const reduceMotion = useReducedMotion();
+
+  if (!section) return null;
+
+  const { eyebrow, subtext, tiles } = section;
+  const heading = <HeadingLines lines={section.headingLines} />;
 
   const d = (value) => (reduceMotion ? 0 : value);
   const stagger = (value) => (reduceMotion ? 0 : value);
@@ -87,29 +111,24 @@ export default function BakeryConnectedTechSection() {
           {/* ================= LEFT COPY ================= */}
           <div className="min-w-0">
             <motion.div variants={fadeIn}>
-              <Eyebrow>
-                Connected Technology for Bakery &amp; Confectionery Businesses
-              </Eyebrow>
+              {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
             </motion.div>
 
             <motion.h2
               variants={fadeUp}
               className="mt-4 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]"
             >
-              One Connected Platform for{' '}
-              <span className="gradient-text-orange">
-                Every Bakery &amp; Confectionery Operation
-              </span>
+              {heading}
             </motion.h2>
 
-            <motion.p
-              variants={fadeUp}
-              className="mt-4 max-w-xl text-[14.5px] leading-relaxed text-navy-600 sm:text-[15px]"
-            >
-              From sourcing ingredients and managing production to controlling
-              inventory, outlets, sales, and distribution—keep every part of your
-              business working together.
-            </motion.p>
+            {subtext && (
+              <motion.p
+                variants={fadeUp}
+                className="mt-4 max-w-xl text-[14.5px] leading-relaxed text-navy-600 sm:text-[15px]"
+              >
+                {subtext}
+              </motion.p>
+            )}
           </div>
 
           {/* ================= PRODUCT TILES ================= */}
@@ -119,14 +138,14 @@ export default function BakeryConnectedTechSection() {
             variants={tilesGroup}
             className="flex min-w-0 flex-wrap justify-center gap-3 sm:gap-4 lg:gap-5"
           >
-            {PRODUCTS.map(({ label, icon, to }) => (
+            {tiles.map(({ label, icon, to }) => (
               <motion.div
                 key={label}
                 variants={tileVariants}
                 whileHover="hover"
                 className="w-[calc(50%-0.375rem)] sm:w-[calc(33.333%-0.667rem)] lg:w-[calc(33.333%-0.834rem)]"
               >
-                <Link
+                <TileLink
                   to={to}
                   className="group flex h-full items-center gap-3 rounded-[16px] border border-navy-950/[0.06] bg-white px-3.5 py-4 shadow-[0_10px_30px_rgba(25,35,55,0.07)] transition-shadow duration-300 hover:shadow-[0_16px_40px_rgba(25,35,55,0.12)] sm:gap-4 sm:px-4 sm:py-5 lg:gap-5 lg:px-6 lg:py-9 xl:px-7 xl:py-11"
                 >
@@ -144,7 +163,7 @@ export default function BakeryConnectedTechSection() {
                   <span className="h-display min-w-0 text-[13.5px] font-semibold leading-snug text-navy-950 sm:text-[15px] lg:text-[18px] xl:text-[19px]">
                     {label}
                   </span>
-                </Link>
+                </TileLink>
               </motion.div>
             ))}
           </motion.div>
@@ -169,29 +188,24 @@ export default function BakeryConnectedTechSection() {
           {/* ================= LEFT COPY ================= */}
           <div className="min-w-0">
             <motion.div variants={fadeIn}>
-              <Eyebrow>
-                Connected Technology for Bakery &amp; Confectionery Businesses
-              </Eyebrow>
+              {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
             </motion.div>
 
             <motion.h2
               variants={fadeUp}
               className="mt-4 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]"
             >
-              One Connected Platform for{' '}
-              <span className="gradient-text-orange">
-                Every Bakery &amp; Confectionery Operation
-              </span>
+              {heading}
             </motion.h2>
 
-            <motion.p
-              variants={fadeUp}
-              className="mt-4 max-w-xl text-[14.5px] leading-relaxed text-navy-600 sm:text-[15px]"
-            >
-              From sourcing ingredients and managing production to controlling
-              inventory, outlets, sales, and distribution—keep every part of your
-              business working together.
-            </motion.p>
+            {subtext && (
+              <motion.p
+                variants={fadeUp}
+                className="mt-4 max-w-xl text-[14.5px] leading-relaxed text-navy-600 sm:text-[15px]"
+              >
+                {subtext}
+              </motion.p>
+            )}
           </div>
 
           {/* ================= PRODUCT TILES ================= */}
@@ -201,14 +215,14 @@ export default function BakeryConnectedTechSection() {
             variants={tilesGroup}
             className="flex min-w-0 flex-wrap justify-center gap-3 sm:gap-4 lg:gap-5"
           >
-            {PRODUCTS.map(({ label, icon, to }) => (
+            {tiles.map(({ label, icon, to }) => (
               <motion.div
                 key={label}
                 variants={tileVariants}
                 whileHover="hover"
                 className="w-[calc(50%-0.375rem)] sm:w-[calc(33.333%-0.667rem)] lg:w-[calc(33.333%-0.834rem)]"
               >
-                <Link
+                <TileLink
                   to={to}
                   className="group flex h-full items-center gap-3 rounded-[16px] border border-navy-950/[0.06] bg-white px-3.5 py-4 shadow-[0_10px_30px_rgba(25,35,55,0.07)] transition-shadow duration-300 hover:shadow-[0_16px_40px_rgba(25,35,55,0.12)] sm:gap-4 sm:px-4 sm:py-5 lg:gap-5 lg:px-6 lg:py-9 xl:px-7 xl:py-11"
                 >
@@ -226,7 +240,7 @@ export default function BakeryConnectedTechSection() {
                   <span className="h-display min-w-0 text-[13.5px] font-semibold leading-snug text-navy-950 sm:text-[15px] lg:text-[18px] xl:text-[19px]">
                     {label}
                   </span>
-                </Link>
+                </TileLink>
               </motion.div>
             ))}
           </motion.div>

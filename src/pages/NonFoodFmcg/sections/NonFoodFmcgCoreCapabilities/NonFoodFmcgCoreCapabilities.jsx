@@ -1,64 +1,20 @@
 import { m as motion, useReducedMotion } from 'framer-motion';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
 
 const VIEWPORT = { once: true, amount: 0.1 };
 
-/*
-  The illustrations share a 338px height but vary in width (350-456), so each
-  sits in a fixed-height frame with object-contain — every card lines up
-  without cropping or stretching the artwork.
-
-  One filename carries a space and brackets, so its path is percent-encoded.
-*/
-const CAPABILITIES = [
-  {
-    title: 'Centralized Product & Inventory Control',
-    description:
-      'Get a clearer view of products, packaging materials, finished goods, inventory levels, and stock movement across warehouses, branches, distributors, and other locations.',
-    art: '/images/center_product.webp',
-  },
-  {
-    title: 'Connected Sales & Distribution Management',
-    description:
-      'Bring sales orders, inventory availability, distributors, retailers, dispatch, and product movement closer together with better visibility across sales and distribution workflows.',
-    art: '/images/conn_sales.webp',
-  },
-  {
-    title: 'Smarter Distributor & Channel Management',
-    description:
-      'Maintain better visibility across distributor operations, orders, stock movement, sales activity, and channel performance.',
-    art: '/images/smarter_distribution.webp',
-  },
-  {
-    title: 'Field Sales & Market Execution',
-    description:
-      'Support sales teams with connected workflows for market visits, order collection, customer activity, sales execution, and on-ground visibility.',
-    art: '/images/field_sales_market.webp',
-  },
-  {
-    title: 'Warehouse Operations',
-    description:
-      'Support day-to-day warehouse activities including stock receipt, storage, transfers, picking, dispatch, returns, and inventory movement.',
-    art: '/images/operation_ware.webp',
-  },
-  {
-    title: 'Connected Multi-Location Operations',
-    description:
-      'Bring warehouses, branches, distributors, sales teams, and operational teams onto one connected system.',
-    art: '/images/conn_multi_loc%20(1).webp',
-  },
-  {
-    title: 'Real-Time Operational Insights',
-    description:
-      'Access dashboards and reports that provide visibility into inventory, sales, orders, distribution, field activity, channel performance, and overall business operations.',
-    art: '/images/oper_insights.webp',
-  },
-];
-
-export default function NonFoodFmcgCoreCapabilities() {
+/**
+ * CMS-only: the copy and the capability cards come from the CMS via the page. With nothing published - or
+ * the API unreachable - the section renders nothing rather than falling back
+ * to built-in content.
+ *
+ * @param {{ section?: object | null }} props - the published section.
+ */
+export default function NonFoodFmcgCoreCapabilities({ section = null }) {
   const reduceMotion = useReducedMotion();
 
   const d = (value) => (reduceMotion ? 0 : value);
@@ -101,6 +57,8 @@ export default function NonFoodFmcgCoreCapabilities() {
     hover: { y: d(-6), transition: { duration: 0.28, ease: EASE } },
   };
 
+  if (!section) return null;
+
   return (
     <section className="relative overflow-hidden bg-[#f7f8fa] pb-12 sm:pb-16 lg:pb-20">
       {/* ================= HEADING BAND ================= */}
@@ -128,27 +86,27 @@ export default function NonFoodFmcgCoreCapabilities() {
             viewport={VIEWPORT}
             className="max-w-2xl"
           >
-            <motion.div variants={fadeIn}>
-              <Eyebrow>CORE CAPABILITIES</Eyebrow>
-            </motion.div>
+            {section.eyebrow && (
+              <motion.div variants={fadeIn}>
+                <Eyebrow>{section.eyebrow}</Eyebrow>
+              </motion.div>
+            )}
 
             <motion.h2
               variants={fadeUp}
               className="mt-3 h-display text-[30px] leading-[1.1] tracking-tight text-navy-950 sm:text-[34px] lg:text-[36.8px]"
             >
-              Everything You Need.{' '}
-              <span className="gradient-text-orange">
-                One Connected Platform.
-              </span>
+              <HeadingLines lines={section.headingLines} />
             </motion.h2>
 
-            <motion.p
-              variants={fadeUp}
-              className="mt-4 max-w-xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
-            >
-              UpWon brings all key operations of your non-food FMCG business
-              together in one connected platform.
-            </motion.p>
+            {section.subtext && (
+              <motion.p
+                variants={fadeUp}
+                className="mt-4 max-w-xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
+              >
+                {section.subtext}
+              </motion.p>
+            )}
           </motion.div>
         </Container>
       </div>
@@ -163,9 +121,9 @@ export default function NonFoodFmcgCoreCapabilities() {
           viewport={VIEWPORT}
           className="mt-8 flex flex-wrap justify-center gap-5 sm:mt-10"
         >
-          {CAPABILITIES.map(({ title, description, art }) => (
+          {section.cards.map(({ title, description, art }, index) => (
             <motion.article
-              key={title}
+              key={`${title}-${index}`}
               variants={cardVariants}
               whileHover="hover"
               className="flex min-w-0 flex-col rounded-[18px] bg-white px-5 py-6 text-center shadow-[0_12px_35px_rgba(25,35,55,0.07)] transition-shadow duration-300 hover:shadow-[0_18px_45px_rgba(25,35,55,0.12)] sm:w-[calc(50%-0.625rem)] lg:w-[calc(25%-0.9375rem)]"
