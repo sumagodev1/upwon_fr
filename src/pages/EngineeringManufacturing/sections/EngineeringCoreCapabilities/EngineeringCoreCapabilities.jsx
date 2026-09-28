@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { m as motion, useReducedMotion } from 'framer-motion';
 import {
   ShoppingCart,
@@ -10,6 +11,9 @@ import {
   BarChart3,
 } from 'lucide-react';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { fetchEngineeringCapabilitiesSection } from '../../../../lib/engineeringManufacturingPage.js';
+import { engineeringIcon } from '../../../../lib/engineeringIcons.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
@@ -20,6 +24,13 @@ const VIEWPORT = { once: true, amount: 0.1 };
   included — so the copy is laid into those cards. Each rect is a percentage
   of the 1531x1027 artwork, the title row clears the icon the artwork already
   draws, and the type scales with the artwork through a container query.
+
+  The fallback now: the published capabilities are the CMS's, and these are
+  what the section shows during the SSG build, while the fetch is in flight,
+  and whenever the API is unreachable. The rects belong to the artwork, not to
+  the copy, so CMS capabilities take them by position - the first fills the
+  first card. Colours are hex so both sources render through the same inline
+  style (#E85A2A is the theme's orange-500).
 */
 const CAPABILITIES = [
   {
@@ -28,8 +39,8 @@ const CAPABILITIES = [
     description:
       'Suppliers, purchase activity, incoming materials, and raw-material availability in one view.',
     Icon: ShoppingCart,
-    tint: 'bg-[#fdf0e6]',
-    ink: 'text-orange-500',
+    tint: '#fdf0e6',
+    ink: '#E85A2A',
     rect: { left: '2.6%', top: '8.6%', width: '26%', height: '18.1%' },
   },
   {
@@ -38,8 +49,8 @@ const CAPABILITIES = [
     description:
       'Bill of materials, material requirements, and production planning kept connected.',
     Icon: FileText,
-    tint: 'bg-[#e9f1fd]',
-    ink: 'text-[#2f6fed]',
+    tint: '#e9f1fd',
+    ink: '#2f6fed',
     rect: { left: '31.6%', top: '8.6%', width: '25.3%', height: '18.1%' },
   },
   {
@@ -48,8 +59,8 @@ const CAPABILITIES = [
     description:
       'Production requirements, material availability, work progress, and product movement together.',
     Icon: Settings,
-    tint: 'bg-[#e8f7ed]',
-    ink: 'text-[#1f9d55]',
+    tint: '#e8f7ed',
+    ink: '#1f9d55',
     rect: { left: '59.2%', top: '8.6%', width: '26.6%', height: '18.1%' },
   },
   {
@@ -58,8 +69,8 @@ const CAPABILITIES = [
     description:
       'Quality inspection touchpoints, material checks, and product records across production.',
     Icon: ShieldCheck,
-    tint: 'bg-[#fdeef0]',
-    ink: 'text-[#dc2626]',
+    tint: '#fdeef0',
+    ink: '#dc2626',
     rect: { left: '77.6%', top: '35.6%', width: '22.4%', height: '20.3%' },
   },
   {
@@ -68,8 +79,8 @@ const CAPABILITIES = [
     description:
       'Raw materials, components, work-in-process, and finished products across every location.',
     Icon: Database,
-    tint: 'bg-[#f2ecfd]',
-    ink: 'text-[#7c3aed]',
+    tint: '#f2ecfd',
+    ink: '#7c3aed',
     rect: { left: '1.6%', top: '71.4%', width: '22.7%', height: '19.3%' },
   },
   {
@@ -78,8 +89,8 @@ const CAPABILITIES = [
     description:
       'Receiving, storage, transfers, picking, packing, and dispatch across warehouses.',
     Icon: Warehouse,
-    tint: 'bg-[#fdf6e0]',
-    ink: 'text-[#c8820a]',
+    tint: '#fdf6e0',
+    ink: '#c8820a',
     rect: { left: '26.2%', top: '71.4%', width: '23.2%', height: '19.3%' },
   },
   {
@@ -88,8 +99,8 @@ const CAPABILITIES = [
     description:
       'Operational assets and business activity visible for better coordination and reporting.',
     Icon: Activity,
-    tint: 'bg-[#e6f6f4]',
-    ink: 'text-[#0d9488]',
+    tint: '#e6f6f4',
+    ink: '#0d9488',
     rect: { left: '51%', top: '71.4%', width: '23.4%', height: '19.3%' },
   },
   {
@@ -98,11 +109,14 @@ const CAPABILITIES = [
     description:
       'Dashboards covering procurement, production, inventory, quality, sales, and operations.',
     Icon: BarChart3,
-    tint: 'bg-[#fdecf3]',
-    ink: 'text-[#d6336c]',
+    tint: '#fdecf3',
+    ink: '#d6336c',
     rect: { left: '76%', top: '71.4%', width: '23.4%', height: '19.3%' },
   },
 ];
+
+// The artwork's eight cards, in order - what a CMS capability is laid into.
+const RECTS = CAPABILITIES.map(({ rect }) => rect);
 
 const NUMBER_SIZE = 'clamp(7.5px, 0.9cqw, 12px)';
 const TITLE_SIZE = 'clamp(9.5px, 1.28cqw, 16.5px)';
@@ -110,6 +124,33 @@ const DETAIL_SIZE = 'clamp(8px, 1.05cqw, 13.5px)';
 
 export default function EngineeringCoreCapabilities() {
   const reduceMotion = useReducedMotion();
+  const [cms, setCms] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchEngineeringCapabilitiesSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // The CMS's capabilities, in the shape the built-in ones already have. The
+  // artwork has eight cards, so a ninth would have nowhere to go.
+  const capabilities = cms
+    ? cms.capabilities.slice(0, RECTS.length).map((capability, index) => ({
+        number: String(index + 1).padStart(2, '0'),
+        title: capability.title,
+        description: capability.description,
+        Icon: engineeringIcon(capability.icon),
+        tint: capability.tintColor,
+        ink: capability.accentColor,
+        rect: RECTS[index],
+      }))
+    : CAPABILITIES;
 
   const d = (value) => (reduceMotion ? 0 : value);
   const stagger = (value) => (reduceMotion ? 0 : value);
@@ -168,27 +209,35 @@ export default function EngineeringCoreCapabilities() {
             viewport={VIEWPORT}
             className="min-w-0"
           >
-            <motion.div variants={fadeIn}>
-              <Eyebrow>CORE CAPABILITIES</Eyebrow>
-            </motion.div>
+            {(!cms || cms.eyebrow) && (
+              <motion.div variants={fadeIn}>
+                <Eyebrow>{cms ? cms.eyebrow : 'CORE CAPABILITIES'}</Eyebrow>
+              </motion.div>
+            )}
 
             <motion.h2
               variants={fadeUp}
               className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[34px] xl:text-[36.8px]"
             >
-              Built to Power Every Part of Your{' '}
-              <span className="gradient-text-orange">
-                Manufacturing Operations
-              </span>
+              {cms ? (
+                <HeadingLines lines={cms.headingLines} />
+              ) : (
+                <>
+                  Built to Power Every Part of Your{' '}
+                  <span className="gradient-text-orange">
+                    Manufacturing Operations
+                  </span>
+                </>
+              )}
             </motion.h2>
 
             <motion.p
               variants={fadeUp}
               className="mt-4 max-w-lg text-[14.5px] leading-relaxed text-navy-600 sm:text-[15px]"
             >
-              From procurement to production, inventory to insights — UpWon
-              brings all critical operations together in one connected platform,
-              helping you operate with greater clarity, control, and efficiency.
+              {cms
+                ? cms.subtext
+                : 'From procurement to production, inventory to insights — UpWon brings all critical operations together in one connected platform, helping you operate with greater clarity, control, and efficiency.'}
             </motion.p>
           </motion.div>
 
@@ -218,7 +267,7 @@ export default function EngineeringCoreCapabilities() {
               viewport={VIEWPORT}
               className="absolute inset-0"
             >
-              {CAPABILITIES.map(({ number, title, description, rect }) => (
+              {capabilities.map(({ number, title, description, rect }) => (
                 <motion.div
                   key={number}
                   variants={labelVariants}
@@ -261,7 +310,7 @@ export default function EngineeringCoreCapabilities() {
             viewport={VIEWPORT}
             className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:hidden"
           >
-            {CAPABILITIES.map(
+            {capabilities.map(
               ({ number, title, description, Icon, tint, ink }) => (
                 <motion.article
                   key={number}
@@ -270,9 +319,10 @@ export default function EngineeringCoreCapabilities() {
                 >
                   <div className="flex items-start gap-3">
                     <span
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] ${tint}`}
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]"
+                      style={{ background: tint }}
                     >
-                      <Icon className={`h-5 w-5 ${ink}`} strokeWidth={1.7} />
+                      <Icon className="h-5 w-5" style={{ color: ink }} strokeWidth={1.7} />
                     </span>
 
                     <div className="min-w-0">

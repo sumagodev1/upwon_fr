@@ -1,8 +1,11 @@
+import { useEffect, useState } from 'react';
 import { m as motion, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { fetchWhyUpwonIndustriesSection } from '../../../../lib/whyUpwonPage.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
@@ -15,7 +18,14 @@ const VIEWPORT = { once: true, amount: 0.15 };
   reads in one view rather than scrolling. Each card points at the industry
   page that actually covers it — several of the engineering categories share
   one page, which is deliberate.
+
+  The fallback now: the published row is the CMS's, and this is what the
+  section shows during the SSG build, while the fetch is in flight, and
+  whenever the API is unreachable.
 */
+const SUBTEXT =
+  'UpWon can support connected workflows across a wide range of engineering and manufacturing environments.';
+
 const INDUSTRIES = [
   {
     label: 'Engineering Components Manufacturing',
@@ -54,8 +64,43 @@ const INDUSTRIES = [
   },
 ];
 
+/*
+  A card links within the site through the router, and anywhere else as a
+  plain anchor - the CMS accepts a full https:// URL as well as a path, and
+  react-router's Link only understands paths.
+*/
+function CardLink({ to, className, children }) {
+  if (to.startsWith('/')) {
+    return (
+      <Link to={to} className={className}>
+        {children}
+      </Link>
+    );
+  }
+  return (
+    <a href={to} className={className}>
+      {children}
+    </a>
+  );
+}
+
 export default function WhyUpwonIndustryTrust() {
   const reduceMotion = useReducedMotion();
+  const [cms, setCms] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchWhyUpwonIndustriesSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const industries = cms ? cms.industries : INDUSTRIES;
 
   /* ================= VARIANTS ================= */
 
@@ -111,26 +156,33 @@ export default function WhyUpwonIndustryTrust() {
           viewport={VIEWPORT}
           className="max-w-3xl"
         >
-          <motion.div variants={fadeIn}>
-            <Eyebrow>BUILT FOR GROWING BUSINESSES</Eyebrow>
-          </motion.div>
+          {(!cms || cms.eyebrow) && (
+            <motion.div variants={fadeIn}>
+              <Eyebrow>{cms ? cms.eyebrow : 'BUILT FOR GROWING BUSINESSES'}</Eyebrow>
+            </motion.div>
+          )}
 
           <motion.h2
             variants={fadeUp}
             className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]"
           >
-            Designed to Support Complex{' '}
-            <span className="gradient-text-orange">
-              Manufacturing Operations.
-            </span>
+            {cms ? (
+              <HeadingLines lines={cms.headingLines} />
+            ) : (
+              <>
+                Designed to Support Complex{' '}
+                <span className="gradient-text-orange">
+                  Manufacturing Operations.
+                </span>
+              </>
+            )}
           </motion.h2>
 
           <motion.p
             variants={fadeUp}
             className="mt-4 max-w-2xl text-[14.5px] leading-relaxed text-navy-600 sm:text-[15px]"
           >
-            UpWon can support connected workflows across a wide range of
-            engineering and manufacturing environments.
+            {cms ? cms.subtext : SUBTEXT}
           </motion.p>
         </motion.div>
 
@@ -144,9 +196,9 @@ export default function WhyUpwonIndustryTrust() {
           viewport={VIEWPORT}
           className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:mt-10 lg:grid-cols-4 lg:gap-5 xl:grid-cols-7"
         >
-          {INDUSTRIES.map(({ label, photo, to }) => (
-            <motion.div key={label} variants={cardIn} className="min-w-0">
-              <Link
+          {industries.map(({ label, photo, to }, index) => (
+            <motion.div key={`${index}-${label}`} variants={cardIn} className="min-w-0">
+              <CardLink
                 to={to}
                 className="group flex h-full min-w-0 flex-col rounded-[16px] border border-navy-950/[0.06] bg-white p-2.5 shadow-[0_10px_28px_rgba(25,35,55,0.07)] transition-shadow duration-300 hover:shadow-[0_18px_40px_rgba(25,35,55,0.13)]"
               >
@@ -175,7 +227,7 @@ export default function WhyUpwonIndustryTrust() {
                     <ArrowRight className="h-4 w-4" strokeWidth={2.2} />
                   </span>
                 </div>
-              </Link>
+              </CardLink>
             </motion.div>
           ))}
         </motion.div>

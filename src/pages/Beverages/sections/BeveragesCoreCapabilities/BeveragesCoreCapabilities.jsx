@@ -1,12 +1,19 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { m as motion, useReducedMotion } from 'framer-motion';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { fetchBeverageCapabilitiesSection } from '../../../../lib/beveragePage.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
 const VIEWPORT = { once: true, amount: 0.1 };
 
+/*
+  The fallback: the published capabilities are the CMS's, and these are what
+  the section shows during the SSG build, while the fetch is in flight, and
+  whenever the API is unreachable.
+*/
 const CAPABILITIES = [
   {
     title: 'Centralized Ingredient & Inventory Control',
@@ -61,9 +68,28 @@ const CAPABILITIES = [
   },
 ];
 
+const BACKGROUND_SRC = '/images/bev_core_capability_bg.webp';
+
 export default function BeveragesCoreCapabilities() {
   const reduceMotion = useReducedMotion();
   const [active, setActive] = useState(0);
+  const [cms, setCms] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchBeverageCapabilitiesSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const capabilities = cms ? cms.capabilities : CAPABILITIES;
+  // A CMS without a background keeps the shipped illustration.
+  const background = cms?.background ?? BACKGROUND_SRC;
 
   const d = (value) => (reduceMotion ? 0 : value);
   const stagger = (value) => (reduceMotion ? 0 : value);
@@ -99,14 +125,16 @@ export default function BeveragesCoreCapabilities() {
     visible: { opacity: 1, x: 0, transition: { duration: 0.45, ease: EASE } },
   };
 
-  const capability = CAPABILITIES[active];
+  // Guarded against a published list shorter than the tab the visitor had
+  // already picked, which would otherwise leave `active` past the end.
+  const capability = capabilities[active] ?? capabilities[0];
 
   return (
     <section className="relative overflow-hidden bg-white py-12 sm:py-16 lg:py-20">
       {/* ================= BACKGROUND ================= */}
       <div className="pointer-events-none absolute inset-0">
         <img
-          src="/images/bev_core_capability_bg.webp"
+          src={background}
           alt=""
           aria-hidden="true"
           loading="lazy"
@@ -123,25 +151,35 @@ export default function BeveragesCoreCapabilities() {
           viewport={VIEWPORT}
           className="mx-auto max-w-3xl text-center"
         >
-          <motion.div variants={fadeIn}>
-            <Eyebrow className="justify-center">CORE CAPABILITIES</Eyebrow>
-          </motion.div>
+          {(!cms || cms.eyebrow) && (
+            <motion.div variants={fadeIn}>
+              <Eyebrow className="justify-center">
+                {cms ? cms.eyebrow : 'CORE CAPABILITIES'}
+              </Eyebrow>
+            </motion.div>
+          )}
 
           <motion.h2
             variants={fadeUp}
             className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]"
           >
-            Built for Every Step of Your{' '}
-            <span className="gradient-text-orange">Beverage Business</span>
+            {cms ? (
+              <HeadingLines lines={cms.headingLines} />
+            ) : (
+              <>
+                Built for Every Step of Your{' '}
+                <span className="gradient-text-orange">Beverage Business</span>
+              </>
+            )}
           </motion.h2>
 
           <motion.p
             variants={fadeUp}
             className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
           >
-            From ingredients to finished products, UpWon helps you manage,
-            monitor, and connect your entire beverage and juice operations with
-            ease.
+            {cms
+              ? cms.subtext
+              : 'From ingredients to finished products, UpWon helps you manage, monitor, and connect your entire beverage and juice operations with ease.'}
           </motion.p>
         </motion.div>
 
@@ -155,8 +193,8 @@ export default function BeveragesCoreCapabilities() {
             viewport={VIEWPORT}
             className="flex min-w-0 flex-col gap-1.5"
           >
-            {CAPABILITIES.map(({ title }, index) => {
-              const isActive = index === active;
+            {capabilities.map(({ title }, index) => {
+              const isActive = capability === capabilities[index];
 
               return (
                 <motion.button
@@ -205,19 +243,21 @@ export default function BeveragesCoreCapabilities() {
 
             {/* Fixed frame, so switching capabilities never jumps the layout */}
             <div className="mt-6 aspect-[1580/1000] w-full overflow-hidden rounded-[14px] border border-navy-950/[0.06] bg-white shadow-[0_16px_40px_rgba(25,35,55,0.1)]">
-              <motion.img
-                key={`shot-${active}`}
-                initial={{ opacity: 0, x: d(24) }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, ease: EASE }}
-                src={capability.photo}
-                alt={capability.title}
-                width={1580}
-                height={1000}
-                loading="lazy"
-                decoding="async"
-                className="block h-full w-full object-cover object-center"
-              />
+              {capability.photo && (
+                <motion.img
+                  key={`shot-${active}`}
+                  initial={{ opacity: 0, x: d(24) }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, ease: EASE }}
+                  src={capability.photo}
+                  alt={capability.title}
+                  width={1580}
+                  height={1000}
+                  loading="lazy"
+                  decoding="async"
+                  className="block h-full w-full object-cover object-center"
+                />
+              )}
             </div>
           </motion.div>
         </div>

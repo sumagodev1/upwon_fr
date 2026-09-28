@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { m as motion, AnimatePresence } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { fetchBeverageFaqSection } from '../../../../lib/beveragePage.js';
 
 /*
   Beverages & juices "FAQ" — the practical questions beverage teams ask before
@@ -12,6 +14,10 @@ import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
   notes ("Position UpWon around…"), so those five are written out here in the
   site's voice. The notes on production, quality and shelf life also ask for
   the exact product capabilities to be validated before publication.
+
+  The fallback now: the published list is the CMS's, and this is what the
+  section shows while the fetch is in flight, during the SSG build, and
+  whenever the API is unreachable.
 */
 
 const EASE = [0.22, 1, 0.3, 1];
@@ -45,6 +51,21 @@ const FAQS = [
 
 export default function BeveragesFaqSection() {
   const [openIndex, setOpenIndex] = useState(0);
+  const [cms, setCms] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchBeverageFaqSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const faqs = cms ? cms.faqs : FAQS;
 
   return (
     <section className="relative overflow-hidden bg-cream-100 py-12 md:py-16">
@@ -59,23 +80,31 @@ export default function BeveragesFaqSection() {
           transition={{ duration: 0.6, ease: EASE }}
           className="mx-auto max-w-3xl text-center"
         >
-          <Eyebrow className="justify-center">FAQ</Eyebrow>
+          {(!cms || cms.eyebrow) && (
+            <Eyebrow className="justify-center">{cms ? cms.eyebrow : 'FAQ'}</Eyebrow>
+          )}
 
           <h2 className="mt-3 h-display text-[30px] leading-[1.1] tracking-tight text-navy-950 sm:text-[34px] lg:text-[36.8px]">
-            Questions Beverage Teams{' '}
-            <span className="gradient-text-orange">Ask Before They Switch.</span>
+            {cms ? (
+              <HeadingLines lines={cms.headingLines} />
+            ) : (
+              <>
+                Questions Beverage Teams{' '}
+                <span className="gradient-text-orange">Ask Before They Switch.</span>
+              </>
+            )}
           </h2>
 
           <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base">
-            Practical answers to what beverage and juice teams want to know
-            before moving production, quality and distribution onto one
-            platform.
+            {cms
+              ? cms.subtext
+              : 'Practical answers to what beverage and juice teams want to know before moving production, quality and distribution onto one platform.'}
           </p>
         </motion.div>
 
         {/* ================= ACCORDION ================= */}
         <div className="mx-auto mt-10 max-w-3xl divide-y divide-cream-300 rounded-2xl border border-cream-300 bg-white shadow-sm md:mt-12">
-          {FAQS.map((faq, index) => (
+          {faqs.map((faq, index) => (
             <div key={faq.q}>
               <button
                 type="button"

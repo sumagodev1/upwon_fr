@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { m as motion, useReducedMotion } from 'framer-motion';
 import {
   ShoppingCart,
@@ -15,11 +16,19 @@ import {
   PieChart,
 } from 'lucide-react';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { fetchBeveragePlatformSection } from '../../../../lib/beveragePage.js';
+import { beverageIcon } from '../../../../lib/beverageIcons.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
 const VIEWPORT = { once: true, amount: 0.1 };
 
+/*
+  The fallback: the published workflows are the CMS's, and these are what the
+  section shows during the SSG build, while the fetch is in flight, and
+  whenever the API is unreachable.
+*/
 const WORKFLOWS = [
   { label: 'Procurement & Purchasing', Icon: ShoppingCart },
   { label: 'Raw Material & Ingredient Management', Icon: Leaf },
@@ -36,8 +45,35 @@ const WORKFLOWS = [
   { label: 'Finance & Reporting', Icon: PieChart },
 ];
 
+const BACKGROUND_SRC = '/images/bev_how_upwon_help_bg.webp';
+const LIST_LABEL = 'Connected Workflows Across:';
+
 export default function BeveragesHowUpwonHelps() {
   const reduceMotion = useReducedMotion();
+  const [cms, setCms] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchBeveragePlatformSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // The CMS's workflows, in the shape the built-in ones already have.
+  const workflows = cms
+    ? cms.workflows.map((workflow) => ({
+        label: workflow.label,
+        Icon: beverageIcon(workflow.icon),
+      }))
+    : WORKFLOWS;
+  // A CMS without a panel keeps the shipped background and label.
+  const background = cms?.image ?? BACKGROUND_SRC;
+  const listLabel = cms && cms.listLabel !== null ? cms.listLabel : LIST_LABEL;
 
   const d = (value) => (reduceMotion ? 0 : value);
   const stagger = (value) => (reduceMotion ? 0 : value);
@@ -81,7 +117,7 @@ export default function BeveragesHowUpwonHelps() {
           — copy and workflows alike — runs in the clear space on the left */}
       <div className="pointer-events-none absolute inset-0">
         <img
-          src="/images/bev_how_upwon_help_bg.webp"
+          src={background}
           alt=""
           aria-hidden="true"
           loading="lazy"
@@ -101,37 +137,45 @@ export default function BeveragesHowUpwonHelps() {
             whileInView="visible"
             viewport={VIEWPORT}
           >
-            <motion.div variants={fadeIn}>
-              <Eyebrow>HOW UPWON HELPS</Eyebrow>
-            </motion.div>
+            {(!cms || cms.eyebrow) && (
+              <motion.div variants={fadeIn}>
+                <Eyebrow>{cms ? cms.eyebrow : 'HOW UPWON HELPS'}</Eyebrow>
+              </motion.div>
+            )}
 
             <motion.h2
               variants={fadeUp}
               className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[34px]"
             >
-              One Connected Platform for Your{' '}
-              <span className="gradient-text-orange">
-                Beverages &amp; Juices
-              </span>{' '}
-              Operations
+              {cms ? (
+                <HeadingLines lines={cms.headingLines} />
+              ) : (
+                <>
+                  One Connected Platform for Your{' '}
+                  <span className="gradient-text-orange">
+                    Beverages &amp; Juices
+                  </span>{' '}
+                  Operations
+                </>
+              )}
             </motion.h2>
 
             <motion.p
               variants={fadeUp}
               className="mt-4 text-[14.5px] leading-relaxed text-navy-600 sm:text-[15px]"
             >
-              UpWon connects the key workflows behind beverage and juice
-              operations—helping teams manage the movement of ingredients,
-              batches, products, inventory, information, and operations through
-              one unified platform.
+              {cms
+                ? cms.subtext
+                : 'UpWon connects the key workflows behind beverage and juice operations—helping teams manage the movement of ingredients, batches, products, inventory, information, and operations through one unified platform.'}
             </motion.p>
 
-            <motion.div variants={fadeUp} className="mt-7">
-              <p className="h-display text-[17px] font-bold text-navy-950 sm:text-[18px]">
-                Connected Workflows Across:
-              </p>
-
-            </motion.div>
+            {listLabel && (
+              <motion.div variants={fadeUp} className="mt-7">
+                <p className="h-display text-[17px] font-bold text-navy-950 sm:text-[18px]">
+                  {listLabel}
+                </p>
+              </motion.div>
+            )}
           </motion.div>
 
           {/* ================= WORKFLOWS ================= */}
@@ -142,7 +186,7 @@ export default function BeveragesHowUpwonHelps() {
             viewport={VIEWPORT}
             className="mt-5 grid auto-rows-fr grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
           >
-            {WORKFLOWS.map(({ label, Icon }) => (
+            {workflows.map(({ label, Icon }) => (
               <motion.div
                 key={label}
                 variants={itemVariants}

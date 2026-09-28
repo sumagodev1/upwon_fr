@@ -1,11 +1,19 @@
+import { useEffect, useState } from 'react';
 import { m as motion, useReducedMotion } from 'framer-motion';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { fetchSpicesAgroTrustSection } from '../../../../lib/spicesAgroPage.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
 const VIEWPORT = { once: true, amount: 0.2 };
 
+/*
+  The fallback: the published logos and screenshot are the CMS's, and these
+  are what the section shows during the SSG build, while the fetch is in
+  flight, and whenever the API is unreachable.
+*/
 const CLIENTS = [
   { name: 'Winni', src: '/images/testimonial/winni.webp' },
   { name: 'U2 Cake', src: '/images/testimonial/u2cake.webp' },
@@ -14,6 +22,10 @@ const CLIENTS = [
   { name: 'Kaka Halwai', src: '/images/testimonial/kaka%20halwai.webp' },
   { name: 'Gokul', src: '/images/testimonial/gokul.webp' },
 ];
+
+const PANEL_SRC = '/images/agro_proof_strip.webp';
+const PANEL_ALT =
+  'The UpWon dashboard showing procurement, production, inventory and sales for a spices and agro-processing business';
 
 function ClientLogo({ client }) {
   return (
@@ -31,6 +43,24 @@ function ClientLogo({ client }) {
 
 export default function SpicesAgroProofStrip() {
   const reduceMotion = useReducedMotion();
+  const [cms, setCms] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchSpicesAgroTrustSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const clients = cms ? cms.logos : CLIENTS;
+  // A CMS without a screenshot of its own keeps the shipped one.
+  const panelSrc = cms?.image ?? PANEL_SRC;
+  const panelAlt = cms?.image ? (cms.imageAlt ?? PANEL_ALT) : PANEL_ALT;
 
   const d = (value) => (reduceMotion ? 0 : value);
 
@@ -67,29 +97,37 @@ export default function SpicesAgroProofStrip() {
           viewport={VIEWPORT}
           className="mx-auto max-w-4xl text-center"
         >
-          <motion.div variants={fadeIn}>
-            <Eyebrow className="justify-center">
-              TRUSTED BY GROWING BRANDS
-            </Eyebrow>
-          </motion.div>
+          {(!cms || cms.eyebrow) && (
+            <motion.div variants={fadeIn}>
+              <Eyebrow className="justify-center">
+                {cms ? cms.eyebrow : 'TRUSTED BY GROWING BRANDS'}
+              </Eyebrow>
+            </motion.div>
+          )}
 
           <motion.h2
             variants={fadeUp}
             className="mt-3 h-display text-[22px] leading-snug tracking-tight text-navy-950 sm:text-[26px] lg:text-[28px]"
           >
-            Built to Keep Raw Materials, Processing, Quality, Warehouses,{' '}
-            <span className="gradient-text-orange">
-              and Every Sales Channel Connected.
-            </span>
+            {cms ? (
+              <HeadingLines lines={cms.headingLines} />
+            ) : (
+              <>
+                Built to Keep Raw Materials, Processing, Quality, Warehouses,{' '}
+                <span className="gradient-text-orange">
+                  and Every Sales Channel Connected.
+                </span>
+              </>
+            )}
           </motion.h2>
 
           <motion.p
             variants={fadeUp}
             className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
           >
-            Teams across spices, agro-processing, food, and FMCG use UpWon to
-            keep procurement, production, quality, inventory, and distribution
-            connected across their locations.
+            {cms
+              ? cms.subtext
+              : 'Teams across spices, agro-processing, food, and FMCG use UpWon to keep procurement, production, quality, inventory, and distribution connected across their locations.'}
           </motion.p>
         </motion.div>
 
@@ -110,7 +148,7 @@ export default function SpicesAgroProofStrip() {
                 : 'animate-ticker [animation-duration:38s] hover:[animation-play-state:paused]'
             }`}
           >
-            {CLIENTS.map((client) => (
+            {clients.map((client) => (
               <ClientLogo key={client.name} client={client} />
             ))}
 
@@ -118,7 +156,7 @@ export default function SpicesAgroProofStrip() {
               className="flex items-center gap-10 md:gap-16"
               aria-hidden="true"
             >
-              {CLIENTS.map((client) => (
+              {clients.map((client) => (
                 <ClientLogo key={`dup-${client.name}`} client={client} />
               ))}
             </div>
@@ -134,8 +172,8 @@ export default function SpicesAgroProofStrip() {
           className="mt-10"
         >
           <img
-            src="/images/agro_proof_strip.webp"
-            alt="The UpWon dashboard showing procurement, production, inventory and sales for a spices and agro-processing business"
+            src={panelSrc}
+            alt={panelAlt}
             width={1584}
             height={993}
             loading="lazy"

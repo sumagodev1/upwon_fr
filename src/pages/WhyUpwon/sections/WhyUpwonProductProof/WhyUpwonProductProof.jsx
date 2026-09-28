@@ -1,7 +1,11 @@
+import { useEffect, useState } from 'react';
 import { m as motion, useReducedMotion } from 'framer-motion';
 import { BarChart3, Workflow, Lightbulb, Settings } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { fetchWhyUpwonProofSection } from '../../../../lib/whyUpwonPage.js';
+import { whyUpwonIcon } from '../../../../lib/whyUpwonIcons.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
@@ -21,7 +25,18 @@ const VIEWPORT = { once: true, amount: 0.1 };
    wrapper; `top` is a percentage of the artwork's height (the wrapper
    takes its height from the artwork), read off each dot and then pulled
    back by half a card.
+
+   The copy, artwork and callouts are the CMS's now; these are what the
+   section shows during the SSG build, while the fetch is in flight, and
+   whenever the API is unreachable. A published callout keeps the corner -
+   its box, colours and entrance - of the position it is published in.
    ============================================================ */
+
+const ARTWORK_SRC = '/images/why_product_proof.webp';
+const ARTWORK_ALT =
+  'The UpWon dashboard showing sales, purchase, customer and product figures alongside performance charts and recent activity';
+const SUBTEXT =
+  'UpWon gives your teams a connected view of the information and workflows that matter most. From daily operations to high-level business decisions, the platform helps bring critical information into one place.';
 
 const CALLOUTS = [
   {
@@ -80,6 +95,33 @@ const TILE_ICON = 'clamp(14px, 1.2cqw, 21px)';
 
 export default function WhyUpwonProductProof() {
   const reduceMotion = useReducedMotion();
+  const [cms, setCms] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchWhyUpwonProofSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // The artwork has four connectors, so at most four callouts; each takes the
+  // corner of the built-in callout at its position.
+  const callouts = cms
+    ? cms.callouts.slice(0, CALLOUTS.length).map((callout, index) => ({
+        ...CALLOUTS[index],
+        title: callout.title,
+        detail: callout.description,
+        Icon: whyUpwonIcon(callout.icon),
+      }))
+    : CALLOUTS;
+  // A CMS without artwork of its own keeps the shipped one.
+  const artworkSrc = cms?.image ?? ARTWORK_SRC;
+  const artworkAlt = cms?.image ? (cms.imageAlt ?? ARTWORK_ALT) : ARTWORK_ALT;
 
   const d = (value) => (reduceMotion ? 0 : value);
   const stagger = (value) => (reduceMotion ? 0 : value);
@@ -146,26 +188,33 @@ export default function WhyUpwonProductProof() {
           viewport={VIEWPORT}
           className="mx-auto max-w-4xl text-center"
         >
-          <motion.div variants={fadeIn}>
-            <Eyebrow className="justify-center">BUILT FOR VISIBILITY</Eyebrow>
-          </motion.div>
+          {(!cms || cms.eyebrow) && (
+            <motion.div variants={fadeIn}>
+              <Eyebrow className="justify-center">
+                {cms ? cms.eyebrow : 'BUILT FOR VISIBILITY'}
+              </Eyebrow>
+            </motion.div>
+          )}
 
           <motion.h2
             variants={fadeUp}
             className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]"
           >
-            See Everything.{' '}
-            <span className="gradient-text-orange">Control Everything.</span>
+            {cms ? (
+              <HeadingLines lines={cms.headingLines} />
+            ) : (
+              <>
+                See Everything.{' '}
+                <span className="gradient-text-orange">Control Everything.</span>
+              </>
+            )}
           </motion.h2>
 
           <motion.p
             variants={fadeUp}
             className="mx-auto mt-4 max-w-3xl text-[14.5px] leading-relaxed text-navy-600 sm:text-[15px]"
           >
-            UpWon gives your teams a connected view of the information and
-            workflows that matter most. From daily operations to high-level
-            business decisions, the platform helps bring critical information
-            into one place.
+            {cms ? cms.subtext : SUBTEXT}
           </motion.p>
         </motion.div>
 
@@ -179,8 +228,8 @@ export default function WhyUpwonProductProof() {
         >
           <motion.img
             variants={artwork}
-            src="/images/why_product_proof.webp"
-            alt="The UpWon dashboard showing sales, purchase, customer and product figures alongside performance charts and recent activity"
+            src={artworkSrc}
+            alt={artworkAlt}
             width={1536}
             height={1024}
             loading="lazy"
@@ -189,9 +238,9 @@ export default function WhyUpwonProductProof() {
           />
 
           {/* ---------- Callouts pinned to the connectors (lg and up) ---------- */}
-          {CALLOUTS.map(({ title, detail, Icon, tile, ink, box, from }) => (
+          {callouts.map(({ title, detail, Icon, tile, ink, box, from }, index) => (
             <div
-              key={title}
+              key={`${index}-${title}`}
               className="absolute hidden -translate-y-1/2 lg:block"
               style={box}
             >
@@ -237,9 +286,9 @@ export default function WhyUpwonProductProof() {
           viewport={VIEWPORT}
           className="mt-6 grid gap-4 sm:grid-cols-2 lg:hidden"
         >
-          {CALLOUTS.map(({ title, detail, Icon, tile, ink }) => (
+          {callouts.map(({ title, detail, Icon, tile, ink }, index) => (
             <motion.article
-              key={title}
+              key={`${index}-${title}`}
               variants={fadeUp}
               className="rounded-[14px] bg-white p-5 shadow-[0_10px_28px_rgba(25,35,55,0.07)] ring-1 ring-navy-950/[0.06]"
             >

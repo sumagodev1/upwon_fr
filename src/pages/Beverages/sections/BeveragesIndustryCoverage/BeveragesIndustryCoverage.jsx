@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { m as motion, useReducedMotion } from 'framer-motion';
 import {
   CupSoda,
@@ -15,6 +16,9 @@ import {
 } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { fetchBeverageCoverageSection } from '../../../../lib/beveragePage.js';
+import { beverageIcon } from '../../../../lib/beverageIcons.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
@@ -27,6 +31,12 @@ const TINTS = [
   { tint: 'bg-[#701a45]', ink: 'text-white' },
 ];
 
+/*
+  The fallback: the published categories are the CMS's, and these are what
+  the section shows during the SSG build, while the fetch is in flight, and
+  whenever the API is unreachable. The badge colours stay positional either
+  way - they belong to the grid, not to a category.
+*/
 const CATEGORIES = [
   {
     label: 'Fruit Juices',
@@ -104,6 +114,28 @@ const CATEGORIES = [
 
 export default function BeveragesIndustryCoverage() {
   const reduceMotion = useReducedMotion();
+  const [cms, setCms] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchBeverageCoverageSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // The CMS's categories, in the shape the built-in ones already have.
+  const categories = cms
+    ? cms.categories.map((category) => ({
+        label: category.label,
+        detail: category.detail,
+        Icon: beverageIcon(category.icon),
+      }))
+    : CATEGORIES;
 
   const d = (value) => (reduceMotion ? 0 : value);
   const stagger = (value) => (reduceMotion ? 0 : value);
@@ -151,26 +183,37 @@ export default function BeveragesIndustryCoverage() {
           viewport={VIEWPORT}
           className="mx-auto max-w-3xl text-center"
         >
-          <motion.div variants={fadeIn}>
-            <Eyebrow className="justify-center">INDUSTRY COVERAGE</Eyebrow>
-          </motion.div>
+          {(!cms || cms.eyebrow) && (
+            <motion.div variants={fadeIn}>
+              <Eyebrow className="justify-center">
+                {cms ? cms.eyebrow : 'INDUSTRY COVERAGE'}
+              </Eyebrow>
+            </motion.div>
+          )}
 
           <motion.h2
             variants={fadeUp}
             className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]"
           >
-            Built for a Wide Range of{' '}
-            <span className="gradient-text-orange">
-              Beverage &amp; Juice Businesses.
-            </span>
+            {cms ? (
+              <HeadingLines lines={cms.headingLines} />
+            ) : (
+              <>
+                Built for a Wide Range of{' '}
+                <span className="gradient-text-orange">
+                  Beverage &amp; Juice Businesses.
+                </span>
+              </>
+            )}
           </motion.h2>
 
           <motion.p
             variants={fadeUp}
             className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
           >
-            UpWon can support connected workflows across beverage and related
-            product categories, including:
+            {cms
+              ? cms.subtext
+              : 'UpWon can support connected workflows across beverage and related product categories, including:'}
           </motion.p>
         </motion.div>
 
@@ -182,7 +225,7 @@ export default function BeveragesIndustryCoverage() {
           viewport={VIEWPORT}
           className="mt-10 grid auto-rows-fr grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 lg:gap-5"
         >
-          {CATEGORIES.map(({ label, detail, Icon }, index) => {
+          {categories.map(({ label, detail, Icon }, index) => {
             const { tint, ink } = TINTS[index % TINTS.length];
 
             return (

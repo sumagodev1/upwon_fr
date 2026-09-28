@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { m as motion, useReducedMotion } from 'framer-motion';
 import {
   ShoppingCart,
@@ -9,6 +10,9 @@ import {
 } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { fetchSpicesAgroPlatformSection } from '../../../../lib/spicesAgroPage.js';
+import { spicesAgroIcon } from '../../../../lib/spicesAgroIcons.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
@@ -16,6 +20,10 @@ const VIEWPORT = { once: true, amount: 0.1 };
 
 // The six cards from the layout, each covering a group of the workflows
 // listed below them.
+//
+// The fallback now: the published groups are the CMS's, and these are what the
+// section shows during the SSG build, while the fetch is in flight, and
+// whenever the API is unreachable. CMS groups are numbered by position.
 const GROUPS = [
   {
     number: '01',
@@ -61,8 +69,35 @@ const GROUPS = [
   },
 ];
 
+const BACKGROUND_SRC = '/images/agro_how_upwon_bg.webp';
+
 export default function SpicesAgroHowUpwonHelps() {
   const reduceMotion = useReducedMotion();
+  const [cms, setCms] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchSpicesAgroPlatformSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // The CMS's groups, in the shape the built-in ones already have.
+  const groups = cms
+    ? cms.groups.map((group, index) => ({
+        number: String(index + 1).padStart(2, '0'),
+        title: group.title,
+        description: group.description,
+        Icon: spicesAgroIcon(group.icon),
+      }))
+    : GROUPS;
+  // A CMS without a background keeps the shipped illustration.
+  const background = cms?.background ?? BACKGROUND_SRC;
 
   const d = (value) => (reduceMotion ? 0 : value);
   const stagger = (value) => (reduceMotion ? 0 : value);
@@ -104,7 +139,7 @@ export default function SpicesAgroHowUpwonHelps() {
       {/* ================= BACKGROUND ================= */}
       <div className="pointer-events-none absolute inset-0">
         <img
-          src="/images/agro_how_upwon_bg.webp"
+          src={background}
           alt=""
           aria-hidden="true"
           loading="lazy"
@@ -121,28 +156,35 @@ export default function SpicesAgroHowUpwonHelps() {
           viewport={VIEWPORT}
           className="mx-auto max-w-3xl text-center"
         >
-          <motion.div variants={fadeIn}>
-            <Eyebrow className="justify-center">HOW UPWON HELPS</Eyebrow>
-          </motion.div>
+          {(!cms || cms.eyebrow) && (
+            <motion.div variants={fadeIn}>
+              <Eyebrow className="justify-center">{cms ? cms.eyebrow : 'HOW UPWON HELPS'}</Eyebrow>
+            </motion.div>
+          )}
 
           <motion.h2
             variants={fadeUp}
             className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]"
           >
-            One Connected Platform for Your{' '}
-            <span className="gradient-text-orange">
-              Spices &amp; Agro Processing Operations
-            </span>
+            {cms ? (
+              <HeadingLines lines={cms.headingLines} />
+            ) : (
+              <>
+                One Connected Platform for Your{' '}
+                <span className="gradient-text-orange">
+                  Spices &amp; Agro Processing Operations
+                </span>
+              </>
+            )}
           </motion.h2>
 
           <motion.p
             variants={fadeUp}
             className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-navy-600 sm:text-base"
           >
-            UpWon connects the key workflows behind spices and agro-processing
-            businesses—helping teams manage the movement of raw materials,
-            batches, products, inventory, information, and operations through
-            one unified platform.
+            {cms
+              ? cms.subtext
+              : 'UpWon connects the key workflows behind spices and agro-processing businesses—helping teams manage the movement of raw materials, batches, products, inventory, information, and operations through one unified platform.'}
           </motion.p>
         </motion.div>
 
@@ -155,7 +197,7 @@ export default function SpicesAgroHowUpwonHelps() {
           viewport={VIEWPORT}
           className="mt-14 grid auto-rows-fr gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 xl:gap-4"
         >
-          {GROUPS.map(({ number, title, description, Icon }) => (
+          {groups.map(({ number, title, description, Icon }) => (
             <motion.article
               key={number}
               variants={cardVariants}

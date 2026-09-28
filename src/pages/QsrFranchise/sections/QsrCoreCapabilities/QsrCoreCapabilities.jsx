@@ -14,6 +14,9 @@ import {
 } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { fetchQsrFranchiseCapabilitiesSection } from '../../../../lib/qsrFranchisePage.js';
+import { qsrFranchiseIcon } from '../../../../lib/qsrFranchiseIcons.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
@@ -25,6 +28,31 @@ const CARD_GAP = 20;
 // How fast the row drifts on its own, in pixels per second
 const DRIFT_SPEED = 42;
 
+/*
+  The colours the cards' icons cycle through, by position. The built-in set
+  below spells them out; CMS capabilities take them from here in the same
+  order, so the fifth card is always purple and the sixth orange again.
+*/
+const PALETTE = [
+  { tint: 'bg-[#fff3ec]', ink: 'text-orange-500' },
+  { tint: 'bg-[#eef4fd]', ink: 'text-[#2f6fed]' },
+  { tint: 'bg-[#eef8f1]', ink: 'text-[#1f9d55]' },
+  { tint: 'bg-[#fdeef4]', ink: 'text-[#d6336c]' },
+  { tint: 'bg-[#f4eefd]', ink: 'text-[#7c3aed]' },
+];
+
+const ARTWORK_SRC = '/images/qsr_core_capabilities.webp';
+const ARTWORK_ALT =
+  'A chef reviewing the UpWon dashboard, surrounded by procurement, production, recipes, outlets, inventory, sales and workforce workflows';
+
+const SUBTEXT =
+  'From ingredients to outlets, people to performance — UpWon brings all your key operations together in one connected platform.';
+
+/*
+  The fallback: the published capabilities are the CMS's, and these are what
+  the section shows during the SSG build, while the fetch is in flight, and
+  whenever the API is unreachable.
+*/
 const CAPABILITIES = [
   {
     number: '01',
@@ -102,6 +130,32 @@ const CAPABILITIES = [
 
 export default function QsrCoreCapabilities() {
   const reduceMotion = useReducedMotion();
+  const [cms, setCms] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchQsrFranchiseCapabilitiesSection().then((section) => {
+      if (!cancelled && section) setCms(section);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const capabilities = cms
+    ? cms.capabilities.map((capability, index) => ({
+        number: String(index + 1).padStart(2, '0'),
+        title: capability.title,
+        description: capability.description,
+        Icon: qsrFranchiseIcon(capability.icon),
+        ...PALETTE[index % PALETTE.length],
+      }))
+    : CAPABILITIES;
+  // A CMS without artwork of its own keeps the shipped one.
+  const artworkSrc = cms?.image ?? ARTWORK_SRC;
+  const artworkAlt = cms?.image ? (cms.imageAlt ?? ARTWORK_ALT) : ARTWORK_ALT;
 
   /* ================= CAROUSEL ================= */
 
@@ -111,7 +165,8 @@ export default function QsrCoreCapabilities() {
   const [paused, setPaused] = useState(false);
 
   // The track holds two copies of the set for the loop, so position is read
-  // against one copy's width.
+  // against one copy's width. Re-measured when the set changes, since a
+  // published set of a different length changes the page count.
   const measure = useCallback(() => {
     const track = trackRef.current;
     if (!track || !track.clientWidth) return;
@@ -139,7 +194,7 @@ export default function QsrCoreCapabilities() {
       observer.disconnect();
       track.removeEventListener('scroll', measure);
     };
-  }, [measure]);
+  }, [measure, capabilities.length]);
 
   const behavior = reduceMotion ? 'auto' : 'smooth';
 
@@ -273,8 +328,8 @@ export default function QsrCoreCapabilities() {
             className="min-w-0"
           >
             <img
-              src="/images/qsr_core_capabilities.webp"
-              alt="A chef reviewing the UpWon dashboard, surrounded by procurement, production, recipes, outlets, inventory, sales and workforce workflows"
+              src={artworkSrc}
+              alt={artworkAlt}
               loading="lazy"
               decoding="async"
               className="block h-auto w-full"
@@ -290,25 +345,33 @@ export default function QsrCoreCapabilities() {
               viewport={VIEWPORT}
               className="text-center"
             >
-              <motion.div variants={fadeIn}>
-                <Eyebrow className="justify-center">CORE CAPABILITIES</Eyebrow>
-              </motion.div>
+              {(!cms || cms.eyebrow) && (
+                <motion.div variants={fadeIn}>
+                  <Eyebrow className="justify-center">
+                    {cms ? cms.eyebrow : 'CORE CAPABILITIES'}
+                  </Eyebrow>
+                </motion.div>
+              )}
 
               <motion.h2
                 variants={fadeUp}
                 className="mt-3 h-display text-[26px] leading-[1.12] tracking-tight text-navy-950 sm:text-[30px] lg:text-[34px]"
               >
-                Built to Power Every Part of Your{' '}
-                <span className="gradient-text-orange">F&amp;B Operations</span>
+                {cms ? (
+                  <HeadingLines lines={cms.headingLines} />
+                ) : (
+                  <>
+                    Built to Power Every Part of Your{' '}
+                    <span className="gradient-text-orange">F&amp;B Operations</span>
+                  </>
+                )}
               </motion.h2>
 
               <motion.p
                 variants={fadeUp}
                 className="mx-auto mt-3 max-w-2xl text-[14.5px] leading-relaxed text-navy-600 sm:text-[15px]"
               >
-                From ingredients to outlets, people to performance — UpWon
-                brings all your key operations together in one connected
-                platform.
+                {cms ? cms.subtext : SUBTEXT}
               </motion.p>
             </motion.div>
 
@@ -355,12 +418,12 @@ export default function QsrCoreCapabilities() {
               className="mt-4 flex overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               style={{ gap: CARD_GAP }}
             >
-              {CAPABILITIES.map((capability, index) =>
+              {capabilities.map((capability, index) =>
                 renderCard(capability, index)
               )}
 
               {/* Second copy of the set, so the drift wraps without a seam */}
-              {CAPABILITIES.map((capability, index) =>
+              {capabilities.map((capability, index) =>
                 renderCard(capability, index, true)
               )}
             </motion.div>
