@@ -34,10 +34,38 @@ function StarRating({ count }) {
   );
 }
 
-export default function ComparisonMatrix({ subset }) {
+/* The matrix's built-in copy — what it renders whenever no `copy` is passed. */
+const DEFAULT_EYEBROW = 'Capability comparison';
+const DEFAULT_TITLE = 'UpWon vs the market — capability by capability.';
+const DEFAULT_DESCRIPTION =
+  'Star ratings reflect out-of-the-box capability, not what can be built with custom development.';
+
+/*
+  The shared capability matrix — VsSapPage, VsTallyPage and the (unused)
+  WhyUpwonPage all draw it.
+
+  `copy`, `rows` and `tco` are OPTIONAL, and each is read only when it is
+  passed. They exist for VsSapPage, whose matrix is authored in the admin panel
+  under Resource Page → UpWon vs SAP (see lib/vsSapPage.js); every other caller
+  passes none of them and gets exactly the matrix it always had.
+
+    copy   `{ eyebrow, heading, subtext }` in place of the built-in eyebrow,
+           title and description. A null eyebrow keeps the built-in one.
+    rows   the capability rows in place of data/metrics.js's COMPETITORS, in
+           the same shape — `{ capability, [key]: 0..5 }` for every key in
+           `subset`. An EMPTY array is honoured and renders no capability rows:
+           the caller passes one only when every authored row was switched off
+           on purpose, and leaves `rows` out to keep the built-in ones.
+    tco    `{ [key]: label }` in place of the "Total Cost of Ownership (3 yr)"
+           row's built-in labels. Only the words: each cell keeps its built-in
+           colour, and a key with no label (or a null one) keeps its built-in
+           label too.
+*/
+export default function ComparisonMatrix({ subset, copy, rows, tco: tcoLabels }) {
   // subset can be an array of competitor keys to include (other than upwon)
   const keys = subset || COMPETITOR_KEYS;
   const labels = keys.map((k) => COMPETITOR_LABELS[COMPETITOR_KEYS.indexOf(k)]);
+  const matrixRows = rows ?? COMPETITORS;
 
   return (
     <section className="relative overflow-hidden bg-white section-pad">
@@ -46,9 +74,9 @@ export default function ComparisonMatrix({ subset }) {
         <SectionHeading
           align="center"
           variant="light"
-          eyebrow="Capability comparison"
-          title="UpWon vs the market — capability by capability."
-          description="Star ratings reflect out-of-the-box capability, not what can be built with custom development."
+          eyebrow={copy?.eyebrow ?? DEFAULT_EYEBROW}
+          title={copy?.heading ?? DEFAULT_TITLE}
+          description={copy?.subtext ?? DEFAULT_DESCRIPTION}
         />
 
         {/* Grid layout notes for mobile (≤ 320 px):
@@ -86,7 +114,7 @@ export default function ComparisonMatrix({ subset }) {
               ))}
             </div>
 
-            {COMPETITORS.map((row, i) => (
+            {matrixRows.map((row, i) => (
               <motion.div
                 key={row.capability}
                 initial={{ opacity: 0, x: -8 }}
@@ -143,7 +171,9 @@ export default function ComparisonMatrix({ subset }) {
                     }`}
                   >
                     <span className="text-[10px] font-bold uppercase tracking-[0.1em] sm:text-[10.5px] sm:tracking-[0.12em]">
-                      {tco?.l || '—'}
+                      {/* An authored label when one was passed; the colour
+                          above is always the built-in one. */}
+                      {tcoLabels?.[k] || tco?.l || '—'}
                     </span>
                   </div>
                 );

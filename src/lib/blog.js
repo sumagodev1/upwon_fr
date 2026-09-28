@@ -3,9 +3,10 @@
 // /blog and the /resources hub, and each /blog/:slug article.
 //
 // The admin panel authors all of it under Resource Page → Blog, in four tabs:
-// Hero Section and Topics Section (two singletons of copy), Categories (an
-// ordered child list, each row a slug, a label and an icon NAME) and Posts
-// (one row per article, ordered by its publish date). Only ACTIVE rows are
+// Hero Section (an ordered list of slides, as on the home and Insider pages),
+// Topics Section (a singleton of copy), Categories (an ordered child list, each
+// row a slug, a label and an icon NAME) and Posts (one row per article,
+// ordered by its publish date). Only ACTIVE rows are
 // served, and the public shapes carry no ids, timestamps, authorship or display
 // order — see the public router in the backend's modules/blog/routes/.
 //
@@ -25,9 +26,10 @@
 //      fetch resolves to null immediately and the blog behaves exactly as it
 //      did before this feature existed.
 //
-// A 404 is folded into that same null. The API answers 404 while the hero or
-// the topic intro has never been saved, and for a post slug that is unknown or
-// not ACTIVE; "nothing published" and "nothing could be reached" are one answer
+// A 404 is folded into that same null. The API answers 404 while the topic
+// intro has never been saved, and for a post slug that is unknown or not
+// ACTIVE; a hero with no ACTIVE slide answers an empty list, which reads the
+// same. "Nothing published" and "nothing could be reached" are one answer
 // here on purpose. The post page tells the two apart with the index read, not
 // with this module — see BlogPostPage.jsx.
 //
@@ -59,9 +61,10 @@ const isText = (value) => typeof value === 'string' && value.trim() !== '';
 const textOr = (value, fallback) => (isText(value) ? value.trim() : fallback);
 
 // Site-relative ("/blog/wastage.webp") or absolute http(s) — the seeded posts'
-// pictures are remote (Unsplash) and an upload resolves to the API's own
-// absolute URL, so both forms are in use. The admin API accepts no URL on write
-// at all — a post's pictures, desktop and mobile, are uploads only — so this is
+// pictures are remote (Unsplash), the seeded hero slide's is the site's own
+// and an upload resolves to the API's own absolute URL, so both forms are in
+// use. The admin API accepts no URL on write at all — a post's and a hero
+// slide's pictures, desktop and mobile, are uploads only — so this is
 // the one place the rule is checked: it keeps a `javascript:` URL out of an
 // attribute even if a bad value ever reached a row. A leading "/\" is refused
 // along with "//" because browsers read both as protocol-relative.
@@ -165,43 +168,50 @@ const isObject = (value) =>
 
 // --- Hero Section ----------------------------------------------------------
 
+// A slide is only usable if it has the two fields the hero always renders.
+function isRenderableSlide(slide) {
+  return isObject(slide) && isText(slide.heading) && isText(slide.subtext);
+}
+
+// `heading` is plain text: the hero is the one heading in this area with no
+// `**accent**` markup (HeroSlider styles an em-dash split instead), so it is
+// carried as the string it was authored as. There is no alt text: HeroSlider
+// paints the backdrop as decorative.
+function toHeroSlide(slide) {
+  return {
+    // Null when it somehow arrives blank; the caller answers it with its
+    // built-in eyebrow. The server requires one, so this is a guard rather than
+    // a state anyone can reach from the panel.
+    eyebrow: textOr(slide.eyebrow, null),
+    heading: slide.heading.trim(),
+    subtext: slide.subtext.trim(),
+    // Null means no picture of its own; the caller falls back to its house art.
+    image: safeUrl(slide.image),
+    // Null means no phone-specific crop: HeroSlider serves the desktop picture
+    // to every viewport and omits the <picture> source entirely.
+    mobileImage: safeUrl(slide.mobileImage),
+  };
+}
+
 /**
- * The published /blog hero, or null to mean "keep whatever you have".
+ * The published /blog hero carousel — the ACTIVE slides in the order the panel
+ * arranged them — or null to mean "keep whatever you have".
  *
- * One slide of copy, which is what the hero is on the page today: the eyebrow,
- * the headline, the paragraph under it and the labels of its two buttons. The
- * buttons' links are not authored — the primary always goes to /demo and the
- * secondary to /knowledgebase — and neither is the backdrop, the site's shared
- * hero artwork; both are fixed in BlogPage.jsx.
+ * Only the words and the pictures are authored. The two buttons — the primary
+ * to /demo, the secondary to /knowledgebase — and the accent are the page's
+ * own and fixed in BlogPage.jsx.
  *
- * `heading` is plain text: the hero is the one heading in this area with no
- * `**accent**` markup (HeroSlider styles an em-dash split instead), so it is
- * carried as the string it was authored as.
- *
- * `eyebrow` and either button label come back null when they somehow arrive
- * blank, and the caller answers each with its own built-in value, so a hero
- * never loses a button's words to one bad field. The server requires all of
- * them, so these are guards rather than states anyone can reach from the panel.
- *
- * @returns {Promise<{eyebrow: string|null, heading: string, subtext: string,
- *   primaryCtaLabel: string|null, secondaryCtaLabel: string|null} | null>}
+ * @returns {Promise<Array<{eyebrow: string|null, heading: string,
+ *   subtext: string, image: string|null, mobileImage: string|null}> | null>}
  */
 export async function fetchBlogHero() {
   const published = await getPublished('/hero-section');
-  const hero = published?.data;
+  if (!published || !Array.isArray(published.data)) return null;
 
-  // The headline and the paragraph under it are what this band cannot render
-  // without, so a row arriving without either counts as nothing published and
-  // the built-in hero stands whole rather than in part.
-  if (!isObject(hero) || !isText(hero.heading) || !isText(hero.subtext)) return null;
-
-  return {
-    eyebrow: textOr(hero.eyebrow, null),
-    heading: hero.heading.trim(),
-    subtext: hero.subtext.trim(),
-    primaryCtaLabel: textOr(hero.primaryCtaLabel, null),
-    secondaryCtaLabel: textOr(hero.secondaryCtaLabel, null),
-  };
+  const slides = published.data.filter(isRenderableSlide).map(toHeroSlide);
+  // An empty carousel is content the site cannot render, so it counts as
+  // "nothing published" rather than "publish nothing".
+  return slides.length > 0 ? slides : null;
 }
 
 // --- Topics Section --------------------------------------------------------

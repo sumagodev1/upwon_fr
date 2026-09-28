@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import Container from '../../components/shared/Container/Container.jsx';
@@ -8,14 +8,86 @@ import {
   getArticlesByCategory,
   formatKbDate,
 } from '../../data/knowledgebase.js';
+import { fetchKbCategories, fetchKbCategory } from '../../lib/knowledgebase.js';
 
 export default function KnowledgebaseCategoryPage() {
   const { categorySlug } = useParams();
-  const category = getCategory(categorySlug);
+
+  /*
+    The built-in category renders first — it is the copy the sitemap vouches
+    for (seo/routes.js and App.jsx's getStaticPaths enumerate
+    data/knowledgebase.js's slugs), what the prerender bakes in, and what
+    renders if the API is unreachable — and the category published through the
+    admin panel's Resource Page → Knowledgebase replaces it once the API
+    answers. BlogPostPage's order, for the same reasons.
+
+    Two calls, because they answer different questions — the same pair
+    BlogPostPage makes:
+      - fetchKbCategory carries the category itself: its name, description and
+        guide cards;
+      - fetchKbCategories says which categories are LIVE, which is how a
+        category switched off in the panel (a 404, so null above) is told
+        apart from an API that could not be reached (also null).
+    Both resolve to null for every failure — see lib/knowledgebase.js.
+
+    The answer is stored with the slug it was for, so a slow reply for the
+    previous category can never paint over the next one.
+  */
+  const [published, setPublished] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([fetchKbCategory(categorySlug), fetchKbCategories()]).then(
+      ([found, index]) => {
+        if (cancelled) return;
+        setPublished({ slug: categorySlug, found, index });
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [categorySlug]);
+
+  const settled = published?.slug === categorySlug;
+  const fetched = settled ? published : null;
+  const builtIn = getCategory(categorySlug);
+
+  /*
+    The published categories are the authority on what is live — the same
+    rule the hub uses to choose its cards. When the knowledgebase HAS
+    categories (`hasCategories`, see lib/knowledgebase.js) and this slug is
+    not among them, the category was switched off or deleted in the admin
+    panel, so a built-in copy of it stops rendering once the API has said so
+    rather than living on at a URL the hub no longer links to. With no list —
+    API unreachable, unconfigured, no category rows at all — the built-in copy
+    stands.
+  */
+  const listed = fetched?.index?.hasCategories ? fetched.index : null;
+  const unpublished =
+    Boolean(listed) && !listed.categories.some((c) => c.slug === categorySlug);
+
+  // The published category when there is one; otherwise the built-in one,
+  // unless the API says it is gone.
+  const found = fetched?.found ?? null;
+  const category = found?.category ?? (builtIn && !unpublished ? builtIn : null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [categorySlug]);
+
+  // Not a built-in category and the API has not answered yet: hold the hero's
+  // frame rather than flashing "not found" at a category that exists only in
+  // the admin panel.
+  if (!category && !settled) {
+    return (
+      <section
+        aria-busy="true"
+        className="relative flex min-h-[48vh] items-center overflow-hidden bg-navy-950 pt-32 pb-12 md:min-h-[52vh] md:pt-40 md:pb-14"
+      >
+        <span className="sr-only">Loading category…</span>
+      </section>
+    );
+  }
 
   if (!category) {
     return (
@@ -31,7 +103,9 @@ export default function KnowledgebaseCategoryPage() {
     );
   }
 
-  const articles = getArticlesByCategory(categorySlug);
+  // A published category's own guide cards — possibly none, when every one
+  // was switched off — or the built-in ones filed under it.
+  const articles = found ? found.articles : getArticlesByCategory(categorySlug);
   const trail = [
     { name: 'Home', to: '/' },
     { name: 'Knowledgebase', to: '/knowledgebase' },
@@ -40,10 +114,13 @@ export default function KnowledgebaseCategoryPage() {
 
   return (
     <>
+      {/* The panel authors no keywords, so a published category keeps its
+          built-in twin's (the slug never changes) and one that exists only in
+          the panel takes the site default. */}
       <Seo
         title={`${category.name} — UpWon Knowledgebase`}
         description={category.description}
-        keywords={category.keywords}
+        keywords={category.keywords ?? builtIn?.keywords}
         canonical={`https://upwon.in/knowledgebase/${category.slug}`}
         jsonLd={breadcrumbJsonLd(trail)}
       />
@@ -99,6 +176,13 @@ export default function KnowledgebaseCategoryPage() {
                 </span>
               </Link>
             ))}
+            {/* Only reachable once a published category has had every guide
+                switched off; every built-in category has guides. */}
+            {articles.length === 0 && (
+              <p className="col-span-full py-12 text-center text-sm text-navy-500">
+                No guides in this category yet — check back soon.
+              </p>
+            )}
           </div>
         </Container>
       </section>
