@@ -1,11 +1,39 @@
 import { m as motion } from 'framer-motion';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 import {
     ArrowRight,
 } from 'lucide-react';
 
 const EASE = [0.22, 1, 0.3, 1];
 
-export default function VmsCtaSection() {
+/*
+  The built-in copy, written in the shape the API sends so that a CMS band and
+  the shipped one take one identical path through the render below.
+*/
+const HEADING_LINES = [
+    [{ text: 'See Your Vendor Base', accent: false }],
+    [
+        { text: 'on UpWon — ', accent: false },
+        { text: 'Live, in 30 Minutes.', accent: true },
+    ],
+];
+const SUBTEXT =
+    "An invitation to a conversation about your business's own vendor relationships — not a demo request form.";
+const IMAGE = '/images/vms_final_cta.webp';
+const MOBILE_IMAGE = '/images/vms_cta_mobile.webp';
+const PRIMARY = { label: 'Talk to a Procurement Specialist', href: '#contact' };
+const SECONDARY = { label: 'See How This Fits Your Vendor Base', href: '#vendor-base' };
+
+export default function VmsCtaSection({ section = null }) {
+    const headingLines = section ? section.headingLines : HEADING_LINES;
+    const subtext = section ? section.subtext : SUBTEXT;
+    // A band without its own photograph falls back to the site's, so the copy
+    // always has something behind it.
+    const image = (section && section.image) || IMAGE;
+    const mobileImage = (section && section.mobileImage) || MOBILE_IMAGE;
+    const primary = section ? section.primary : PRIMARY;
+    const secondary = section ? section.secondary : SECONDARY;
+
     return (
         <section className="relative w-full overflow-hidden">
 
@@ -16,7 +44,7 @@ export default function VmsCtaSection() {
             <div className="relative hidden w-full md:block">
 
                 <img
-                    src="/images/vms_final_cta.webp"
+                    src={image}
                     alt=""
                     aria-hidden="true"
                     loading="lazy"
@@ -64,10 +92,7 @@ export default function VmsCtaSection() {
                                     text-navy-950
                                 "
                             >
-                                See Your Vendor Base<br /> on UpWon —{' '}
-                                <span className="gradient-text-orange">
-                                    Live, in 30 Minutes.
-                                </span>
+                                <HeadingLines lines={headingLines} />
                             </motion.h2>
 
 
@@ -92,9 +117,7 @@ export default function VmsCtaSection() {
                                     text-navy-600
                                 "
                             >
-                                An invitation to a conversation about your
-                                business's own vendor relationships —<br />
-                                not a demo request form.
+                                {subtext}
                             </motion.p>
 
 
@@ -124,7 +147,7 @@ export default function VmsCtaSection() {
                             >
 
                                 <a
-                                    href="#contact"
+                                    href={primary.href}
                                     className="
                                         group
                                         inline-flex
@@ -147,7 +170,7 @@ export default function VmsCtaSection() {
                                         sm:w-auto
                                     "
                                 >
-                                    Talk to a Procurement Specialist
+                                    {primary.label}
 
                                     <ArrowRight
                                         size={17}
@@ -162,7 +185,7 @@ export default function VmsCtaSection() {
 
 
                                 <a
-                                    href="#vendor-base"
+                                    href={secondary ? secondary.href : "#"}
                                     className="
                                         group
                                         inline-flex
@@ -188,7 +211,7 @@ export default function VmsCtaSection() {
                                         sm:w-auto
                                     "
                                 >
-                                    See How This Fits Your Vendor Base
+                                    {secondary ? secondary.label : ''}
 
                                     <ArrowRight
                                         size={17}
@@ -234,7 +257,7 @@ export default function VmsCtaSection() {
                     "
                 >
                     <img
-                        src="/images/vms_cta_mobile.webp"
+                        src={mobileImage}
                         alt=""
                         aria-hidden="true"
                         loading="lazy"
@@ -295,14 +318,7 @@ export default function VmsCtaSection() {
                             text-navy-950
                         "
                     >
-                        See Your Vendor Base
-                        <br />
-                        on UpWon —{' '}
-                        <span className="gradient-text-orange">
-                            Live, in 30
-                            <br />
-                            Minutes.
-                        </span>
+                        <HeadingLines lines={headingLines} />
                     </motion.h2>
 
 
@@ -328,9 +344,7 @@ export default function VmsCtaSection() {
                             text-navy-600
                         "
                     >
-                        An invitation to a conversation about your
-                        business's own vendor relationships — not a
-                        demo request form.
+                        {subtext}
                     </motion.p>
 
 
@@ -359,7 +373,7 @@ export default function VmsCtaSection() {
                         {/* Primary CTA */}
 
                         <a
-                            href="#contact"
+                            href={primary.href}
                             className="
                                 group
                                 inline-flex
@@ -380,7 +394,7 @@ export default function VmsCtaSection() {
                                 active:scale-[0.99]
                             "
                         >
-                            Talk to a Procurement Specialist
+                            {primary.label}
 
                             <ArrowRight
                                 size={16}
@@ -397,7 +411,7 @@ export default function VmsCtaSection() {
                         {/* Secondary CTA */}
 
                         <a
-                            href="#vendor-base"
+                            href={secondary ? secondary.href : "#"}
                             className="
                                 group
                                 inline-flex
@@ -421,7 +435,7 @@ export default function VmsCtaSection() {
                                 active:scale-[0.99]
                             "
                         >
-                            See How This Fits Your Vendor Base
+                            {secondary ? secondary.label : ''}
 
                             <ArrowRight
                                 size={16}

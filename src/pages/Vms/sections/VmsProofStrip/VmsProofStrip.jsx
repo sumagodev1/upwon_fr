@@ -1,25 +1,100 @@
 import { m as motion } from 'framer-motion';
-import {
-  UserRoundPlus,
-  Clock3,
-  ShieldCheck,
-  ArrowUp,
-  ArrowDown,
-} from 'lucide-react';
+import { ArrowUp, ArrowDown } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { vmsIcon } from '../../../../lib/vmsIcons.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
-function MetricCard({
-  icon: Icon,
-  value,
-  direction,
-  title,
-  description,
-  delay = 0,
-}) {
-  const isUp = direction === 'up';
+/*
+  The built-in copy and layout, written in the shape the API sends so that a
+  CMS section and the shipped one take one identical path through the render.
+
+  TILES is the bento: each entry carries its own kind and column span, and the
+  order is the layout - 5 + 7 fills the first row of twelve, then 5 + 3 + 4
+  fills the second. The icons are names rather than imported components for
+  the same reason the other pages' are: a record cannot hold a component, so
+  the CMS sends a name and lib/vmsIcons.js turns it back into one.
+*/
+const EYEBROW = 'Proof Strip';
+const HEADING_LINES = [
+  [
+    { text: 'Not a Pitch. ', accent: false },
+    { text: "Just What's Already Under Control.", accent: true },
+  ],
+];
+const SUBTEXT =
+  'Best-available operational proof from live UpWon deployments — presented honestly, without inflating results or implying unsupported VMS-specific outcomes.';
+
+const TILES = [
+  {
+    kind: 'METRIC',
+    colSpan: 5,
+    icon: 'UserRoundPlus',
+    value: '40%',
+    direction: 'up',
+    title: 'Faster Vendor Onboarding',
+    description:
+      'Bring vendor information online faster with a structured, centralized workflow. Collect, organize, validate, and manage vendor details, documents, compliance records, and approvals in one place—reducing manual work, improving accuracy, and keeping every vendor record up to date.',
+  },
+  {
+    kind: 'IMAGE',
+    colSpan: 7,
+    image: '/images/vms_proof_number1.webp',
+    imageAlt: 'Vendor management operational proof',
+  },
+  {
+    kind: 'IMAGE',
+    colSpan: 5,
+    image: '/images/vms_proof_number2.webp',
+    imageAlt: 'Vendor approval and procurement workflow',
+  },
+  {
+    kind: 'METRIC',
+    colSpan: 3,
+    icon: 'Clock3',
+    value: '32%',
+    direction: 'down',
+    title: 'Reduced Processing Time',
+    description:
+      'Fewer manual follow-ups and faster approvals across procurement workflows.',
+  },
+  {
+    kind: 'METRIC',
+    colSpan: 4,
+    icon: 'ShieldCheck',
+    value: '28%',
+    direction: 'up',
+    title: 'Better Compliance Visibility',
+    description:
+      'Centralized vendor records, documents and compliance for complete visibility.',
+  },
+];
+
+/*
+  Tailwind compiles the classes it can see in the source, so a span cannot be
+  interpolated into `lg:col-span-${n}` - the class would never be generated.
+  Hence a lookup of the literal strings, covering the spans the schema allows.
+*/
+const COL_SPAN_CLASS = {
+  3: 'lg:col-span-3',
+  4: 'lg:col-span-4',
+  5: 'lg:col-span-5',
+  6: 'lg:col-span-6',
+  7: 'lg:col-span-7',
+  8: 'lg:col-span-8',
+  9: 'lg:col-span-9',
+  10: 'lg:col-span-10',
+  11: 'lg:col-span-11',
+  12: 'lg:col-span-12',
+};
+
+function MetricCard({ icon, value, direction, title, description, delay = 0 }) {
+  // A name, not a component — resolved the same way whether it came from the
+  // CMS or the built-in set above.
+  const Icon = vmsIcon(icon);
+  const isUp = direction !== 'down';
 
   return (
     <motion.div
@@ -90,7 +165,12 @@ function ProofImage({ src, alt, delay = 0 }) {
   );
 }
 
-export default function VmsProofStrip() {
+export default function VmsProofStrip({ section = null }) {
+  const eyebrow = section ? section.eyebrow : EYEBROW;
+  const headingLines = section ? section.headingLines : HEADING_LINES;
+  const subtext = section ? section.subtext : SUBTEXT;
+  const tiles = section && section.tiles.length > 0 ? section.tiles : TILES;
+
   return (
     <section className="relative overflow-hidden bg-white py-12 md:py-16">
       <Container>
@@ -102,79 +182,46 @@ export default function VmsProofStrip() {
           transition={{ duration: 0.6, ease: EASE }}
           className="mx-auto max-w-3xl text-center"
         >
-          <Eyebrow className="justify-center">
-            Proof Strip
-          </Eyebrow>
+          {eyebrow && <Eyebrow className="justify-center">{eyebrow}</Eyebrow>}
 
           <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-            Not a Pitch.{' '}
-            <span className="gradient-text-orange">
-              Just What&apos;s Already Under Control.
-            </span>
+            <HeadingLines lines={headingLines} />
           </h2>
 
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
-            Best-available operational proof from live UpWon deployments —
-            presented honestly, without inflating results or implying unsupported
-            VMS-specific outcomes.
-          </p>
+          {subtext && (
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
+              {subtext}
+            </p>
+          )}
         </motion.div>
 
-        {/* ================= COMPACT PROOF GRID ================= */}
+        {/* ================= THE BENTO =================
+            One list, laid out by each tile's own span. The order is the
+            layout, so reordering in the CMS rearranges the grid. */}
         <div className="mx-auto mt-8 grid max-w-[1280px] gap-3 lg:grid-cols-12">
-          
-          {/* Top Left */}
-          <div className="lg:col-span-5">
-            <MetricCard
-              icon={UserRoundPlus}
-              value="40%"
-              direction="up"
-              title="Faster Vendor Onboarding"
-              description="Bring vendor information online faster with a structured, centralized workflow. Collect, organize, validate, and manage vendor details, documents, compliance records, and approvals in one place—reducing manual work, improving accuracy, and keeping every vendor record up to date."
-            />
-          </div>
-
-          {/* Top Right Image */}
-          <div className="lg:col-span-7">
-            <ProofImage
-              src="/images/vms_proof_number1.webp"
-              alt="Vendor management operational proof"
-              delay={0.08}
-            />
-          </div>
-
-          {/* Bottom Left Image */}
-          <div className="lg:col-span-5">
-            <ProofImage
-              src="/images/vms_proof_number2.webp"
-              alt="Vendor approval and procurement workflow"
-              delay={0.1}
-            />
-          </div>
-
-          {/* Bottom Center */}
-          <div className="lg:col-span-3">
-            <MetricCard
-              icon={Clock3}
-              value="32%"
-              direction="down"
-              title="Reduced Processing Time"
-              description="Fewer manual follow-ups and faster approvals across procurement workflows."
-              delay={0.05}
-            />
-          </div>
-
-          {/* Bottom Right */}
-          <div className="lg:col-span-4">
-            <MetricCard
-              icon={ShieldCheck}
-              value="28%"
-              direction="up"
-              title="Better Compliance Visibility"
-              description="Centralized vendor records, documents and compliance for complete visibility."
-              delay={0.1}
-            />
-          </div>
+          {tiles.map((tile, index) => (
+            <div
+              key={index}
+              className={COL_SPAN_CLASS[tile.colSpan] ?? COL_SPAN_CLASS[4]}
+            >
+              {tile.kind === 'IMAGE' ? (
+                <ProofImage
+                  src={tile.image}
+                  alt={tile.imageAlt}
+                  delay={index * 0.04}
+                />
+              ) : (
+                <MetricCard
+                  icon={tile.icon}
+                  value={tile.value}
+                  direction={tile.direction}
+                  title={tile.title}
+                  description={tile.description}
+                  delay={index * 0.04}
+                />
+              )}
+            </div>
+          ))}
         </div>
       </Container>
     </section>

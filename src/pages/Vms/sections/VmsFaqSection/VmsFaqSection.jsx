@@ -3,6 +3,7 @@ import { m as motion, AnimatePresence } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 /*
   VMS "FAQ" — pre-empts the practical questions procurement and
@@ -10,6 +11,20 @@ import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
 */
 
 const EASE = [0.22, 1, 0.3, 1];
+
+/*
+  The built-in copy, written in the shape the API sends so that a CMS section
+  and the shipped one take one identical path through the render below.
+*/
+const EYEBROW = 'FAQ';
+const HEADING_LINES = [
+  [
+    { text: 'Questions Procurement Leads ', accent: false },
+    { text: 'Ask Before They Commit.', accent: true },
+  ],
+];
+const SUBTEXT =
+  'Practical, adoption-focused answers to the questions procurement teams ask before bringing vendors onto a new management platform.';
 
 const FAQS = [
   {
@@ -54,22 +69,22 @@ export default function VmsFaqSection() {
           transition={{ duration: 0.6, ease: EASE }}
           className="mx-auto max-w-3xl text-center"
         >
-          <Eyebrow className="justify-center">FAQ</Eyebrow>
+          {eyebrow && <Eyebrow className="justify-center">{eyebrow}</Eyebrow>}
 
           <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-            Questions Procurement Leads{' '}
-            <span className="gradient-text-orange">Ask Before They Commit.</span>
+            <HeadingLines lines={headingLines} />
           </h2>
 
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
-            Practical, adoption-focused answers to the questions procurement teams
-            ask before bringing vendors onto a new management platform.
-          </p>
+          {subtext && (
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
+              {subtext}
+            </p>
+          )}
         </motion.div>
 
         {/* Accordion */}
         <div className="mx-auto mt-12 max-w-3xl divide-y divide-cream-300 rounded-2xl border border-cream-300 bg-white shadow-sm">
-          {FAQS.map((f, i) => (
+          {faqs.map((f, i) => (
             <div key={f.q}>
               <button
                 type="button"

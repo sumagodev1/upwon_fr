@@ -1,16 +1,31 @@
 import { m as motion } from 'framer-motion';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 /*
   WMS "Recognition" — a quick category map so every food/FMCG warehouse buyer sees
   themselves immediately: cold-storage manager, multi-plant FG head, raw-material
-  stores manager, 3PL operator. Seven warehouse-type cards (icon + title + one
+  stores manager, 3PL operator. Seven warehouse-type cards (image + title + one
   line on its specific stock-handling reality), over a faint warehouse line-art
-  background, closed by a compliance / excellence / scale trust bar.
+  background.
 */
 
 const EASE = [0.22, 1, 0.3, 1];
+
+/*
+  The built-in copy, written in the shape the API sends so that a CMS section
+  and the shipped one take one identical path through the render below.
+*/
+const EYEBROW = 'Recognition';
+const HEADING_LINES = [
+  [
+    { text: 'Built for All Types ', accent: false },
+    { text: 'of Warehouses', accent: true },
+  ],
+];
+const SUBTEXT =
+  'From cold-storage managers to multi-plant FG warehouse heads and raw-material stores managers — our platform is built to help you see yourself in every workflow.';
 
 const TYPES = [
   {
@@ -75,7 +90,12 @@ function TypeCard({ t, i }) {
   );
 }
 
-export default function WmsRecognition() {
+export default function WmsRecognition({ section = null }) {
+  const eyebrow = section ? section.eyebrow : EYEBROW;
+  const headingLines = section ? section.headingLines : HEADING_LINES;
+  const subtext = section ? section.subtext : SUBTEXT;
+  const types = section && section.cards.length > 0 ? section.cards : TYPES;
+
   return (
     <section className="relative overflow-hidden bg-white py-12 md:py-16">
       {/* Warehouse line-art background — clearly visible */}
@@ -95,19 +115,22 @@ export default function WmsRecognition() {
           transition={{ duration: 0.6, ease: EASE }}
           className="mx-auto max-w-3xl text-center"
         >
-          <Eyebrow className="justify-center">Recognition</Eyebrow>
+          {eyebrow && <Eyebrow className="justify-center">{eyebrow}</Eyebrow>}
+
           <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-            Built for All Types <span className="gradient-text-orange">of Warehouses</span>
+            <HeadingLines lines={headingLines} />
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
-            From cold-storage managers to multi-plant FG warehouse heads and raw-material stores
-            managers — our platform is built to help you see yourself in every workflow.
-          </p>
+
+          {subtext && (
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-navy-600">
+              {subtext}
+            </p>
+          )}
         </motion.div>
 
         {/* Card grid — four across, final three centered */}
         <div className="mt-12 flex flex-wrap justify-center gap-6">
-          {TYPES.map((t, i) => (
+          {types.map((t, i) => (
             <TypeCard key={t.title} t={t} i={i} />
           ))}
         </div>

@@ -1,40 +1,61 @@
 import { m as motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import {
-  CalendarDays,
-  Package,
-  ArrowRight,
-  ShieldCheck,
-  Lock,
-  Clock,
-} from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { wmsIcon } from '../../../../lib/wmsIcons.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
+/*
+  The built-in copy, written in the shape the API sends so that a CMS section
+  and the shipped one take one identical path through the render below — the
+  icons as names the lookup resolves, not as imported components.
+*/
+const EYEBROW = "Let's Talk About Your Warehouse";
+const HEADING_LINES = [
+  [
+    { text: 'See Your Warehouse on UpWon — ', accent: false },
+    { text: 'Live, in 30 Minutes.', accent: true },
+  ],
+];
+const SUBTEXT =
+  "Let's understand your warehouse, your challenges and your goals. We'll show you the impact UpWon WMS can deliver for your actual operations.";
+
+const IMAGE = '/images/wms_CTA.webp';
+const MOBILE_IMAGE = '/images/wms_cta_mb.webp';
+
+const PRIMARY = {
+  label: 'Talk to a Warehouse Specialist',
+  href: '/demo',
+  icon: 'CalendarDays',
+};
+const SECONDARY = {
+  label: 'See How This Fits Your Warehouse',
+  href: '/contact',
+  icon: 'Package',
+};
+
 const TRUST = [
-  {
-    icon: Package,
-    a: 'Built for modern',
-    b: 'warehouse operations',
-  },
-  {
-    icon: ShieldCheck,
-    a: 'Accurate, traceable',
-    b: 'inventory control',
-  },
-  {
-    icon: Lock,
-    a: 'Your warehouse data',
-    b: 'safe and secure',
-  },
-  {
-    icon: Clock,
-    a: 'Real warehouse insights',
-    b: 'in just 30 minutes',
-  },
+  { icon: 'Package', lineOne: 'Built for modern', lineTwo: 'warehouse operations' },
+  { icon: 'ShieldCheck', lineOne: 'Accurate, traceable', lineTwo: 'inventory control' },
+  { icon: 'Lock', lineOne: 'Your warehouse data', lineTwo: 'safe and secure' },
+  { icon: 'Clock', lineOne: 'Real warehouse insights', lineTwo: 'in just 30 minutes' },
 ];
 
-export default function WmsCta() {
+export default function WmsCta({ section = null }) {
+  const eyebrow = section ? section.eyebrow : EYEBROW;
+  const headingLines = section ? section.headingLines : HEADING_LINES;
+  const subtext = section ? section.subtext : SUBTEXT;
+  const image = section ? section.image : IMAGE;
+  // Null leaves the phone showing the desktop photograph.
+  const mobileImage = section ? (section.mobileImage ?? section.image) : MOBILE_IMAGE;
+  const primary = section ? section.primary : PRIMARY;
+  const secondary = section ? section.secondary : SECONDARY;
+  const trust = section && section.trust.length > 0 ? section.trust : TRUST;
+
+  const PrimaryIcon = wmsIcon(primary.icon);
+  const SecondaryIcon = secondary ? wmsIcon(secondary.icon) : null;
+
   return (
     <section className="relative overflow-hidden bg-white">
       <motion.div
@@ -47,18 +68,18 @@ export default function WmsCta() {
         {/* =========================
             BACKGROUND
         ========================== */}
-        <picture>
-          <source
-            media="(max-width: 767px)"
-            srcSet="/images/wms_cta_mb.webp"
-          />
-          <img
-            src="/images/wms_CTA.webp"
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 h-full w-full object-cover object-center"
-          />
-        </picture>
+        {/* Absent is a working state: the band falls back to its cream ground. */}
+        {image && (
+          <picture>
+            {mobileImage && <source media="(max-width: 767px)" srcSet={mobileImage} />}
+            <img
+              src={image}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 h-full w-full object-cover object-center"
+            />
+          </picture>
+        )}
 
         {/* =========================
             LEFT SIDE OVERLAY
@@ -80,24 +101,23 @@ export default function WmsCta() {
           <div className="flex w-full justify-center px-5 py-12 sm:px-8 md:w-[48%] md:px-8 lg:w-[46%] lg:px-10 xl:w-[45%] xl:px-12">
             <div className="w-full max-w-[650px] text-left">
               {/* Eyebrow */}
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-orange-600 md:text-[12px]">
-                Let&apos;s Talk About Your Warehouse
-              </p>
+              {eyebrow && (
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-orange-600 md:text-[12px]">
+                  {eyebrow}
+                </p>
+              )}
 
               {/* Headline */}
               <h2 className="mt-5 max-w-[620px] h-display text-[2rem] leading-[1.08] tracking-tight text-navy-950 md:mt-6 md:text-[2.9rem]">
-                See Your Warehouse on UpWon —{' '}
-                <span className="text-orange-500">
-                  Live, in 30 Minutes.
-                </span>
+                <HeadingLines lines={headingLines} accentClassName="text-orange-500" />
               </h2>
 
               {/* Subtext */}
-              <p className="mt-4 max-w-[570px] text-[15px] leading-relaxed text-navy-600 md:text-base">
-                Let&apos;s understand your warehouse, your challenges and your
-                goals. We&apos;ll show you the impact UpWon WMS can deliver for
-                your actual operations.
-              </p>
+              {subtext && (
+                <p className="mt-4 max-w-[570px] text-[15px] leading-relaxed text-navy-600 md:text-base">
+                  {subtext}
+                </p>
+              )}
 
               {/* =========================
                   CTA BUTTONS
@@ -105,51 +125,56 @@ export default function WmsCta() {
               <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                 {/* Primary CTA */}
                 <Link
-                  to="/demo"
+                  to={primary.href}
                   className="group inline-flex items-center justify-center gap-3 rounded-2xl bg-orange-500 px-6 py-4 text-[14px] font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-orange-600 sm:px-7 sm:text-[15px]"
                 >
-                  <CalendarDays className="h-5 w-5 shrink-0" />
+                  <PrimaryIcon className="h-5 w-5 shrink-0" />
 
-                  <span>Talk to a Warehouse Specialist</span>
-
-                  <ArrowRight className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-1" />
-                </Link>
-
-                {/* Secondary CTA */}
-                <Link
-                  to="/contact"
-                  className="group inline-flex items-center justify-center gap-3 rounded-2xl border border-navy-200 bg-white/75 px-6 py-4 text-[14px] font-semibold text-navy-900 backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-navy-400 hover:bg-white sm:px-7 sm:text-[15px]"
-                >
-                  <Package className="h-5 w-5 shrink-0" />
-
-                  <span>See How This Fits Your Warehouse</span>
+                  <span>{primary.label}</span>
 
                   <ArrowRight className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-1" />
                 </Link>
+
+                {/* Secondary CTA — optional; the band reads fine with one. */}
+                {secondary && SecondaryIcon && (
+                  <Link
+                    to={secondary.href}
+                    className="group inline-flex items-center justify-center gap-3 rounded-2xl border border-navy-200 bg-white/75 px-6 py-4 text-[14px] font-semibold text-navy-900 backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:border-navy-400 hover:bg-white sm:px-7 sm:text-[15px]"
+                  >
+                    <SecondaryIcon className="h-5 w-5 shrink-0" />
+
+                    <span>{secondary.label}</span>
+
+                    <ArrowRight className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-1" />
+                  </Link>
+                )}
               </div>
 
               {/* =========================
                   TRUST STRIP
               ========================== */}
               <div className="mt-10 grid max-w-[650px] grid-cols-2 gap-y-6 sm:grid-cols-4">
-                {TRUST.map(({ icon: Icon, a, b }, i) => (
-                  <div
-                    key={a}
-                    className={`flex items-center gap-2.5 px-3 ${
-                      i === 0 ? 'pl-0' : 'sm:border-l sm:border-navy-900/10'
-                    }`}
-                  >
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-orange-200 bg-white text-orange-500">
-                      <Icon className="h-4 w-4" strokeWidth={1.9} />
-                    </span>
+                {trust.map((item, i) => {
+                  const Icon = wmsIcon(item.icon);
+                  return (
+                    <div
+                      key={item.lineOne}
+                      className={`flex items-center gap-2.5 px-3 ${
+                        i === 0 ? 'pl-0' : 'sm:border-l sm:border-navy-900/10'
+                      }`}
+                    >
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-orange-200 bg-white text-orange-500">
+                        <Icon className="h-4 w-4" strokeWidth={1.9} />
+                      </span>
 
-                    <p className="text-left text-[11px] font-semibold leading-[1.35] text-navy-800 md:text-[12px]">
-                      {a}
-                      <br />
-                      {b}
-                    </p>
-                  </div>
-                ))}
+                      <p className="text-left text-[11px] font-semibold leading-[1.35] text-navy-800 md:text-[12px]">
+                        {item.lineOne}
+                        <br />
+                        {item.lineTwo}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

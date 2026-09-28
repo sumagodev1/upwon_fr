@@ -1,7 +1,22 @@
 import { m as motion } from 'framer-motion';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
+
+/*
+  The built-in copy, written in the shape the API sends so that a CMS section
+  and the shipped one take one identical path through the render below.
+*/
+const EYEBROW = 'Core Capabilities';
+const HEADING_LINES = [
+  [
+    { text: 'Everything From the Receiving Dock to the ', accent: false },
+    { text: 'Dispatch Bay — In One Flow.', accent: true },
+  ],
+];
+const SUBTEXT =
+  'Seven connected capabilities that bring visibility, speed and control to every movement inside your warehouse.';
 
 const CAPABILITIES = [
   {
@@ -120,7 +135,7 @@ function CapabilityRow({ item, index }) {
         <div className="group flex w-full items-center justify-center">
           <img
             src={item.img}
-            alt={item.title}
+            alt={item.alt || item.title}
             loading="lazy"
             decoding="async"
             className="h-auto w-full max-w-[760px] object-contain transition-transform duration-500 group-hover:scale-[1.02]"
@@ -131,7 +146,12 @@ function CapabilityRow({ item, index }) {
   );
 }
 
-export default function WmsCoreCapabilities() {
+export default function WmsCoreCapabilities({ section = null }) {
+  const eyebrow = section ? section.eyebrow : EYEBROW;
+  const headingLines = section ? section.headingLines : HEADING_LINES;
+  const subtext = section ? section.subtext : SUBTEXT;
+  const items = section && section.items.length > 0 ? section.items : CAPABILITIES;
+
   return (
     <section
       id="core-capabilities"
@@ -149,26 +169,24 @@ export default function WmsCoreCapabilities() {
           }}
           className="max-w-3xl"
         >
-          <Eyebrow>Core Capabilities</Eyebrow>
+          {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
 
           <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-            Everything From the Receiving Dock to the{' '}
-            <span className="gradient-text-orange">
-              Dispatch Bay — In One Flow.
-            </span>
+            <HeadingLines lines={headingLines} />
           </h2>
 
-          <p className="mt-5 max-w-sm text-base leading-relaxed text-navy-600">
-            Seven connected capabilities that bring visibility, speed and
-            control to every movement inside your warehouse.
-          </p>
+          {subtext && (
+            <p className="mt-5 max-w-sm text-base leading-relaxed text-navy-600">
+              {subtext}
+            </p>
+          )}
         </motion.div>
 
         {/* Capability Rows */}
         <div className="mt-10 space-y-8 md:mt-10 md:space-y-10 lg:space-y-12">
-          {CAPABILITIES.map((item, index) => (
+          {items.map((item, index) => (
             <CapabilityRow
-              key={item.num}
+              key={item.num || item.title || index}
               item={item}
               index={index}
             />

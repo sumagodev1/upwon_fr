@@ -123,10 +123,22 @@ const heroSlides = [
   },
 ];
 
-export default function VmsHeroSection() {
+export default function VmsHeroSection({ slides = null }) {
+  /*
+    The CMS set replaces the built-in one wholesale rather than merging with
+    it: a half-published slider would mix two editorial voices.
+
+    The accent is the page's, not the slide's, so it is applied to whichever
+    list is in play - the API does not carry it.
+  */
+  const inUse = (slides && slides.length > 0 ? slides : heroSlides).map((slide) => ({
+    accent: '#E85A2A',
+    ...slide,
+  }));
+
   return (
     <HeroSlider
-      slides={heroSlides}
+      slides={inUse}
       variant="dark"
       intervalMs={5000}
       minHeight="min-h-[520px] sm:min-h-[560px] md:min-h-[620px]"

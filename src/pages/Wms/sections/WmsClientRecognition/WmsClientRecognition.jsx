@@ -1,21 +1,39 @@
 import { m as motion } from 'framer-motion';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
-import {
-  PackageOpen,
-  Target,
-  Clock3,
-  ClipboardList,
-  ChartNoAxesCombined,
-} from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { wmsIcon } from '../../../../lib/wmsIcons.js';
 
 const EASE = [0.22, 1, 0.3, 1];
 
 const BG_IMAGE = '/images/wms_customer outcome_corner.webp';
 
+/*
+  The built-in copy, written in the shape the API sends so that a CMS section
+  and the shipped one take one identical path through the render below.
+
+  That is also why the icons are names rather than imported components: a
+  record cannot hold a component, so the CMS sends a name and lib/wmsIcons.js
+  turns it back into one. Keeping the built-in set in the same form means the
+  render resolves both the same way.
+*/
+const EYEBROW = 'Customer Outcomes';
+const HEADING_LINES = [
+  [
+    { text: '15–20%', accent: true },
+    { text: ' Less Wastage.', accent: false },
+  ],
+  [
+    { text: '20–35%', accent: true },
+    { text: ' Better Fulfilment Accuracy.', accent: false },
+  ],
+];
+const SUBTEXT =
+  'Real operational impact across manufacturing and distribution — from better inventory precision and reduced wastage to faster, more accurate order fulfilment.';
+
 const outcomes = [
   {
-    icon: PackageOpen,
+    icon: 'PackageOpen',
     value: '15–20%',
     title: 'Less Wastage',
     description:
@@ -23,7 +41,7 @@ const outcomes = [
     accent: 'orange',
   },
   {
-    icon: Target,
+    icon: 'Target',
     value: '20–35%',
     title: 'Better Fulfilment Accuracy',
     description:
@@ -31,7 +49,7 @@ const outcomes = [
     accent: 'blue',
   },
   {
-    icon: Clock3,
+    icon: 'Clock3',
     value: '30–40%',
     title: 'Faster Order Processing',
     description:
@@ -39,7 +57,7 @@ const outcomes = [
     accent: 'orange',
   },
   {
-    icon: ClipboardList,
+    icon: 'ClipboardList',
     value: '99%+',
     title: 'Inventory Visibility',
     description:
@@ -47,7 +65,7 @@ const outcomes = [
     accent: 'blue',
   },
   {
-    icon: ChartNoAxesCombined,
+    icon: 'ChartNoAxesCombined',
     value: '10–15%',
     title: 'Higher Space Utilization',
     description:
@@ -56,7 +74,12 @@ const outcomes = [
   },
 ];
 
-export default function WmsClientRecognition() {
+export default function WmsClientRecognition({ section = null }) {
+  const eyebrow = section ? section.eyebrow : EYEBROW;
+  const headingLines = section ? section.headingLines : HEADING_LINES;
+  const subtext = section ? section.subtext : SUBTEXT;
+  const cards = section && section.cards.length > 0 ? section.cards : outcomes;
+
   return (
     <section className="relative isolate overflow-hidden bg-[#f8f9fb] py-12 md:py-16 lg:py-[72px]">
       {/* Background Grid */}
@@ -104,27 +127,30 @@ export default function WmsClientRecognition() {
               transition={{ duration: 0.6, ease: EASE }}
               className="max-w-4xl"
             >
-              <Eyebrow>Customer Outcomes</Eyebrow>
+              {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
 
               <h2 className="mt-3 h-display text-[36.8px] leading-[1.1] tracking-tight text-navy-950">
-                <span className="text-orange-600">15–20%</span> Less Wastage.
-                <br />
-                <span className="text-orange-600">20–35%</span> Better Fulfilment
-                Accuracy.
+                {/*
+                  The figures are the accented runs, drawn in solid orange
+                  here rather than the gradient the other headings use.
+                */}
+                <HeadingLines lines={headingLines} accentClassName="text-orange-600" />
               </h2>
 
-              <p className="mt-5 max-w-3xl text-base leading-relaxed text-navy-600 md:text-lg">
-                Real operational impact across manufacturing and distribution —
-                from better inventory precision and reduced wastage to faster,
-                more accurate order fulfilment.
-              </p>
+              {subtext && (
+                <p className="mt-5 max-w-3xl text-base leading-relaxed text-navy-600 md:text-lg">
+                  {subtext}
+                </p>
+              )}
             </motion.div>
 
             {/* Cards */}
             <div className="relative z-20 mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
-              {outcomes.map((item, index) => {
-                const Icon = item.icon;
-                const isOrange = item.accent === 'orange';
+              {cards.map((item, index) => {
+                // A name, not a component — resolved the same way whether it
+                // came from the CMS or the built-in set above.
+                const Icon = wmsIcon(item.icon);
+                const isOrange = item.accent !== 'blue';
 
                 return (
                   <motion.article

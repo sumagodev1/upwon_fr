@@ -1145,6 +1145,7 @@
 
 import {
     useEffect,
+    useMemo,
     useRef,
     useState,
 } from 'react';
@@ -1161,6 +1162,7 @@ import {
 
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 
 const EASE = [0.22, 1, 0.3, 1];
@@ -1170,7 +1172,19 @@ const EASE = [0.22, 1, 0.3, 1];
    CAPABILITIES
 ========================================================= */
 
-const capabilities = [
+/*
+  The built-in copy, written in the shape the API sends so that a CMS section
+  and the shipped one take one identical path through the render below.
+*/
+const EYEBROW = 'CORE CAPABILITIES';
+const HEADING_LINES = [
+    [{ text: 'From First Quote to Final Payment-', accent: false }],
+    [{ text: 'In One System.', accent: true }],
+];
+const SUBTEXT =
+    'Every stage connected.\nEvery vendor interaction visible.\nEvery decision backed by data.';
+
+const BUILT_IN_CAPABILITIES = [
     {
         number: '01',
         title: 'RFQ Management & Comparative Analysis',
@@ -1236,12 +1250,15 @@ const capabilities = [
    01 02 03 04 05 06 07
 ========================================================= */
 
-const COPY_COUNT = 5;
+/*
+   How many copies of the list the track holds, so it never runs out of cards
+   while the visitor scrolls.
 
-const infiniteCapabilities = Array.from(
-    { length: COPY_COUNT },
-    () => capabilities
-).flat();
+   The copies and the starting offset used to be computed here. They moved
+   into the component with the list itself: which cards are in play is now a
+   prop, so neither can be known until render.
+*/
+const COPY_COUNT = 5;
 
 
 /*
@@ -1254,8 +1271,6 @@ const infiniteCapabilities = Array.from(
    Copy 5 = index 28
 */
 
-const START_INDEX =
-    capabilities.length * 2;
 
 
 /* =========================================================
@@ -1520,7 +1535,40 @@ function CapabilityCard({
    MAIN
 ========================================================= */
 
-export default function VmsCoreCapabilities() {
+export default function VmsCoreCapabilities({ section = null }) {
+
+    /*
+       The list in play, and the two values derived from it.
+
+       Both used to be module-level constants. They cannot be any more: the
+       CMS decides how many cards there are, so the length of the track and
+       the offset the carousel starts at follow the prop.
+    */
+    const capabilities =
+        section && section.cards.length > 0
+            ? section.cards
+            : BUILT_IN_CAPABILITIES;
+
+    const eyebrow = section ? section.eyebrow : EYEBROW;
+    const headingLines = section ? section.headingLines : HEADING_LINES;
+    // Each authored line is its own <p> under the heading.
+    const subtextLines = (section ? section.subtext : SUBTEXT)
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean);
+
+    const infiniteCapabilities = useMemo(
+        () =>
+            Array.from(
+                { length: COPY_COUNT },
+                () => capabilities
+            ).flat(),
+        [capabilities]
+    );
+
+    // The middle copy, so there is room to scroll either way from the start.
+    const START_INDEX =
+        capabilities.length * 2;
 
     const cardRef =
         useRef(null);
@@ -1944,11 +1992,13 @@ export default function VmsCoreCapabilities() {
                             "
                         >
 
-                            <Eyebrow
-                                icon={BadgeCheck}
-                            >
-                                CORE CAPABILITIES
-                            </Eyebrow>
+                            {eyebrow && (
+                                <Eyebrow
+                                    icon={BadgeCheck}
+                                >
+                                    {eyebrow}
+                                </Eyebrow>
+                            )}
 
 
                             <h2
@@ -1966,18 +2016,15 @@ export default function VmsCoreCapabilities() {
                                     lg:text-[36.8px]
                                 "
                             >
-
-                                From First Quote to Final Payment-
-
-                                <span
-                                    className="
-                                        block
-                                        gradient-text-orange
-                                    "
-                                >
-                                    In One System.
-                                </span>
-
+                                {/*
+                                   The accent run is drawn `block`, so each
+                                   authored line becomes its own line here -
+                                   which is what the stored newline means.
+                                */}
+                                <HeadingLines
+                                    lines={headingLines}
+                                    accentClassName="block gradient-text-orange"
+                                />
                             </h2>
 
 
@@ -1993,19 +2040,14 @@ export default function VmsCoreCapabilities() {
                                     lg:text-[17px]
                                 "
                             >
-
-                                <p>
-                                    Every stage connected.
-                                </p>
-
-                                <p>
-                                    Every vendor interaction visible.
-                                </p>
-
-                                <p>
-                                    Every decision backed by data.
-                                </p>
-
+                                {/*
+                                   Three short lines rather than a paragraph,
+                                   so the stored subtext is split on its
+                                   newlines and each becomes its own <p>.
+                                */}
+                                {subtextLines.map((line) => (
+                                    <p key={line}>{line}</p>
+                                ))}
                             </div>
 
                         </motion.div>

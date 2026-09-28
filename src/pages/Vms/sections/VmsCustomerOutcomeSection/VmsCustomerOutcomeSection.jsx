@@ -3,12 +3,27 @@ import { m as motion, AnimatePresence } from 'framer-motion';
 import { Play, BadgeCheck, X } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import Eyebrow from '../../../../components/shared/Eyebrow/Eyebrow.jsx';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
 
 const EASE = [0.22, 1, 0.3, 1];
 
 const VIDEO_SRC = '/video/pos_growth_engine.mp4';
 
-const VIDEOS = [
+/*
+  The built-in copy, written in the shape the API sends so that a CMS section
+  and the shipped one take one identical path through the render below.
+*/
+const EYEBROW = 'CUSTOMER OUTCOMES';
+const HEADING_LINES = [
+    [
+        { text: 'The Proof Point This ', accent: false },
+        { text: 'Page Still Needs.', accent: true },
+    ],
+];
+const SUBTEXT =
+    'See how UpWon helps businesses bring vendors into one connected workflow — with self-service, streamlined procurement, and better visibility across the vendor base.';
+
+const BUILT_IN_VIDEOS = [
     {
         id: 0,
         label: 'VMS',
@@ -41,7 +56,7 @@ const VIDEOS = [
     },
 ];
 
-export default function VmsCustomerOutcomeSection() {
+export default function VmsCustomerOutcomeSection({ section = null }) {
 
     /*
      * activeIndex:
@@ -53,7 +68,21 @@ export default function VmsCustomerOutcomeSection() {
     const [activeIndex, setActiveIndex] = useState(0);
     const [popupVideo, setPopupVideo] = useState(null);
 
-    const activeVideo = VIDEOS[activeIndex];
+    const videos =
+        section && section.videos.length > 0
+            ? section.videos
+            : BUILT_IN_VIDEOS;
+
+    const eyebrow = section ? section.eyebrow : EYEBROW;
+    const headingLines = section ? section.headingLines : HEADING_LINES;
+    const subtext = section ? section.subtext : SUBTEXT;
+
+    /*
+       Clamped: a CMS set can be shorter than the built-in three, and a stale
+       index would otherwise read past the end of the list.
+    */
+    const safeIndex = Math.min(activeIndex, videos.length - 1);
+    const activeVideo = videos[safeIndex];
 
     /*
      * ============================================================
@@ -68,7 +97,7 @@ export default function VmsCustomerOutcomeSection() {
      */
     const handleCardClick = (video) => {
 
-        if (video.id !== activeIndex) {
+        if (video.id !== safeIndex) {
             setActiveIndex(video.id);
             return;
         }
@@ -103,9 +132,9 @@ export default function VmsCustomerOutcomeSection() {
      * ============================================================
      */
     const gridColumns =
-        activeIndex === 0
+        safeIndex === 0
             ? 'lg:grid-cols-[minmax(0,2fr)_minmax(190px,0.68fr)_minmax(190px,0.68fr)]'
-            : activeIndex === 1
+            : safeIndex === 1
                 ? 'lg:grid-cols-[minmax(190px,0.68fr)_minmax(0,2fr)_minmax(190px,0.68fr)]'
                 : 'lg:grid-cols-[minmax(190px,0.68fr)_minmax(190px,0.68fr)_minmax(0,2fr)]';
 
@@ -120,9 +149,9 @@ export default function VmsCustomerOutcomeSection() {
      * ============================================================
      */
     const contentPosition =
-        activeIndex === 0
+        safeIndex === 0
             ? 'lg:col-start-1'
-            : activeIndex === 1
+            : safeIndex === 1
                 ? 'lg:col-start-2'
                 : 'lg:col-start-3';
 
@@ -178,9 +207,11 @@ export default function VmsCustomerOutcomeSection() {
                     className="relative z-20"
                 >
 
-                    <Eyebrow icon={BadgeCheck}>
-                        CUSTOMER OUTCOMES
-                    </Eyebrow>
+                    {eyebrow && (
+                        <Eyebrow icon={BadgeCheck}>
+                            {eyebrow}
+                        </Eyebrow>
+                    )}
 
 
                     <h2
@@ -194,10 +225,7 @@ export default function VmsCustomerOutcomeSection() {
                             sm:text-[36.8px]
                         "
                     >
-                        The Proof Point This
-                        <span className="gradient-text-orange">
-                            Page Still Needs.
-                        </span>
+                        <HeadingLines lines={headingLines} />
                     </h2>
 
 
@@ -215,12 +243,7 @@ export default function VmsCustomerOutcomeSection() {
                             md:text-[17px]
                         "
                     >
-                        <p>
-                            See how UpWon helps businesses bring vendors into
-                            one connected workflow — with self-service,
-                            streamlined procurement, and better visibility
-                            across the vendor base.
-                        </p>
+                        <p>{subtext}</p>
                     </div>
 
                 </motion.div>
@@ -244,33 +267,21 @@ export default function VmsCustomerOutcomeSection() {
                 >
 
                     {/* =====================================================
-                        CARD 1 — VMS
+                        ONE CARD PER TAB
+
+                        Three today, but the CMS decides how many - so these
+                        are mapped rather than written out. handleCardClick
+                        keys on video.id, which is the entry's position in
+                        this list for both the built-in set and the API's.
                     ===================================================== */}
-                    <VideoCard
-                        video={VIDEOS[0]}
-                        isActive={activeIndex === 0}
-                        onClick={handleCardClick}
-                    />
-
-
-                    {/* =====================================================
-                        CARD 2 — VENDOR SELF-SERVICE
-                    ===================================================== */}
-                    <VideoCard
-                        video={VIDEOS[1]}
-                        isActive={activeIndex === 1}
-                        onClick={handleCardClick}
-                    />
-
-
-                    {/* =====================================================
-                        CARD 3 — PROCUREMENT INTELLIGENCE
-                    ===================================================== */}
-                    <VideoCard
-                        video={VIDEOS[2]}
-                        isActive={activeIndex === 2}
-                        onClick={handleCardClick}
-                    />
+                    {videos.map((video, index) => (
+                        <VideoCard
+                            key={video.id ?? index}
+                            video={video}
+                            isActive={safeIndex === index}
+                            onClick={handleCardClick}
+                        />
+                    ))}
 
                 </div>
 
@@ -468,7 +479,7 @@ export default function VmsCustomerOutcomeSection() {
 
                                 <video
                                     key={popupVideo.id}
-                                    src={VIDEO_SRC}
+                                    src={activeVideo.src || VIDEO_SRC}
                                     autoPlay
                                     controls
                                     playsInline
@@ -605,7 +616,7 @@ function VideoCard({ video, isActive, onClick }) {
                     This prevents all 3 videos from playing simultaneously.
                 ========================================================= */}
                 <video
-                    src={VIDEO_SRC}
+                    src={activeVideo.src || VIDEO_SRC}
                     muted
                     playsInline
                     preload="metadata"
