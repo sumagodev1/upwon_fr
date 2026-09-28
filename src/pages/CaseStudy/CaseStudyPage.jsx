@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { m as motion } from 'framer-motion';
 import { Quote, MapPin, ArrowRight, ArrowUpRight, CheckCircle2, AlertOctagon } from 'lucide-react';
@@ -8,16 +9,89 @@ import DemoCtaCompact from '../../components/shared/DemoCtaCompact/DemoCtaCompac
 import Seo, { breadcrumbJsonLd } from '../../components/shared/Seo/Seo.jsx';
 import { ALL_CASES, MONGINIS_CASE } from '../../data/caseStudy.js';
 import { CASE_DELIVERABLES } from '../../data/industryExtras.js';
+import { fetchClientsCases, fetchClientsCaseStory } from '../../lib/clientsPage.js';
+
+/*
+  The built-in stories, in the shape lib/clientsPage.js returns. They are the
+  fallback, not the source of truth: a story published through the admin panel
+  (Clients → Case Studies) replaces its built-in copy at runtime. They are what
+  the SSG build prerenders, and what renders if the API is unreachable.
+*/
+const fromStatic = (c) => ({
+  slug: c.slug,
+  category: c.category,
+  brand: c.brand,
+  location: c.location,
+  scale: c.scale,
+  headline: c.headline,
+  duration: c.duration ?? null,
+  challengeOneLine: c.challengeOneLine ?? null,
+  challengeSummary: c.hero?.challenge ?? null,
+  outcomes: c.outcomes ?? [],
+  challenges: c.challenges ?? [],
+  whyUpwon: c.whyUpwon ?? null,
+  timeline: c.timeline ?? [],
+  deliverables: CASE_DELIVERABLES[c.slug] ?? [],
+  testimonial: c.testimonial ?? null,
+});
+
+const staticOthers = (slug) =>
+  ALL_CASES.filter((c) => c.slug !== slug).map((c) => ({
+    slug: c.slug,
+    brand: c.brand,
+    location: c.location,
+    scale: c.scale,
+    headline: c.headline,
+  }));
 
 export default function CaseStudyPage() {
   const { slug } = useParams();
-  const caseData = slug
-    ? ALL_CASES.find((c) => c.slug === slug)
-    : MONGINIS_CASE; // /case-studies legacy → Monginis
+  // /case-studies (legacy, no slug) → Monginis. Keyed by slug so moving from
+  // one story to another through "More UpWon stories" starts afresh.
+  const target = slug ?? MONGINIS_CASE.slug;
+  return <CaseStudy key={target} slug={target} />;
+}
 
-  if (!caseData) return <Navigate to="/clients" replace />;
+function CaseStudy({ slug }) {
+  const builtIn = ALL_CASES.find((c) => c.slug === slug);
 
-  const others = ALL_CASES.filter((c) => c.slug !== caseData.slug);
+  // A known client renders its built-in story at once; an admin-only one waits
+  // for the API, and 'missing' - no published story and no built-in one -
+  // sends the visitor back to /clients, as an unknown slug always has.
+  const [caseData, setCaseData] = useState(builtIn ? fromStatic(builtIn) : null);
+  const [missing, setMissing] = useState(false);
+  const [others, setOthers] = useState(staticOthers(slug));
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchClientsCaseStory(slug).then((published) => {
+      if (cancelled) return;
+      if (published) setCaseData(published);
+      else if (!builtIn) setMissing(true);
+    });
+    fetchClientsCases().then((section) => {
+      if (cancelled || !section) return;
+      setOthers(
+        section.cards
+          .filter((c) => c.slug && c.slug !== slug)
+          .map((c) => ({
+            slug: c.slug,
+            brand: c.brand,
+            location: c.location,
+            scale: c.scale,
+            headline: c.headline,
+          })),
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, builtIn]);
+
+  if (missing) return <Navigate to="/clients" replace />;
+  if (!caseData) return <StoryLoading />;
+
+  const hasChallenge = Boolean(caseData.challengeSummary) || caseData.challenges.length > 0;
 
   return (
     <>
@@ -33,19 +107,24 @@ export default function CaseStudyPage() {
         ])}
       />
       <PageHero
-        eyebrow={`${caseData.category} · ${caseData.location}`}
+        eyebrow={[caseData.category, caseData.location].filter(Boolean).join(' · ')}
         title={<span>{caseData.headline}</span>}
-        description={caseData.challengeOneLine}
+        description={caseData.challengeOneLine ?? undefined}
         meta={
-          <>
-            <span>{caseData.scale}</span>
-            <span className="h-3 w-px bg-navy-200" />
-            <span>{caseData.duration}</span>
-          </>
+          caseData.scale || caseData.duration ? (
+            <>
+              {caseData.scale && <span>{caseData.scale}</span>}
+              {caseData.scale && caseData.duration && (
+                <span className="h-3 w-px bg-navy-200" />
+              )}
+              {caseData.duration && <span>{caseData.duration}</span>}
+            </>
+          ) : undefined
         }
       />
 
       {/* Headline outcomes */}
+      {caseData.outcomes.length > 0 && (
       <section className="relative overflow-hidden bg-navy-950 py-12 md:py-16 text-white">
         <div className="absolute inset-0 grid-bg opacity-40" />
         <Container className="relative">
@@ -70,8 +149,10 @@ export default function CaseStudyPage() {
           </div>
         </Container>
       </section>
+      )}
 
       {/* The Challenge */}
+      {hasChallenge && (
       <section className="relative overflow-hidden bg-white py-10 sm:py-12 lg:py-14">
         <div className="absolute inset-0 grid-bg-light opacity-40" />
         <Container className="relative">
@@ -88,7 +169,7 @@ export default function CaseStudyPage() {
                     </span>
                   </>
                 }
-                description={caseData.hero.challenge}
+                description={caseData.challengeSummary ?? undefined}
               />
             </div>
             <div className="space-y-3">
@@ -114,8 +195,10 @@ export default function CaseStudyPage() {
           </div>
         </Container>
       </section>
+      )}
 
       {/* Why UpWon */}
+      {caseData.whyUpwon && (
       <section className="relative overflow-hidden bg-cream-100 py-10 sm:py-12 lg:py-14">
         <div className="absolute inset-0 grid-bg-light opacity-50" />
         <Container className="relative">
@@ -135,8 +218,10 @@ export default function CaseStudyPage() {
           </div>
         </Container>
       </section>
+      )}
 
       {/* What we delivered */}
+      {caseData.timeline.length > 0 && (
       <section className="relative overflow-hidden bg-white py-10 sm:py-12 lg:py-14">
         <Container className="relative">
           <SectionIntro
@@ -177,9 +262,10 @@ export default function CaseStudyPage() {
           </div>
         </Container>
       </section>
+      )}
 
       {/* What UpWon delivered — green deliverables box */}
-      {CASE_DELIVERABLES[caseData.slug] && (
+      {caseData.deliverables.length > 0 && (
         <section className="relative overflow-hidden bg-white py-16 md:py-20">
           <Container className="relative">
             <div className="mx-auto max-w-4xl">
@@ -200,7 +286,7 @@ export default function CaseStudyPage() {
                   </h3>
                 </div>
                 <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-                  {CASE_DELIVERABLES[caseData.slug].map((d) => (
+                  {caseData.deliverables.map((d) => (
                     <li
                       key={d}
                       className="flex items-start gap-2.5 text-[14px] text-emerald-900 leading-relaxed"
@@ -219,6 +305,7 @@ export default function CaseStudyPage() {
       )}
 
       {/* Testimonial */}
+      {caseData.testimonial && (
       <section className="relative overflow-hidden bg-cream-200 py-10 sm:py-12 lg:py-14">
         <Container className="relative">
           <motion.div
@@ -246,6 +333,7 @@ export default function CaseStudyPage() {
           </motion.div>
         </Container>
       </section>
+      )}
 
       {/* Closing CTA + other cases */}
       <section className="relative overflow-hidden bg-white py-10 sm:py-12 lg:py-14">
@@ -276,7 +364,7 @@ export default function CaseStudyPage() {
                     </h3>
                     <p className="mt-1 text-[14px] text-navy-600">
                       <MapPin className="mr-1 inline-block h-3 w-3 text-orange-500" />
-                      {c.location} · {c.scale}
+                      {[c.location, c.scale].filter(Boolean).join(' · ')}
                     </p>
                   </div>
                   <ArrowRight className="h-4 w-4 text-orange-600 transition-transform group-hover:translate-x-1" />
@@ -300,5 +388,18 @@ export default function CaseStudyPage() {
 
       <DemoCtaCompact />
     </>
+  );
+}
+
+/** What an admin-only story shows while the API answers. */
+function StoryLoading() {
+  return (
+    <section className="bg-white py-40">
+      <Container>
+        <p className="text-center text-sm text-navy-600" role="status">
+          Loading case study…
+        </p>
+      </Container>
+    </section>
   );
 }

@@ -10,6 +10,11 @@ import Eyebrow from '../Eyebrow/Eyebrow.jsx';
  *
  * Reusable across home, product, industry and clients pages — pass a custom
  * `eyebrow` / `title` to retitle the strip.
+ *
+ * `items` replaces the built-in quotes with a page's own (the Clients page
+ * passes the ones published through the admin panel). Every item given is
+ * shown; without it the strip shows the first half of TESTIMONIALS, as it
+ * always has.
  */
 const TESTIMONIALS = [
   {
@@ -189,11 +194,14 @@ export default function TestimonialsMarquee({
   eyebrow = 'IN THEIR WORDS',
   title,
   description,
+  items,
 }) {
+  const hasItems = Array.isArray(items) && items.length > 0;
+
   // Split testimonials into two rows, second row shifted so the two don't
   // mirror each other (more organic feel)
   const half = Math.ceil(TESTIMONIALS.length / 2);
-  const rowA = TESTIMONIALS.slice(0, half);
+  const rowA = hasItems ? items : TESTIMONIALS.slice(0, half);
   const rowB = [
     ...TESTIMONIALS.slice(half),
     ...TESTIMONIALS.slice(0, 2),
@@ -206,7 +214,7 @@ export default function TestimonialsMarquee({
       <Container className="relative">
         {/* Same eyebrow / headline / subtext cadence as every other section */}
         <div className="mx-auto max-w-3xl text-center">
-          <Eyebrow className="justify-center">{eyebrow}</Eyebrow>
+          {eyebrow && <Eyebrow className="justify-center">{eyebrow}</Eyebrow>}
 
           <h2 className="mt-3 h-display text-[28px] leading-[1.12] tracking-tight text-navy-950 sm:text-[32px] lg:text-[36.8px]">
             {title || (

@@ -1,11 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { m as motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
 import { INDIA_PATH } from '../../../../data/indiaOutline.js';
+import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
+import { fetchClientsNetwork } from '../../../../lib/clientsPage.js';
 
 // Cities grouped by state, each tagged with real lat/lng so the map markers
 // land in the right place on the India outline.
-const STATES = [
+//
+// This is the fallback, not the source of truth: the states published through
+// the admin panel (Clients → Network Map) replace it at runtime. It is what the
+// SSG build prerenders and what renders if the API is unreachable.
+const FALLBACK_STATES = [
   { state: 'Maharashtra', zone: 'West', cities: [
     { name: 'Mumbai',        lat: 19.07, lng: 72.87 },
     { name: 'Pune',          lat: 18.52, lng: 73.85 },
@@ -27,9 +33,23 @@ const STATES = [
   { state: 'Jharkhand',     zone: 'East',  cities: [{ name: 'Ranchi',       lat: 23.34, lng: 85.31 }] },
 ];
 
-export const TOTAL_STATES = STATES.length;
-export const TOTAL_CITIES = STATES.reduce((n, s) => n + s.cities.length, 0);
-const TOTAL_ZONES = new Set(STATES.map((s) => s.zone)).size;
+// The built-in copy, in the shape lib/clientsPage.js returns.
+const FALLBACK_COPY = {
+  eyebrow: 'Operational Network',
+  headingLines: [
+    [
+      { text: 'From Sambhajinagar to ', accent: false },
+      { text: 'Kolkata', accent: true },
+      { text: '.', accent: false },
+    ],
+  ],
+  subtext:
+    'Running today across India’s food & FMCG belt — from west-coast bakery chains to eastern dairy networks.',
+};
+
+// Counts of the built-in network, kept exported for anything that reads them.
+export const TOTAL_STATES = FALLBACK_STATES.length;
+export const TOTAL_CITIES = FALLBACK_STATES.reduce((n, s) => n + s.cities.length, 0);
 
 // --- lat/lng → viewBox projection, calibrated against the outline's bounds ---
 const VB = 1024;
@@ -40,20 +60,35 @@ const YR = [6, 1019];
 const px = (lng) => XR[0] + ((lng - LNG[0]) / (LNG[1] - LNG[0])) * (XR[1] - XR[0]);
 const py = (lat) => YR[0] + ((LAT[0] - lat) / (LAT[0] - LAT[1])) * (YR[1] - YR[0]);
 
-const DOTS = STATES.flatMap((s) =>
-  s.cities.map((c) => ({ ...c, state: s.state, x: px(c.lng), y: py(c.lat) }))
-);
+// Everything the map draws, derived from the states: the pins, the lines,
+// and the three counters.
+function buildNetwork(states) {
+  const dots = states.flatMap((s) =>
+    s.cities.map((c) => ({ ...c, state: s.state, x: px(c.lng), y: py(c.lat) }))
+  );
 
-// Network lines fan out from a west-coast hub (Mumbai) to every other city.
-const HUB = DOTS[0];
-const LINES = DOTS.slice(1).map((d) => ({
-  key: `${d.state}-${d.name}`,
-  state: d.state,
-  x1: HUB.x,
-  y1: HUB.y,
-  x2: d.x,
-  y2: d.y,
-}));
+  // Network lines fan out from the hub - the first city of the first state
+  // (Mumbai, on the west coast) - to every other city.
+  const hub = dots[0];
+  const lines = hub
+    ? dots.slice(1).map((d) => ({
+        key: `${d.state}-${d.name}`,
+        state: d.state,
+        x1: hub.x,
+        y1: hub.y,
+        x2: d.x,
+        y2: d.y,
+      }))
+    : [];
+
+  return {
+    DOTS: dots,
+    LINES: lines,
+    TOTAL_CITIES: dots.length,
+    TOTAL_STATES: states.length,
+    TOTAL_ZONES: new Set(states.map((s) => s.zone)).size,
+  };
+}
 
 const container = {
   hidden: {},
@@ -218,6 +253,31 @@ function useMobileAutoScroll(ref, { intervalMs = 2200 } = {}) {
 }
 
 export default function DeploymentMap() {
+  /*
+    Starts as the built-in network and is swapped for the published one once
+    the API answers. fetchClientsNetwork resolves to null for every failure,
+    and null means "keep what you have".
+  */
+  const [copy, setCopy] = useState(FALLBACK_COPY);
+  const [STATES, setStates] = useState(FALLBACK_STATES);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchClientsNetwork().then((published) => {
+      if (cancelled || !published) return;
+      setCopy(published);
+      setStates(published.states);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const { DOTS, LINES, TOTAL_CITIES, TOTAL_STATES, TOTAL_ZONES } = useMemo(
+    () => buildNetwork(STATES),
+    [STATES],
+  );
+
   const [active, setActive] = useState(null);
   const activeCities = active ? DOTS.filter((d) => d.state === active) : [];
   const stripRef = useRef(null);
@@ -248,28 +308,30 @@ export default function DeploymentMap() {
 
         {/* Header — centered */}
         <div className="relative mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-orange-500/10 px-4 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.2em] text-orange-300 backdrop-blur-md">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-400" />
+          {copy.eyebrow && (
+            <span className="inline-flex items-center gap-2 rounded-full border border-orange-400/30 bg-orange-500/10 px-4 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.2em] text-orange-300 backdrop-blur-md">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-orange-400" />
+              </span>
+              {copy.eyebrow}
             </span>
-            Operational Network
-          </span>
+          )}
 
           {/* Sits inside the roster section's own h2, so it is sized one step
               below the site's section headline rather than above it. */}
           <h3 className="mx-auto mt-3 max-w-2xl h-display text-[26px] leading-[1.12] tracking-tight text-white sm:text-[30px] lg:text-[33px]">
-            From Sambhajinagar to{' '}
-            <span className="bg-gradient-to-r from-orange-300 via-orange-400 to-orange-500 bg-clip-text text-transparent">
-              Kolkata
-            </span>
-            .
+            <HeadingLines
+              lines={copy.headingLines}
+              accentClassName="bg-gradient-to-r from-orange-300 via-orange-400 to-orange-500 bg-clip-text text-transparent"
+            />
           </h3>
 
-          <p className="mx-auto mt-4 max-w-xl text-[14.5px] leading-relaxed text-navy-200 sm:text-[15px]">
-            Running today across India&rsquo;s food &amp; FMCG belt — from
-            west-coast bakery chains to eastern dairy networks.
-          </p>
+          {copy.subtext && (
+            <p className="mx-auto mt-4 max-w-xl text-[14.5px] leading-relaxed text-navy-200 sm:text-[15px]">
+              {copy.subtext}
+            </p>
+          )}
 
           {/* Stat badges */}
           <div className="mx-auto mt-8 flex max-w-md items-stretch justify-center gap-3">
