@@ -55,48 +55,53 @@ const usableCta = (cta) =>
 const usableImage = (value) => (typeof value === 'string' && value !== '' ? value : null);
 
 /*
- * The hero needs its heading and its first button; the artwork is optional,
- * because the section ships its own. The second button is optional too - the
- * hero reads fine with one.
+ * A slide needs its eyebrow, its heading and its first button; the artwork is
+ * optional, because the section ships its own. The second button is optional
+ * too - the hero reads fine with one.
  */
-function isRenderableHero(section) {
+function isRenderableSlide(slide) {
   return (
-    section &&
-    Array.isArray(section.headingLines) &&
-    section.headingLines.length > 0 &&
-    section.primary &&
-    typeof section.primary.label === 'string' &&
-    section.primary.label !== '' &&
-    typeof section.primary.href === 'string' &&
-    section.primary.href !== ''
+    slide &&
+    Array.isArray(slide.headingLines) &&
+    slide.headingLines.length > 0 &&
+    typeof slide.eyebrow === 'string' &&
+    slide.primary &&
+    typeof slide.primary.label === 'string' &&
+    slide.primary.label !== '' &&
+    typeof slide.primary.href === 'string' &&
+    slide.primary.href !== ''
   );
 }
 
 /**
- * The published hero, or null to mean "keep what you have".
+ * The published hero slides, or an empty array to mean "keep what you have".
+ *
+ * An array since the hero became a slider - it was a single record before,
+ * and this returned one object. A slide missing its heading or its first
+ * button is dropped rather than rendered half-built.
  *
  * The buttons carry both `href` and `to` (see usableCta); the images are null
- * when the CMS has none, and the hero then keeps its own artwork.
+ * when the CMS has none, and the slide then keeps the hero's own artwork.
  *
- * @returns {Promise<{eyebrow: string | null, headingLines: Array, subtext: string,
+ * @returns {Promise<Array<{eyebrow: string, headingLines: Array, subtext: string,
  *   desktopImage: string | null, mobileImage: string | null, imageAlt: string | null,
  *   primary: {label: string, href: string, to: string},
- *   secondary: {label: string, href: string, to: string} | null} | null>}
+ *   secondary: {label: string, href: string, to: string} | null}>>}
  */
-export async function fetchWhyUpwonHeroSection() {
-  const section = await readSection('hero-section');
-  if (!isRenderableHero(section)) return null;
+export async function fetchWhyUpwonHeroSlides() {
+  const slides = await readSection('hero-section');
+  if (!Array.isArray(slides)) return [];
 
-  return {
-    eyebrow: typeof section.eyebrow === 'string' ? section.eyebrow : null,
-    headingLines: section.headingLines,
-    subtext: typeof section.subtext === 'string' ? section.subtext : '',
-    desktopImage: usableImage(section.desktopImage),
-    mobileImage: usableImage(section.mobileImage),
-    imageAlt: typeof section.imageAlt === 'string' ? section.imageAlt : null,
-    primary: usableCta(section.primary),
-    secondary: usableCta(section.secondary),
-  };
+  return slides.filter(isRenderableSlide).map((slide) => ({
+    eyebrow: slide.eyebrow,
+    headingLines: slide.headingLines,
+    subtext: typeof slide.subtext === 'string' ? slide.subtext : '',
+    desktopImage: usableImage(slide.desktopImage),
+    mobileImage: usableImage(slide.mobileImage),
+    imageAlt: typeof slide.imageAlt === 'string' ? slide.imageAlt : null,
+    primary: usableCta(slide.primary),
+    secondary: usableCta(slide.secondary),
+  }));
 }
 
 // The industry trust section is only usable with its heading and one industry.

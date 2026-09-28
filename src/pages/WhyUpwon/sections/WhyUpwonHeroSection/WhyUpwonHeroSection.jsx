@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { ArrowUpRight, ArrowRight } from 'lucide-react';
 import Container from '../../../../components/shared/Container/Container.jsx';
 import HeadingLines from '../../../../components/shared/HeadingLines/HeadingLines.jsx';
-import { fetchWhyUpwonHeroSection } from '../../../../lib/whyUpwonPage.js';
+import { fetchWhyUpwonHeroSlides } from '../../../../lib/whyUpwonPage.js';
 
 /*
   Why UpWon — Hero Section
@@ -25,28 +25,48 @@ import { fetchWhyUpwonHeroSection } from '../../../../lib/whyUpwonPage.js';
 const EASE = [0.16, 1, 0.3, 1];
 
 /*
-  The built-in hero - the fallback now. The published one is the CMS's; these
-  are what the section shows during the SSG build, while the fetch is in
+  The built-in hero - the fallback now, and written as a one-slide list so a
+  CMS set and the shipped one take the same path through the render below. It
+  is what the section shows during the SSG build, while the fetch is in
   flight, and whenever the API is unreachable.
 */
 const BG_DESKTOP = '/images/why_hero_desktop.webp';
 const BG_MOBILE = '/images/why_hero_mobile.webp';
 const IMAGE_ALT =
   'The UpWon dashboard on a laptop, surrounded by floating tiles for real-time data, connected teams, automated workflows and complete visibility';
-const SUBTEXT =
-  'Manufacturing businesses need more than disconnected software and manual processes. UpWon brings your critical workflows, teams, and business data together in one connected platform.';
-const PRIMARY = { label: 'Explore UpWon', to: '/what-is-upwon' };
-const SECONDARY = { label: 'See How It Works', to: '/demo' };
+
+const BUILT_IN_SLIDES = [
+  {
+    eyebrow: 'WHY UPWON',
+    headingLines: [
+      [
+        { text: 'Why Growing Manufacturers ', accent: false },
+        { text: 'Choose UpWon.', accent: true },
+      ],
+    ],
+    subtext:
+      'Manufacturing businesses need more than disconnected software and manual processes. UpWon brings your critical workflows, teams, and business data together in one connected platform.',
+    desktopImage: BG_DESKTOP,
+    mobileImage: BG_MOBILE,
+    imageAlt: IMAGE_ALT,
+    primary: { label: 'Explore UpWon', to: '/what-is-upwon' },
+    secondary: { label: 'See How It Works', to: '/demo' },
+  },
+];
+
+/** How long each slide holds before the next comes round. */
+const INTERVAL_MS = 6000;
 
 export default function WhyUpwonHeroSection() {
   const reduceMotion = useReducedMotion();
-  const [cms, setCms] = useState(null);
+  const [cmsSlides, setCmsSlides] = useState(null);
+  const [index, setIndex] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
 
-    fetchWhyUpwonHeroSection().then((section) => {
-      if (!cancelled && section) setCms(section);
+    fetchWhyUpwonHeroSlides().then((slides) => {
+      if (!cancelled && slides.length > 0) setCmsSlides(slides);
     });
 
     return () => {
@@ -54,13 +74,35 @@ export default function WhyUpwonHeroSection() {
     };
   }, []);
 
-  const subtext = cms ? cms.subtext : SUBTEXT;
-  const primary = cms ? cms.primary : PRIMARY;
-  const secondary = cms ? cms.secondary : SECONDARY;
-  // A CMS without artwork keeps the hero's own.
-  const bgDesktop = cms?.desktopImage ?? BG_DESKTOP;
-  const bgMobile = cms?.mobileImage ?? BG_MOBILE;
-  const imageAlt = cms?.imageAlt ?? IMAGE_ALT;
+  const slides = cmsSlides ?? BUILT_IN_SLIDES;
+
+  /*
+    Clamped rather than reset: the published set can be shorter than whatever
+    is on screen when it arrives, and a stale index would read past its end.
+  */
+  const active = Math.min(index, slides.length - 1);
+  const slide = slides[active];
+
+  /*
+    Auto-advance only when there is somewhere to advance to, and never under
+    prefers-reduced-motion - a hero that rotates on its own is exactly the
+    kind of movement that setting asks us to stop.
+  */
+  useEffect(() => {
+    if (reduceMotion || slides.length < 2) return undefined;
+    const id = setInterval(() => {
+      setIndex((current) => (current + 1) % slides.length);
+    }, INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [reduceMotion, slides.length]);
+
+  const subtext = slide.subtext;
+  const primary = slide.primary;
+  const secondary = slide.secondary;
+  // A slide without artwork of its own keeps the hero's.
+  const bgDesktop = slide.desktopImage ?? BG_DESKTOP;
+  const bgMobile = slide.mobileImage ?? BG_MOBILE;
+  const imageAlt = slide.imageAlt ?? IMAGE_ALT;
 
   const d = (value) => (reduceMotion ? 0 : value);
 
@@ -117,18 +159,22 @@ export default function WhyUpwonHeroSection() {
           screen is — the artwork scales with the width, so a fixed pixel
           offset would overlap on some phones and leave a gap on others. */}
       <Container className="relative z-10 flex w-full flex-col justify-end pb-12 pt-[76%] sm:pb-14 lg:justify-center lg:pb-0 lg:pt-24">
+        {/* Keyed on the slide so each one animates in as it comes round;
+            without it the copy would swap in place while the stagger only
+            ever ran on mount. */}
         <motion.div
+          key={active}
           variants={group}
           initial="hidden"
           animate="visible"
           className="max-w-2xl lg:max-w-[46%] xl:max-w-[48%]"
         >
-          {(!cms || cms.eyebrow) && (
+          {slide.eyebrow && (
             <motion.p
               variants={fadeUp}
               className="text-[11px] font-bold uppercase tracking-[0.22em] text-navy-600"
             >
-              {cms ? cms.eyebrow : 'WHY UPWON'}
+              {slide.eyebrow}
             </motion.p>
           )}
 
@@ -136,14 +182,7 @@ export default function WhyUpwonHeroSection() {
             variants={fadeUp}
             className="mt-5 h-display text-balance text-[2rem] leading-[1.05] tracking-tightest text-navy-950 sm:text-[2.4rem] md:text-5xl lg:text-[2.5rem] xl:text-[2.9rem]"
           >
-            {cms ? (
-              <HeadingLines lines={cms.headingLines} />
-            ) : (
-              <>
-                Why Growing Manufacturers{' '}
-                <span className="gradient-text-orange">Choose UpWon.</span>
-              </>
-            )}
+            <HeadingLines lines={slide.headingLines} />
           </motion.h1>
 
           <motion.p
@@ -169,6 +208,29 @@ export default function WhyUpwonHeroSection() {
               </Link>
             )}
           </motion.div>
+
+          {/* Only worth drawing with somewhere to go. Buttons rather than
+              dots-as-decoration, so the slider is usable without waiting for
+              the timer - and the only control there is under reduced motion,
+              where it does not advance on its own. */}
+          {slides.length > 1 && (
+            <motion.div variants={fadeUp} className="mt-8 flex items-center gap-2">
+              {slides.map((item, i) => (
+                <button
+                  key={item.eyebrow + i}
+                  type="button"
+                  onClick={() => setIndex(i)}
+                  aria-label={`Show slide ${i + 1} of ${slides.length}`}
+                  aria-current={i === active}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    i === active
+                      ? 'w-8 bg-orange-500'
+                      : 'w-2 bg-navy-300 hover:bg-navy-400'
+                  }`}
+                />
+              ))}
+            </motion.div>
+          )}
         </motion.div>
       </Container>
     </section>
