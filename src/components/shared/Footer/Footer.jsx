@@ -4,6 +4,7 @@ import { COMPANY } from '../../../data/company.js';
 import { PLATFORM_NAV } from '../../../data/platformNav.js';
 import { INDUSTRIES } from '../../../data/industries.js';
 import { submitLead } from '../../../lib/leads.js';
+import { checkSubscribe } from '../../../lib/leadFields.js';
 import { fetchSocialMediaLinks } from '../../../lib/socialMediaLinks.js';
 import { socialIcon } from '../../../lib/socialIcons.jsx';
 import { useEffect, useState } from 'react';
@@ -58,6 +59,15 @@ const WHY_LINKS = [
 export default function Footer() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  /*
+    `attempted` makes the error visible from the first press, the way the site's
+    other forms do it; before that, a half-typed address is not yet a mistake.
+  */
+  const [attempted, setAttempted] = useState(false);
+  const [touched, setTouched] = useState(false);
+
+  const emailError = checkSubscribe({ email }).email;
+  const showEmailError = (attempted || touched) && emailError;
 
   // Null until the published lists land. The first render — which must match
   // the prerendered HTML — always uses the built-in lists.
@@ -278,8 +288,13 @@ export default function Footer() {
                 <p className="mt-3 text-[14px] text-emerald-300">You're in. Watch your inbox.</p>
               ) : (
                 <form
+                  noValidate
                   onSubmit={(e) => {
                     e.preventDefault();
+                    setAttempted(true);
+                    // Nothing is sent while the address is wrong. setAttempted
+                    // above has already put the message on screen.
+                    if (emailError) return;
                     submitLead('newsletter_footer', { email });
                     setSubscribed(true);
                   }}
@@ -290,9 +305,16 @@ export default function Footer() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      onBlur={() => setTouched(true)}
                       placeholder="you@company.com"
                       required
-                      className="w-full rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-[14px] text-white placeholder-cream-100/40 outline-none focus:border-orange-500/40"
+                      aria-invalid={showEmailError ? true : undefined}
+                      aria-describedby={showEmailError ? 'footer-news-error' : undefined}
+                      className={`w-full rounded-md border bg-white/[0.04] px-3 py-2 text-[14px] text-white placeholder-cream-100/40 outline-none ${
+                        showEmailError
+                          ? 'border-orange-400/70 focus:border-orange-400'
+                          : 'border-white/10 focus:border-orange-500/40'
+                      }`}
                     />
                     <button
                       type="submit"
@@ -301,6 +323,11 @@ export default function Footer() {
                       Join
                     </button>
                   </div>
+                  {showEmailError && (
+                    <p id="footer-news-error" className="mt-2 text-[13px] text-orange-300">
+                      {emailError}
+                    </p>
+                  )}
                   {/* <p className="mt-2 text-[14px] text-cream-100/50">
                     Monthly food industry insights. No spam.
                   </p> */}

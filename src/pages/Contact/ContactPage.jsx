@@ -5,6 +5,7 @@ import Container from '../../components/shared/Container/Container.jsx';
 import ContactHeroSection from './sections/ContactHeroSection/ContactHeroSection.jsx';
 import ContactCtaSection from './sections/ContactCtaSection/ContactCtaSection.jsx';
 import Seo from '../../components/shared/Seo/Seo.jsx';
+import Recaptcha, { recaptchaConfigured } from '../../components/shared/Recaptcha.jsx';
 import {
   ENQUIRY_NOT_CONNECTED,
   ENQUIRY_OPTIONS_CHANGED,
@@ -203,6 +204,19 @@ export default function ContactPage() {
   const [serverErrors, setServerErrors] = useState({});
   const [submitError, setSubmitError] = useState(null);
 
+  /*
+    The reCAPTCHA token, and the counter that clears it.
+
+    A token is spent the moment the server checks it, and expires two minutes
+    after it is issued - so any failed send has to discard the one it just
+    used. Without that, a visitor who fixes a highlighted field and presses
+    Send again is told the robot check failed, on an attempt that was correct.
+    Bumping captchaNonce is what returns the widget to an unticked box.
+  */
+  const [captchaToken, setCaptchaToken] = useState(null);
+  const [captchaNonce, setCaptchaNonce] = useState(0);
+  const [captchaError, setCaptchaError] = useState(null);
+
   /** The in-flight latch. See handleSubmit for why this is a ref and not state. */
   const inFlight = useRef(false);
 
@@ -344,15 +358,38 @@ export default function ContactPage() {
     // put every message on screen, so the visitor can see why.
     if (hasErrors) return;
 
+    /*
+      The robot check, in the same place and for the same reason as the field
+      checks: nothing leaves the browser until it passes. Checked here rather
+      than by disabling Send, because a disabled button gives no reason and
+      "why can I not send this" is the entire question a visitor would have.
+    */
+    if (recaptchaConfigured && !captchaToken) {
+      setCaptchaError('Please confirm you are not a robot.');
+      return;
+    }
+    setCaptchaError(null);
+
     inFlight.current = true;
     setSending(true);
     try {
-      const result = await submitContactEnquiry(form);
+      const result = await submitContactEnquiry(form, captchaToken);
 
       if (result.ok) {
         setSent(true);
         setServerErrors({});
         return;
+      }
+
+      /*
+        Spent, whatever went wrong. The token cannot be reused, so every path
+        below leads back to a form the visitor has to tick again before Send
+        will work - and clearing it here means that is true of all of them,
+        including the choice-field reconcile that returns early.
+      */
+      if (recaptchaConfigured) {
+        setCaptchaToken(null);
+        setCaptchaNonce((n) => n + 1);
       }
 
       /*
@@ -645,6 +682,18 @@ export default function ContactPage() {
                     />
                     <FieldError id="enquiry-message-error" message={errorFor('message')} />
                   </div>
+
+                  {/* Last field before the footnote and Send, so the control
+                      that can block the submit is the last thing read before
+                      pressing it. Renders nothing when no site key is set. */}
+                  <Recaptcha
+                    resetKey={captchaNonce}
+                    error={captchaError}
+                    onChange={(token) => {
+                      setCaptchaToken(token);
+                      if (token) setCaptchaError(null);
+                    }}
+                  />
 
                   <div className="flex flex-wrap items-center justify-between gap-4 border-t border-cream-300 pt-6">
                     <div className="min-w-0 flex-1 space-y-1.5">

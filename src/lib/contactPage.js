@@ -337,6 +337,8 @@ const FAILURE_MESSAGES = {
     'Several messages have already been sent from this network. Please wait a few minutes and try again.',
   unavailable:
     'The form is temporarily unavailable, so your message was not sent. Please email or WhatsApp us using the details beside this form.',
+  captcha:
+    'The robot check could not be confirmed, so your message was not sent. Please tick the box again and send.',
   failed:
     'Something went wrong at our end and your message was not sent. Please try again in a moment.',
 };
@@ -434,7 +436,7 @@ export function canSubmitEnquiry() {
  * @returns {Promise<{ok: true} | {ok: false, reason: string, message: string,
  *   fieldErrors: Record<string, string>}>}
  */
-export async function submitContactEnquiry(values) {
+export async function submitContactEnquiry(values, recaptchaToken) {
   // Rule 1: the prerender pass must not reach the network. It has no visitor
   // and no filled-in form, so reaching here at all would be a mistake.
   if (typeof window === 'undefined') return failure('unconfigured');
@@ -452,6 +454,14 @@ export async function submitContactEnquiry(values) {
     revenueRange: values.revenueRange,
     platforms: [...values.platforms],
     message: blankToNull(values.message),
+    /*
+     * The reCAPTCHA token, when the widget produced one. The server strips the
+     * field before its own validator runs, so it never reaches the stored row
+     * - and it is omitted rather than sent as null, because an absent field
+     * and a null one mean the same thing there, and omitting it keeps the
+     * payload of a build with no site key identical to what it was before.
+     */
+    ...(recaptchaToken ? { recaptchaToken } : {}),
   };
 
   let res;
@@ -483,6 +493,11 @@ export async function submitContactEnquiry(values) {
   // has never been published, so the server cannot vouch for any of the
   // options the visitor was just offered — unavailable, not their fault.
   if (res.status === 422) return failure('invalid', toFieldErrors(errorBody?.error?.details));
+  // A 400 from this endpoint is the captcha and nothing else: every other
+  // bad-input answer it gives is a 422 with named fields.
+  if (res.status === 400 && errorBody?.error?.code === 'RECAPTCHA_FAILED') {
+    return failure('captcha');
+  }
   if (res.status === 429) return failure('rate-limited');
   if (res.status === 404) return failure('unavailable');
   return failure('failed');

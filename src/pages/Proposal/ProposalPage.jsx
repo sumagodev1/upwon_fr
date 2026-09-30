@@ -5,6 +5,7 @@ import Container from '../../components/shared/Container/Container.jsx';
 import PageHero from '../../components/shared/PageHero/PageHero.jsx';
 import Seo from '../../components/shared/Seo/Seo.jsx';
 import { PLATFORM_MODULES } from '../../data/modules.js';
+import { checkProposalRequest, counterFor, isOver, MAX_FOR } from '../../lib/leadFields.js';
 
 export default function ProposalPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -19,6 +20,18 @@ export default function ProposalPage() {
     platforms: [],
     notes: '',
   });
+  /*
+    `attempted` puts every message on screen from the first press; until then a
+    field the visitor has not left yet is not reported as wrong.
+  */
+  const [attempted, setAttempted] = useState(false);
+  const [touched, setTouched] = useState({});
+
+  const errors = checkProposalRequest(form);
+  const hasErrors = Object.values(errors).some(Boolean);
+  const errorFor = (name) =>
+    attempted || touched[name] ? (errors[name] ?? undefined) : undefined;
+  const touch = (name) => setTouched((t) => ({ ...t, [name]: true }));
 
   const togglePlatform = (id) =>
     setForm((f) => ({
@@ -69,7 +82,18 @@ export default function ProposalPage() {
                 </p>
               </motion.div>
             ) : (
-              <form onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }} className="space-y-6">
+              <form
+                noValidate
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setAttempted(true);
+                  // Nothing is sent while a field is wrong. setAttempted above
+                  // has already put every message on screen.
+                  if (hasErrors) return;
+                  setSubmitted(true);
+                }}
+                className="space-y-6"
+              >
                 <div>
                   <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-orange-600">
                     <FileText className="h-3.5 w-3.5" />
@@ -78,11 +102,11 @@ export default function ProposalPage() {
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <I label="Full name" required value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
-                  <I label="Role" placeholder="CFO, IT Head, Procurement" value={form.role} onChange={(v) => setForm({ ...form, role: v })} />
-                  <I label="Company" required value={form.company} onChange={(v) => setForm({ ...form, company: v })} />
-                  <I label="Mobile" required value={form.mobile} onChange={(v) => setForm({ ...form, mobile: v })} />
-                  <I label="Work email" type="email" required value={form.email} onChange={(v) => setForm({ ...form, email: v })} className="sm:col-span-2" />
+                  <I label="Full name" name="name" required value={form.name} onChange={(v) => setForm({ ...form, name: v })} onBlur={() => touch('name')} error={errorFor('name')} />
+                  <I label="Role" name="role" placeholder="CFO, IT Head, Procurement" value={form.role} onChange={(v) => setForm({ ...form, role: v })} onBlur={() => touch('role')} error={errorFor('role')} />
+                  <I label="Company" name="company" required value={form.company} onChange={(v) => setForm({ ...form, company: v })} onBlur={() => touch('company')} error={errorFor('company')} />
+                  <I label="Mobile" name="mobile" type="tel" inputMode="numeric" placeholder="10-digit mobile" required value={form.mobile} onChange={(v) => setForm({ ...form, mobile: v })} onBlur={() => touch('mobile')} error={errorFor('mobile')} />
+                  <I label="Work email" name="email" type="email" required value={form.email} onChange={(v) => setForm({ ...form, email: v })} onBlur={() => touch('email')} error={errorFor('email')} className="sm:col-span-2" />
                 </div>
 
                 <div>
@@ -142,17 +166,46 @@ export default function ProposalPage() {
                 </div>
 
                 <div>
-                  <L>Scope, RFP requirements, or specific notes</L>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <L>Scope, RFP requirements, or specific notes</L>
+                    <span
+                      className={`shrink-0 text-[11px] tabular-nums ${
+                        isOver(form.notes, MAX_FOR.notes)
+                          ? 'font-medium text-orange-600'
+                          : 'text-navy-400'
+                      }`}
+                    >
+                      {counterFor(form.notes, MAX_FOR.notes)}
+                    </span>
+                  </div>
                   <textarea
+                    id="proposal-notes"
+                    name="notes"
                     value={form.notes}
                     onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                    onBlur={() => touch('notes')}
                     rows={5}
                     placeholder="Tell us anything specific — number of plants, distributor count, outlet count, integration list, compliance requirements…"
-                    className="mt-2 w-full rounded-lg border border-cream-400 bg-white px-4 py-3 text-sm text-navy-950 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                    aria-invalid={errorFor('notes') ? true : undefined}
+                    aria-describedby={errorFor('notes') ? 'proposal-notes-error' : undefined}
+                    className={`mt-2 w-full rounded-lg border bg-white px-4 py-3 text-sm text-navy-950 outline-none focus:ring-2 focus:ring-orange-500/20 ${
+                      errorFor('notes')
+                        ? 'border-orange-400 focus:border-orange-400'
+                        : 'border-cream-400 focus:border-orange-500'
+                    }`}
                   />
+                  {errorFor('notes') && (
+                    <p id="proposal-notes-error" className="mt-1.5 text-[13px] text-orange-600">
+                      {errorFor('notes')}
+                    </p>
+                  )}
                 </div>
 
-                <button type="submit" className="btn-primary-glow w-full !py-3.5">
+                <button
+                  type="submit"
+                  disabled={attempted && hasErrors}
+                  className="btn-primary-glow w-full !py-3.5 disabled:cursor-not-allowed disabled:opacity-60"
+                >
                   Request formal proposal
                   <ArrowRight className="h-4 w-4" />
                 </button>
@@ -168,22 +221,68 @@ export default function ProposalPage() {
   );
 }
 
-function I({ label, required, type = 'text', placeholder, value, onChange, className = '' }) {
+function I({
+  label,
+  name,
+  required,
+  type = 'text',
+  placeholder,
+  value,
+  onChange,
+  onBlur,
+  error,
+  inputMode,
+  className = '',
+}) {
+  const id = `proposal-${name}`;
+  const max = MAX_FOR[name];
+
   return (
-    <label className={`block ${className}`}>
-      <L>
-        {label}
-        {required && <span className="ml-1 text-orange-500">*</span>}
-      </L>
+    <div className={className}>
+      <div className="flex items-baseline justify-between gap-3">
+        <label htmlFor={id}>
+          <L>
+            {label}
+            {required && <span className="ml-1 text-orange-500">*</span>}
+          </L>
+        </label>
+        {/*
+          A counter rather than a `maxLength` attribute: the browser truncates a
+          paste at maxLength with no event and no message, which silently loses
+          the tail and makes the "N characters or fewer" message unreachable.
+        */}
+        {max !== undefined && (
+          <span
+            className={`shrink-0 text-[11px] tabular-nums ${
+              isOver(value, max) ? 'font-medium text-orange-600' : 'text-navy-400'
+            }`}
+          >
+            {counterFor(value, max)}
+          </span>
+        )}
+      </div>
       <input
+        id={id}
+        name={name}
         type={type}
+        inputMode={inputMode}
         required={required}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full rounded-lg border border-cream-400 bg-white px-4 py-2.5 text-sm text-navy-950 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+        onBlur={onBlur}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
+        className={`mt-2 w-full rounded-lg border bg-white px-4 py-2.5 text-sm text-navy-950 outline-none focus:ring-2 focus:ring-orange-500/20 ${
+          error ? 'border-orange-400 focus:border-orange-400' : 'border-cream-400 focus:border-orange-500'
+        }`}
       />
-    </label>
+      {error && (
+        <p id={`${id}-error`} className="mt-1.5 text-[13px] text-orange-600">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }
 

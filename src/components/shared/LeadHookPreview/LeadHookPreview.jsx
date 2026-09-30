@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { m as motion } from 'framer-motion';
 import { ArrowRight, FileText, CheckCircle2, XCircle } from 'lucide-react';
 import Container from '../Container/Container.jsx';
+import { checkSubscribe } from '../../../lib/leadFields.js';
 
 export default function LeadHookPreview({
   variant = 'checklist', // 'checklist' | 'report' | 'benchmark'
@@ -16,6 +17,11 @@ export default function LeadHookPreview({
 }) {
   const [submitted, setSubmitted] = useState(false);
   const [email, setEmail] = useState('');
+  const [attempted, setAttempted] = useState(false);
+  const [touched, setTouched] = useState(false);
+
+  const emailError = checkSubscribe({ email }).email;
+  const showEmailError = (attempted || touched) && emailError;
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-navy-950 via-navy-900 to-navy-950 py-20 text-white md:py-24">
@@ -77,8 +83,11 @@ export default function LeadHookPreview({
               </div>
             ) : (
               <form
+                noValidate
                 onSubmit={(e) => {
                   e.preventDefault();
+                  setAttempted(true);
+                  if (emailError) return;
                   setSubmitted(true);
                 }}
                 className="mt-7 flex flex-wrap gap-2"
@@ -88,8 +97,15 @@ export default function LeadHookPreview({
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onBlur={() => setTouched(true)}
                   placeholder="Your work email"
-                  className="w-full flex-1 min-w-0 rounded-md border border-white/15 bg-white/[0.06] px-4 py-3 text-sm text-white placeholder-cream-100/40 outline-none focus:border-orange-500/40 sm:min-w-[160px]"
+                  aria-invalid={showEmailError ? true : undefined}
+                  aria-describedby={showEmailError ? 'leadhook-email-error' : undefined}
+                  className={`w-full flex-1 min-w-0 rounded-md border bg-white/[0.06] px-4 py-3 text-sm text-white placeholder-cream-100/40 outline-none sm:min-w-[160px] ${
+                    showEmailError
+                      ? 'border-orange-400/70 focus:border-orange-400'
+                      : 'border-white/15 focus:border-orange-500/40'
+                  }`}
                 />
                 <button
                   type="submit"
@@ -99,6 +115,15 @@ export default function LeadHookPreview({
                   {buttonLabel}
                   <ArrowRight className="h-4 w-4" />
                 </button>
+                {/* w-full so the message sits on its own row under the flex pair. */}
+                {showEmailError && (
+                  <p
+                    id="leadhook-email-error"
+                    className="w-full text-[13px] text-orange-300"
+                  >
+                    {emailError}
+                  </p>
+                )}
               </form>
             )}
             <p className="mt-3 text-[14px] text-cream-100/50">{trustLine}</p>

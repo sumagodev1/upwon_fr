@@ -22,6 +22,7 @@ import ResourcesHeroSection from './sections/ResourcesHeroSection/ResourcesHeroS
 import Seo from '../../components/shared/Seo/Seo.jsx';
 import SectionIntro from '../../components/shared/SectionIntro/SectionIntro.jsx';
 import { submitLead } from '../../lib/leads.js';
+import { checkSubscribe } from '../../lib/leadFields.js';
 import {
   SORTED_POSTS,
   CATEGORIES_WITH_COUNTS,
@@ -156,6 +157,11 @@ export default function ResourcesPage() {
   const [activeCat, setActiveCat] = useState('all');
   const [caseFilter, setCaseFilter] = useState('all');
   const [emailValue, setEmailValue] = useState('');
+  const [emailAttempted, setEmailAttempted] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
+
+  const subscribeError = checkSubscribe({ email: emailValue }).email;
+  const showSubscribeError = (emailAttempted || emailTouched) && subscribeError;
   const [subscribed, setSubscribed] = useState(false);
 
   /*
@@ -610,29 +616,46 @@ export default function ResourcesPage() {
                 </p>
               ) : (
                 <form
+                  noValidate
                   onSubmit={(e) => {
                     e.preventDefault();
-                    if (emailValue) {
-                      submitLead('newsletter_resources', { email: emailValue });
-                      setSubscribed(true);
-                    }
+                    setEmailAttempted(true);
+                    // The bare `if (emailValue)` this replaces let any non-empty
+                    // string through, so 'abc' subscribed silently.
+                    if (subscribeError) return;
+                    submitLead('newsletter_resources', { email: emailValue });
+                    setSubscribed(true);
                   }}
-                  className="mt-4 flex flex-col gap-2 sm:flex-row"
+                  className="mt-4"
                 >
-                  <input
-                    type="email"
-                    required
-                    placeholder="your-email@company.com"
-                    value={emailValue}
-                    onChange={(e) => setEmailValue(e.target.value)}
-                    className="flex-1 rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder-white/60 outline-none focus:border-white/60"
-                  />
-                  <button
-                    type="submit"
-                    className="rounded-lg bg-navy-950 px-5 py-3 text-sm font-bold text-white shadow hover:bg-navy-900"
-                  >
-                    Subscribe
-                  </button>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <input
+                      type="email"
+                      required
+                      placeholder="your-email@company.com"
+                      value={emailValue}
+                      onChange={(e) => setEmailValue(e.target.value)}
+                      onBlur={() => setEmailTouched(true)}
+                      aria-invalid={showSubscribeError ? true : undefined}
+                      aria-describedby={showSubscribeError ? 'resources-news-error' : undefined}
+                      className={`flex-1 rounded-lg border bg-white/10 px-4 py-3 text-sm text-white placeholder-white/60 outline-none ${
+                        showSubscribeError
+                          ? 'border-orange-300 focus:border-orange-200'
+                          : 'border-white/20 focus:border-white/60'
+                      }`}
+                    />
+                    <button
+                      type="submit"
+                      className="rounded-lg bg-navy-950 px-5 py-3 text-sm font-bold text-white shadow hover:bg-navy-900"
+                    >
+                      Subscribe
+                    </button>
+                  </div>
+                  {showSubscribeError && (
+                    <p id="resources-news-error" className="mt-2 text-[13px] font-medium text-white">
+                      {subscribeError}
+                    </p>
+                  )}
                 </form>
               )}
             </div>

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { PLATFORM_MODULES, PLATFORM_THEMES } from '../../../data/modules.js';
 import { submitLead } from '../../../lib/leads.js';
+import { checkBrochureRequest, counterFor, isOver, MAX_FOR } from '../../../lib/leadFields.js';
 
 // BrochureModal — the "Download Product Brochure (PDF)" pop-up that replaces
 // the inline dropdown in HeroSection.
@@ -41,6 +42,19 @@ export default function BrochureModal({ open, onClose }) {
   const [picked, setPicked] = useState(null); // { slug, title, sub, href }
   const [form, setForm] = useState({ name: '', email: '', company: '' });
   const [submitting, setSubmitting] = useState(false);
+  /*
+    `attempted` puts every message on screen from the first press; before that a
+    field the visitor has not left yet is not reported. Same shape as the site's
+    already-validated forms.
+  */
+  const [attempted, setAttempted] = useState(false);
+  const [touched, setTouched] = useState({});
+
+  const errors = checkBrochureRequest(form);
+  const hasErrors = Object.values(errors).some(Boolean);
+  const errorFor = (name) =>
+    attempted || touched[name] ? (errors[name] ?? undefined) : undefined;
+  const touch = (name) => setTouched((t) => ({ ...t, [name]: true }));
 
   // Lock body scroll while open. Restore on close. ESC also closes.
   useEffect(() => {
@@ -101,6 +115,9 @@ export default function BrochureModal({ open, onClose }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    setAttempted(true);
+    // Nothing is sent while a field is wrong; setAttempted has already shown why.
+    if (hasErrors) return;
     setSubmitting(true);
     await submitLead('brochure_download', {
       ...form,
@@ -180,6 +197,9 @@ export default function BrochureModal({ open, onClose }) {
                   onSubmit={handleSubmit}
                   submitting={submitting}
                   onBack={() => setStep('browse')}
+                  errorFor={errorFor}
+                  onTouch={touch}
+                  blocked={attempted && hasErrors}
                 />
               )}
               {step === 'delivered' && (
@@ -278,38 +298,64 @@ function BrowseStep({ brochures, onPick }) {
 }
 
 // ─── Step 2: Capture ─────────────────────────────────────────────────────────
-function CaptureStep({ picked, form, setForm, onSubmit, submitting, onBack }) {
+function CaptureStep({
+  picked,
+  form,
+  setForm,
+  onSubmit,
+  submitting,
+  onBack,
+  errorFor,
+  onTouch,
+  blocked,
+}) {
   return (
-    <form onSubmit={onSubmit} className="grid gap-5 md:grid-cols-[1fr_280px]">
+    /*
+      noValidate: the browser's own check would open a native bubble over the
+      first empty box and stop the handler running, so the inline messages below
+      would never appear. `type` and `required` stay for the keyboard they choose
+      and for what they tell a screen reader.
+    */
+    <form onSubmit={onSubmit} noValidate className="grid gap-5 md:grid-cols-[1fr_280px]">
       <div>
         <div className="grid gap-3">
           <Field
             label="Full name"
+            name="name"
             value={form.name}
             onChange={(v) => setForm({ ...form, name: v })}
+            onBlur={() => onTouch('name')}
+            error={errorFor('name')}
             required
             placeholder="Your name"
           />
           <Field
             label="Work email"
+            name="email"
             type="email"
             value={form.email}
             onChange={(v) => setForm({ ...form, email: v })}
+            onBlur={() => onTouch('email')}
+            error={errorFor('email')}
             required
             placeholder="you@company.com"
           />
           <Field
             label="Company (optional)"
+            name="company"
             value={form.company}
             onChange={(v) => setForm({ ...form, company: v })}
+            onBlur={() => onTouch('company')}
+            error={errorFor('company')}
             placeholder="Your business"
           />
         </div>
         <div className="mt-5 flex flex-wrap items-center gap-3">
           <button
             type="submit"
-            disabled={submitting}
-            className="btn-primary !px-6 !py-3 disabled:opacity-60"
+            disabled={submitting || blocked}
+            aria-busy={submitting}
+            className="btn-primary !px-6 !py-3 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Download className="h-4 w-4" />
             {submitting ? 'Preparing…' : `Send me the ${picked?.title?.split(' — ')[0] || 'brochure'}`}
@@ -415,21 +461,64 @@ function DeliveredStep({ picked, onPickAnother }) {
   );
 }
 
-function Field({ label, value, onChange, type = 'text', required, placeholder }) {
+function Field({
+  label,
+  name,
+  value,
+  onChange,
+  onBlur,
+  error,
+  type = 'text',
+  required,
+  placeholder,
+}) {
+  const id = `brochure-${name}`;
+  const max = MAX_FOR[name];
+
   return (
-    <label className="block">
-      <span className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-navy-600">
-        {label}
-        {required && <span className="ml-0.5 text-orange-600">*</span>}
-      </span>
+    <div>
+      <div className="flex items-baseline justify-between gap-3">
+        <label htmlFor={id}>
+          <span className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-navy-600">
+            {label}
+            {required && <span className="ml-0.5 text-orange-600">*</span>}
+          </span>
+        </label>
+        {/*
+          A counter rather than a `maxLength` attribute: the browser truncates a
+          paste at maxLength with no event and no message, which silently loses
+          the tail and makes the "N characters or fewer" message unreachable.
+        */}
+        {max !== undefined && (
+          <span
+            className={`shrink-0 text-[11px] tabular-nums ${
+              isOver(value, max) ? 'font-medium text-orange-600' : 'text-navy-400'
+            }`}
+          >
+            {counterFor(value, max)}
+          </span>
+        )}
+      </div>
       <input
+        id={id}
+        name={name}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
         required={required}
         placeholder={placeholder}
-        className="mt-1.5 w-full rounded-md border border-cream-300 bg-white px-3 py-2.5 text-[14px] text-navy-900 placeholder:text-navy-400 focus:border-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
+        className={`mt-1.5 w-full rounded-md border bg-white px-3 py-2.5 text-[14px] text-navy-900 placeholder:text-navy-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 ${
+          error ? 'border-orange-400' : 'border-cream-300 focus:border-orange-300'
+        }`}
       />
-    </label>
+      {error && (
+        <p id={`${id}-error`} className="mt-1.5 text-[13px] text-orange-600">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }

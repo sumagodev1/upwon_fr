@@ -14,6 +14,7 @@ import Container from '../../components/shared/Container/Container.jsx';
 import HeroSlider from '../../components/shared/HeroSlider/HeroSlider.jsx';
 import DemoCtaCompact from '../../components/shared/DemoCtaCompact/DemoCtaCompact.jsx';
 import { submitLead } from '../../lib/leads.js';
+import { checkRoiReport } from '../../lib/leadFields.js';
 import Seo from '../../components/shared/Seo/Seo.jsx';
 
 // Brief §17.2 — three business-type cards each load a different input schema.
@@ -251,6 +252,18 @@ export default function RoiCalculatorPage() {
   const [inputs, setInputs] = useState(() => initialInputs('food-mfg'));
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', mobile: '' });
+  /*
+    `attempted` puts every message on screen from the first press; until then a
+    field the visitor has not left yet is not reported as wrong.
+  */
+  const [attempted, setAttempted] = useState(false);
+  const [touched, setTouched] = useState({});
+
+  const errors = checkRoiReport(form);
+  const hasErrors = Object.values(errors).some(Boolean);
+  const errorFor = (name) =>
+    attempted || touched[name] ? (errors[name] ?? undefined) : undefined;
+  const touch = (name) => setTouched((t) => ({ ...t, [name]: true }));
 
   const schema = INPUT_SCHEMAS[businessType];
   const results = useMemo(() => calcSavings(businessType, inputs), [businessType, inputs]);
@@ -419,8 +432,13 @@ export default function RoiCalculatorPage() {
                 </div>
               ) : (
                 <form
+                  noValidate
                   onSubmit={(e) => {
                     e.preventDefault();
+                    setAttempted(true);
+                    // Nothing is sent while a field is wrong. setAttempted above
+                    // has already put every message on screen.
+                    if (hasErrors) return;
                     submitLead('roi_calculator', {
                       name: form.name,
                       email: form.email,
@@ -436,29 +454,38 @@ export default function RoiCalculatorPage() {
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cream-100/60">
                     Get your full ROI report — module-wise breakdown
                   </p>
-                  <input
-                    required
+                  <RoiField
+                    name="name"
                     placeholder="Full name"
                     value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full rounded-md border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white placeholder-cream-100/40 outline-none focus:border-orange-500/40"
+                    onChange={(v) => setForm({ ...form, name: v })}
+                    onBlur={() => touch('name')}
+                    error={errorFor('name')}
                   />
-                  <input
-                    required
+                  <RoiField
+                    name="email"
                     type="email"
                     placeholder="Work email"
                     value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="w-full rounded-md border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white placeholder-cream-100/40 outline-none focus:border-orange-500/40"
+                    onChange={(v) => setForm({ ...form, email: v })}
+                    onBlur={() => touch('email')}
+                    error={errorFor('email')}
                   />
-                  <input
-                    required
-                    placeholder="Mobile"
+                  <RoiField
+                    name="mobile"
+                    type="tel"
+                    inputMode="numeric"
+                    placeholder="Mobile (10 digits)"
                     value={form.mobile}
-                    onChange={(e) => setForm({ ...form, mobile: e.target.value })}
-                    className="w-full rounded-md border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white placeholder-cream-100/40 outline-none focus:border-orange-500/40"
+                    onChange={(v) => setForm({ ...form, mobile: v })}
+                    onBlur={() => touch('mobile')}
+                    error={errorFor('mobile')}
                   />
-                  <button type="submit" className="btn-primary-glow w-full !py-3">
+                  <button
+                    type="submit"
+                    disabled={attempted && hasErrors}
+                    className="btn-primary-glow w-full !py-3 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
                     Get My Full ROI Report
                     <ArrowRight className="h-4 w-4" />
                   </button>
@@ -481,5 +508,44 @@ export default function RoiCalculatorPage() {
 
       {/* <DemoCtaCompact /> */}
     </>
+  );
+}
+
+/**
+ * One field of the ROI-report capture.
+ *
+ * The three inputs it replaces carried a placeholder and nothing else, so there
+ * was no label for a screen reader to read — hence `aria-label` from the
+ * placeholder text. The design stays placeholder-only on purpose; this only adds
+ * the name the control was always missing, plus the error line.
+ */
+function RoiField({ name, value, onChange, onBlur, error, type = 'text', placeholder, inputMode }) {
+  const id = `roi-${name}`;
+
+  return (
+    <div>
+      <input
+        id={id}
+        name={name}
+        type={type}
+        inputMode={inputMode}
+        required
+        aria-label={placeholder}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
+        className={`w-full rounded-md border bg-white/[0.04] px-3 py-2.5 text-sm text-white placeholder-cream-100/40 outline-none ${
+          error ? 'border-orange-400/70 focus:border-orange-400' : 'border-white/10 focus:border-orange-500/40'
+        }`}
+      />
+      {error && (
+        <p id={`${id}-error`} className="mt-1.5 text-[13px] text-orange-300">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }

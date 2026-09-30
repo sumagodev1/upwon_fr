@@ -15,6 +15,7 @@ import InsiderFeatureSection from './sections/InsiderFeatureSection/InsiderFeatu
 import Seo from '../../components/shared/Seo/Seo.jsx';
 import { ISSUES } from '../../data/newsletter.js';
 import { fetchInsiderIssues } from '../../lib/insiderPage.js';
+import { checkSubscribe } from '../../lib/leadFields.js';
 
 // The story grid's subtext for an issue that has no summary of its own — the
 // line this page always carried, written for the March 2026 issue.
@@ -97,20 +98,35 @@ function StoryCard({ story, index, issueSlug }) {
 function SubscribeForm() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [attempted, setAttempted] = useState(false);
+  const [touched, setTouched] = useState(false);
+
+  const emailError = checkSubscribe({ email }).email;
+  const showEmailError = (attempted || touched) && emailError;
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!email || !email.includes('@')) return;
+    setAttempted(true);
+    /*
+      This replaces `if (!email || !email.includes('@')) return;`, which refused
+      the submit without saying anything: 'a@b' passed it, and anything without
+      an @ was dropped on the floor with the button looking like it had worked.
+    */
+    if (emailError) return;
     // TODO: wire to your CRM / Mailchimp endpoint
     setSubmitted(true);
     setEmail('');
+    setAttempted(false);
+    setTouched(false);
   };
 
   return (
     <form
+      noValidate
       onSubmit={handleSubmit}
-      className="flex w-full max-w-md flex-col gap-2 sm:flex-row"
+      className="flex w-full max-w-md flex-col gap-2"
     >
+      <div className="flex w-full flex-col gap-2 sm:flex-row">
       <label className="relative flex-1">
         <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-400" />
         <input
@@ -119,7 +135,12 @@ function SubscribeForm() {
           placeholder="you@yourcompany.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-md border border-cream-300 bg-white px-9 py-3 text-[14px] text-navy-900 placeholder:text-navy-400 focus:border-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+          onBlur={() => setTouched(true)}
+          aria-invalid={showEmailError ? true : undefined}
+          aria-describedby={showEmailError ? 'insider-news-error' : undefined}
+          className={`w-full rounded-md border bg-white px-9 py-3 text-[14px] text-navy-900 placeholder:text-navy-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 ${
+            showEmailError ? 'border-orange-400' : 'border-cream-300 focus:border-orange-300'
+          }`}
         />
       </label>
       <button
@@ -139,6 +160,12 @@ function SubscribeForm() {
           </>
         )}
       </button>
+      </div>
+      {showEmailError && (
+        <p id="insider-news-error" className="text-[13px] text-orange-600">
+          {emailError}
+        </p>
+      )}
     </form>
   );
 }
